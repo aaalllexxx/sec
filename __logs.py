@@ -1,49 +1,41 @@
 import os
 import logging
-from logging import FileHandler
-from flask import Flask, request, has_request_context
+from logging import FileHandler, StreamHandler
+from flask import Flask
 from rich import print
-
-class RequestFormatter(logging.Formatter):
-    """
-    Кастомный форматтер, который пытается подставить в запись лога
-    IP-адрес, метод и URL из контекста Flask (request).
-    """
-    def format(self, record):
-        # Значения по умолчанию на случай, если
-        # лог пишется вне контекста запроса
-        record.remote_addr = '-'
-        record.method = '-'
-        record.url = '-'
-        
-        if has_request_context():
-            record.remote_addr = request.remote_addr or '-'
-            record.method = request.method
-            record.url = request.url
-        
-        return super().format(record)
-
 
 class Logger:
     def __init__(self, app):
         # Здесь app — это ваш класс App, у которого есть поле flask: Flask
         self.app: Flask = app.flask
         
+        # Создадим папку logs, если её нет
         if not os.path.exists("logs"):
             os.mkdir("logs")
 
-        # Создаём FileHandler
-        handler = FileHandler("logs/app.log")
-        handler.setLevel(logging.INFO)
+        # --- Хендлер, пишущий в файл ---
+        file_handler = FileHandler("logs/app.log")
+        file_handler.setLevel(logging.INFO)
 
-        # Привязываем хендлер к logger-у самого приложения Flask
+        # --- Хендлер, пишущий в консоль ---
+        console_handler = StreamHandler()
+        console_handler.setLevel(logging.INFO)
+
+        # (необязательно) Определим общий формат логов
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+
+        # Настроим logger самого приложения
         self.app.logger.setLevel(logging.INFO)
-        self.app.logger.addHandler(handler)
+        self.app.logger.addHandler(file_handler)
+        self.app.logger.addHandler(console_handler)
 
-        # Чтобы видеть логи запроса (GET / ...), нужно добавить хендлер в logger "werkzeug"
+        # Настроим logger веб-сервера (Werkzeug), чтобы видеть запросы (GET /... 200)
         werkzeug_logger = logging.getLogger('werkzeug')
         werkzeug_logger.setLevel(logging.INFO)
-        werkzeug_logger.addHandler(handler)
+        werkzeug_logger.addHandler(file_handler)
+        werkzeug_logger.addHandler(console_handler)
 
     @staticmethod
     def warning(msg):
