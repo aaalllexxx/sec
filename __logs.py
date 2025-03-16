@@ -35,13 +35,6 @@ class Logger:
         # Создаём FileHandler
         handler = FileHandler("logs/app.log")
         handler.setLevel(logging.INFO)
-        
-        # Указываем формат логов:
-        # время - IP - метод - URL
-        formatter = RequestFormatter(
-            '%(asctime)s - %(remote_addr)s - %(method)s - %(url)s'
-        )
-        handler.setFormatter(formatter)
 
         # Привязываем хендлер к logger-у самого приложения Flask
         self.app.logger.setLevel(logging.INFO)
