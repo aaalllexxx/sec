@@ -1,14 +1,15 @@
 from rich import print
 import os
-from logging.handlers import RotatingFileHandler
+from logging import FileHandler
 import logging
+from flask import Flask
 
 class Logger:
     def __init__(self, app):
-        self.app = app.flask
+        self.app: Flask = app.flask
         if not os.path.exists("logs"):
             os.mkdir("logs")
-        handler = RotatingFileHandler("logs/app.log")
+        handler = FileHandler("logs/app.log")
         handler.setLevel(logging.INFO)
         # Формат логов: время, IP-адрес клиента, метод HTTP, URL
         formatter = logging.Formatter('%(asctime)s - %(remote_addr)s - %(method)s - %(url)s')
