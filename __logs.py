@@ -9,8 +9,9 @@ def run(*args, **kwargs):
 	if "init" in arg:
 		if os.path.exists("AEngineApps"):
 			if not os.path.exists("AEngineApps/logging.py"):
-				with open(os.path.join(base, "__logs.py"), encoding="utf-8") as file, \
-				open(os.path.join("AEngineApps/logging.py"),"w", encoding="utf-8") as file_to:
-					file_to.write(file.read())
+				open(os.path.join("AEngineApps/logging.py"),"w", encoding="utf-8").close()
+            with open(os.path.join(base, "__logs.py"), encoding="utf-8") as file, \
+            open(os.path.join("AEngineApps/logging.py"),"w", encoding="utf-8") as file_to:
+                file_to.write(file.read())
 
 
