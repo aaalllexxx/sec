@@ -1,7 +1,7 @@
 import os
 import logging
 from logging import FileHandler, StreamHandler
-from flask import Flask
+from flask import Flask, request
 from rich import print
 
 class Logger:
@@ -21,7 +21,7 @@ class Logger:
         console_handler = StreamHandler()
         console_handler.setLevel(logging.INFO)
 
-        # (необязательно) Определим общий формат логов
+        # Общий формат логов
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
@@ -37,6 +37,14 @@ class Logger:
         werkzeug_logger.addHandler(file_handler)
         werkzeug_logger.addHandler(console_handler)
 
+        # Регистрация before_request-хука
+        self.register_hooks()
+
+    def register_hooks(self):
+        @self.app.before_request
+        def log_ip():
+            ip = request.remote_addr or 'Unknown IP'
+    
     @staticmethod
     def warning(msg):
         print(f"[yellow][!] {msg}[/yellow]")
