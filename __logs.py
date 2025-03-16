@@ -70,17 +70,3 @@ class Logger:
         def log_ip():
             ip = request.remote_addr or 'Unknown IP'
             method = request.method
-
-    # Методы ниже напрямую печатают через rich.print, не попадая в app.log.
-    # Если нужно, чтобы они тоже шли в лог (и очищались), используйте self.app.logger.
-    @staticmethod
-    def warning(msg):
-        print(f"[yellow][!] {msg}[/yellow]")
-    
-    @staticmethod
-    def success(msg):
-        print(f"[green][+] {msg}[/green]")
-    
-    @staticmethod
-    def fail(msg):
-        print(f"[red][-] {msg}[/red]")
