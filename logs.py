@@ -3,8 +3,7 @@ from rich import print
 from datetime import datetime
 import os
 import re
-from Levenshtein import distance
-
+from urllib.parse import unquote
 base = os.sep.join(__file__.split(os.sep)[:-1])
 BRUTE_TIMEOUT_TARGET=2
 
@@ -17,7 +16,7 @@ class Record:
 		self.type = self.parts[2]
 		self.address = self.parts[3]
 		self.method = self.parts[4].strip('"')
-		self.endpoint = self.parts[5]
+		self.endpoint = unquote(self.parts[5])
 		self.protocol = self.parts[6].strip('"')
 		self.code = int(self.parts[7])
 	
@@ -75,12 +74,29 @@ def __check_brute(batch: list[Record]):
 
 	return ips
 
-
+def __check_lfi_and_rfi(batch: list[Record]):
+	res = {
+		"potential": [],
+		"vulnerable": []
+	}
+	for rec in batch:
+		if "?" in rec.endpoint:
+			args = rec.endpoint.split("?")[1].split("&")
+			for arg in args:
+				data = arg.split("=")
+				if len(data) > 1:
+					if ".." in data[1] or "/" in data[1] or "\\" in data[1]:
+						res["potential"].append(rec.line)
+						if rec.code == 200:
+							res["vulnerable"].append(rec.line)
+	return res
 
 def __analyze(*args):
 	batch = []
 	lines = args[args.index("-l") + 1] if "-l" in args else 300
-	with open("logs/app.log", encoding="utf-8") as file:
+	potential_lfi = []
+	vulnerable_endpoints = []
+	with open("logs/app.log", encoding="utf-8") as file, open("report.txt", "w", encoding="utf-8") as report:
 		ip_report = {}
 		batch = __read_next_n(file, lines)
 		while batch:
@@ -93,10 +109,25 @@ def __analyze(*args):
 				else:
 					ip_report[ip]["brute"] += brute_analysis_report[ip]["accuracy"]
 					ip_report[ip]["brute"] /= 2
+			lfi_analysis_report = __check_lfi_and_rfi(batch)
+			potential_lfi += lfi_analysis_report["potential"]
+			vulnerable_endpoints += lfi_analysis_report["vulnerable"]
+
 		for ip in ip_report:
-			print(f"вероятность брутфорса от {ip}: {ip_report[ip]["brute"]}")
-
-
+			print(f"[green bold][+] Вероятность брутфорса от {ip}[/green bold]: [red]{ip_report[ip]["brute"]}[/red]")
+			report.write(f"[+] Вероятность брутфорса от {ip}: {ip_report[ip]["brute"]}" + "\n")
+		print("[green bold][+] Эксплуатация LFI и RFI: [/green bold]")
+		report.write("\n")
+		report.write("[+] Эксплуатация LFI и RFI: " + "\n")
+		potential_lfi = list(set(potential_lfi))
+		vulnerable_endpoints = list(set(vulnerable_endpoints))
+		for rec in vulnerable_endpoints:
+			print("    - [red]" + rec +"[/red]")
+			report.write("    - " + rec + "\n")
+		report.write("\n")
+		report.write("[+] Попытки LFI и RFI:")
+		for rec in potential_lfi:
+			report.write("    - " + rec + "\n")
 
 
 def run(*args, **kwargs):
