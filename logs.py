@@ -4,8 +4,11 @@ from datetime import datetime
 import os
 import re
 from urllib.parse import unquote
+
 base = os.sep.join(__file__.split(os.sep)[:-1])
+
 BRUTE_TIMEOUT_TARGET=2
+MIN_REQUESTS_FOR_BRUTE = 10
 
 class Record:
 	def __init__(self, line:str):
@@ -46,15 +49,14 @@ def __read_next_n(stream, n) -> list[Record]:
 
 def __check_brute(batch: list[Record]):
 	ips = {}
-	for rec in batch:
+	for i, rec in enumerate(batch):
 		if not rec.address in ips:
 			ips[rec.address] = {}
 			ips[rec.address]["last"] = rec.date.timestamp()
-			ips[rec.address]["diff"] = 0
 		if rec.code > 400:
 			if not "error" in ips[rec.address]:
 				ips[rec.address]["error"] = []
-			ips[rec.address]["diff"] += rec.date.timestamp() - ips[rec.address]["last"]
+
 			ips[rec.address]["error"].append(rec.endpoint)
 			ips[rec.address]["last"] = rec.date.timestamp()
 
@@ -64,14 +66,12 @@ def __check_brute(batch: list[Record]):
 			ips[rec.address]["success"].append(rec.endpoint)
 	for ip in ips:
 		try:
-			ips[ip]["accuracy"] = 50 - ((len(ips[ip].get("success") or []) or 0) / (len(ips[ip].get("error") or [])))
-			diff = ips[ip]["diff"] / len(ips[ip].get("error"))
+			if len(ips[ip].get("error") or []) + len(ips[ip].get("success") or []) > MIN_REQUESTS_FOR_BRUTE:
+				ips[ip]["accuracy"] = (len(ips[ip].get("error") or [])) / (len(ips[ip].get("error") or []) + len(ips[ip].get("success") or [])) * 100
+			else:
+				ips[ip]["accuracy"] = 0
 		except ZeroDivisionError:
 			ips[ip]["accuracy"] = 0
-			diff = 0
-
-		ips[ip]["accuracy"] += 50 - (diff / BRUTE_TIMEOUT_TARGET) * 100
-
 	return ips
 
 def __check_lfi_and_rfi(batch: list[Record]):
@@ -93,9 +93,11 @@ def __check_lfi_and_rfi(batch: list[Record]):
 
 def __analyze(*args):
 	batch = []
-	lines = args[args.index("-l") + 1] if "-l" in args else 300
+	args = args[0]
+	lines = int(args[args.index("-l") + 1]) if "-l" in args else 300
 	potential_lfi = []
 	vulnerable_endpoints = []
+	n = 1
 	with open("logs/app.log", encoding="utf-8") as file, open("report.txt", "w", encoding="utf-8") as report:
 		ip_report = {}
 		batch = __read_next_n(file, lines)
@@ -112,11 +114,12 @@ def __analyze(*args):
 			lfi_analysis_report = __check_lfi_and_rfi(batch)
 			potential_lfi += lfi_analysis_report["potential"]
 			vulnerable_endpoints += lfi_analysis_report["vulnerable"]
-
 		for ip in ip_report:
-			print(f"[green bold][+] Вероятность брутфорса от {ip}[/green bold]: [red]{ip_report[ip]["brute"]}[/red]")
-			report.write(f"[+] Вероятность брутфорса от {ip}: {ip_report[ip]["brute"]}" + "\n")
-		print("[green bold][+] Эксплуатация LFI и RFI: [/green bold]")
+			if ip_report[ip]["brute"] != 0:
+				print(f"[yellow][!][/yellow] [blue]Вероятность брутфорса от[/blue] [green]{ip}[/green]: [red]{ip_report[ip]["brute"]}[/red]")
+				report.write(f"[!] Вероятность брутфорса от {ip}: {ip_report[ip]["brute"]}" + "\n")
+
+		print("\n[green bold][red bold][!][/red bold] Эксплуатация LFI и RFI: [/green bold]")
 		report.write("\n")
 		report.write("[+] Эксплуатация LFI и RFI: " + "\n")
 		potential_lfi = list(set(potential_lfi))
