@@ -24,7 +24,7 @@ class Record:
 		self.code = int(self.parts[7])
 	
 	def __str__(self):
-		return self.line
+		return re.sub(r"\[/?[A-z]*]", "", self.line)
 	
 	def __repr__(self):
 		return str(self)
@@ -47,7 +47,7 @@ def __read_next_n(stream, n) -> list[Record]:
 			break
 	return batch
 
-def __check_brute(batch: list[Record]):
+def __check_fuzz(batch: list[Record]):
 	ips = {}
 	for i, rec in enumerate(batch):
 		if not rec.address in ips:
@@ -85,52 +85,89 @@ def __check_lfi_and_rfi(batch: list[Record]):
 			for arg in args:
 				data = arg.split("=")
 				if len(data) > 1:
-					if ".." in data[1] or "/" in data[1] or "\\" in data[1]:
-						res["potential"].append(rec.line)
+					lfi = re.findall(r"(.*://)*([(A-z)*(0-9)*,(\.\.)*][/,//,\\,\\]){1,}", data[1])
+					if lfi:
+						res["potential"].append(rec)
 						if rec.code == 200:
-							res["vulnerable"].append(rec.line)
+							res["vulnerable"].append(rec)
 	return res
+
+def __check_XSS(batch: list[Record]):
+	res = {
+		"potential": [],
+		"vulnerable": []
+	}
+	dangerous = ["<", ">",  "/*", "*/", "'", '"', "script", " src=", " href=", "javascript://"]
+	for rec in batch:
+		if "?" in rec.endpoint:
+			args = rec.endpoint.split("?")[1].split("&")
+			for arg in args:
+				data = arg.split("=")
+				potentiality = 0
+				if len(data) > 1:
+					for ch in dangerous:
+						potentiality += 1 if ch in data[1] else 0
+					if potentiality != 0:
+						rec.line += f"\n      [green]Содержит [blue]{potentiality}[/blue]/[blue]{len(dangerous)}[/blue] опасных признака[/green]"
+						if rec.code < 400:
+							res["vulnerable"].append(rec)
+						elif rec.code >= 400:
+							res["potential"].append(rec)
+	return res
+
+def __write_report(title, potential, vulnerable, report):
+	if vulnerable:
+		print(f"\n[green bold][red bold][!][/red bold] {title} [/green bold]")
+	report.write("\n")
+	report.write(f"[+] {title} " + "\n")
+	potential = list(set(potential))
+	vulnerable = list(set(vulnerable))
+	for rec in vulnerable:
+		print("    - [red]" + rec.line +"[/red]")
+		report.write("    - " + str(rec) + "\n")
+	report.write("\n")
+	report.write(f"[+] {title} - неуспешные\n")
+	for rec in potential:
+		report.write("    - " + str(rec) + "\n")
+
 
 def __analyze(*args):
 	batch = []
 	args = args[0]
 	lines = int(args[args.index("-l") + 1]) if "-l" in args else 300
 	potential_lfi = []
-	vulnerable_endpoints = []
-	n = 1
+	vulnerable_lfi = []
+	potential_xss = []
+	vulnerable_xss = []
 	with open("logs/app.log", encoding="utf-8") as file, open("report.txt", "w", encoding="utf-8") as report:
 		ip_report = {}
 		batch = __read_next_n(file, lines)
 		while batch:
 			batch = __read_next_n(file, lines)
-			brute_analysis_report = __check_brute(batch)
+			brute_analysis_report = __check_fuzz(batch)
 			for ip in brute_analysis_report:
 				if ip not in ip_report:
 					ip_report[ip] = {}
-					ip_report[ip]["brute"] = brute_analysis_report[ip]["accuracy"]
+					ip_report[ip]["fuzz"] = brute_analysis_report[ip]["accuracy"]
 				else:
-					ip_report[ip]["brute"] += brute_analysis_report[ip]["accuracy"]
-					ip_report[ip]["brute"] /= 2
+					ip_report[ip]["fuzz"] += brute_analysis_report[ip]["accuracy"]
+					ip_report[ip]["fuzz"] /= 2
 			lfi_analysis_report = __check_lfi_and_rfi(batch)
 			potential_lfi += lfi_analysis_report["potential"]
-			vulnerable_endpoints += lfi_analysis_report["vulnerable"]
-		for ip in ip_report:
-			if ip_report[ip]["brute"] != 0:
-				print(f"[yellow][!][/yellow] [blue]Вероятность брутфорса от[/blue] [green]{ip}[/green]: [red]{ip_report[ip]["brute"]}[/red]")
-				report.write(f"[!] Вероятность брутфорса от {ip}: {ip_report[ip]["brute"]}" + "\n")
+			vulnerable_lfi += lfi_analysis_report["vulnerable"]
+			xss_analysis_report = __check_XSS(batch)
+			potential_xss += xss_analysis_report["potential"]
+			vulnerable_xss += xss_analysis_report["vulnerable"]
 
-		print("\n[green bold][red bold][!][/red bold] Эксплуатация LFI и RFI: [/green bold]")
-		report.write("\n")
-		report.write("[+] Эксплуатация LFI и RFI: " + "\n")
-		potential_lfi = list(set(potential_lfi))
-		vulnerable_endpoints = list(set(vulnerable_endpoints))
-		for rec in vulnerable_endpoints:
-			print("    - [red]" + rec +"[/red]")
-			report.write("    - " + rec + "\n")
-		report.write("\n")
-		report.write("[+] Попытки LFI и RFI:")
-		for rec in potential_lfi:
-			report.write("    - " + rec + "\n")
+		for ip in ip_report:
+			if ip_report[ip]["fuzz"] != 0:
+				print(f"[yellow][!][/yellow] [blue]Вероятность фаззинга от[/blue] [green]{ip}[/green]: [red]{ip_report[ip]["fuzz"]}[/red]")
+				report.write(f"[!] Вероятность фаззинга от {ip}: {ip_report[ip]["fuzz"]}" + "\n")
+
+
+		__write_report("Эксплуатация LFI и RFI:", potential_lfi, vulnerable_lfi, report)
+		__write_report("Эксплуатация XSS:", potential_xss, vulnerable_xss, report)
+
 
 
 def run(*args, **kwargs):

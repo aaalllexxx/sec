@@ -15139,7 +15139,7 @@
 2025-03-18 12:27:04,755 - INFO - 127.0.0.1 - -  "GET /maven?id=..%20/ HTTP/1.1" 404 -
 2025-03-18 12:27:04,758 - INFO - 127.0.0.1 - -  "GET /maven.asp HTTP/1.1" 404 -
 2025-03-18 12:27:04,761 - INFO - 127.0.0.1 - -  "GET /zimbra2 HTTP/1.1" 404 -
-2025-03-18 12:27:04,764 - INFO - 127.0.0.1 - -  "GET /mcollective?id=../../../../../etc/passwd HTTP/1.1" 404 -
+2025-03-18 12:27:04,764 - INFO - 127.0.0.1 - -  "GET /mcollective?id=<script>alert(1);</script> HTTP/1.1" 200 -
 2025-03-18 12:27:04,766 - INFO - 127.0.0.1 - -  "GET /mcollective.asp HTTP/1.1" 404 -
 2025-03-18 12:27:04,769 - INFO - 127.0.0.1 - -  "GET /gl2 HTTP/1.1" 404 -
 2025-03-18 12:27:04,772 - INFO - 127.0.0.1 - -  "GET /memcached?id=. HTTP/1.1" 404 -
