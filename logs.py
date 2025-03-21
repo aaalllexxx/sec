@@ -42,7 +42,10 @@ def __read_next_n(stream, n) -> list[Record]:
 	for _ in range(n):
 		line = stream.readline()
 		if line:
-			batch.append(Record(line))
+			try:
+				batch.append(Record(line))
+			except:
+				continue
 		else: 
 			break
 	return batch

