@@ -4,8 +4,12 @@ from datetime import datetime
 import os
 import re
 from urllib.parse import unquote
+import shutil
+
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
+with open(base + os.sep + "RCE.list", "r", encoding="utf-8") as file:
+	rce_list = file.read().split("\n")
 
 BRUTE_TIMEOUT_TARGET=2
 MIN_REQUESTS_FOR_BRUTE = 10
@@ -28,7 +32,6 @@ class Record:
 	
 	def __repr__(self):
 		return str(self)
-		
 
 def __init(*args):
 	if os.path.exists("AEngineApps"):
@@ -100,7 +103,7 @@ def __check_XSS(batch: list[Record]):
 		"potential": [],
 		"vulnerable": []
 	}
-	dangerous = ["<", ">",  "/*", "*/", "'", '"', "script", " src=", " href=", "javascript://"]
+	dangerous = ["<", ">",  "/*", "*/", "'", '"', "script", " src=", " href=", "javascript", "://", "cookie", "document."]
 	for rec in batch:
 		if "?" in rec.endpoint:
 			args = rec.endpoint.split("?")[1].split("&")
@@ -111,12 +114,34 @@ def __check_XSS(batch: list[Record]):
 					for ch in dangerous:
 						potentiality += 1 if ch in data[1] else 0
 					if potentiality != 0:
-						rec.line += f"\n      [green]Содержит [blue]{potentiality}[/blue]/[blue]{len(dangerous)}[/blue] опасных признака[/green]"
 						if rec.code < 400:
 							res["vulnerable"].append(rec)
 						elif rec.code >= 400:
 							res["potential"].append(rec)
 	return res
+
+def __check_rce(batch: list[Record]):
+	res = {
+		"potential": [],
+		"vulnerable": []
+	}
+	for rec in batch:
+		if "?" in rec.endpoint:
+			args = rec.endpoint.split("?")[1].split("&")
+			for arg in args:
+				arg = arg.split("=")
+				if len(arg) > 1:
+					parts = arg[1].split()
+					command = parts[0] if parts else ""
+					if shutil.which(arg[1]) or command in rce_list:
+						if rec.code >= 400:
+							res["potential"].append(rec)
+						elif rec.code < 400:
+							res["vulnerable"].append(rec)
+						break
+							
+	return res
+
 
 def __write_report(title, potential, vulnerable, report):
 	if vulnerable:
@@ -132,7 +157,7 @@ def __write_report(title, potential, vulnerable, report):
 	report.write(f"[+] {title} - неуспешные\n")
 	for rec in potential:
 		report.write("    - " + str(rec) + "\n")
-
+	
 
 def __analyze(*args):
 	batch = []
@@ -142,6 +167,8 @@ def __analyze(*args):
 	vulnerable_lfi = []
 	potential_xss = []
 	vulnerable_xss = []
+	potential_rce = []
+	vulnerable_rce = []
 	with open("logs/app.log", encoding="utf-8") as file, open("report.txt", "w", encoding="utf-8") as report:
 		ip_report = {}
 		batch = __read_next_n(file, lines)
@@ -161,6 +188,9 @@ def __analyze(*args):
 			xss_analysis_report = __check_XSS(batch)
 			potential_xss += xss_analysis_report["potential"]
 			vulnerable_xss += xss_analysis_report["vulnerable"]
+			rce_analysis_report = __check_rce(batch)
+			potential_rce += rce_analysis_report["potential"]
+			vulnerable_rce += rce_analysis_report["vulnerable"]
 
 		for ip in ip_report:
 			if ip_report[ip]["fuzz"] != 0:
@@ -170,6 +200,7 @@ def __analyze(*args):
 
 		__write_report("Эксплуатация LFI и RFI:", potential_lfi, vulnerable_lfi, report)
 		__write_report("Эксплуатация XSS:", potential_xss, vulnerable_xss, report)
+		__write_report("Эксплуатация RCE:", potential_rce, vulnerable_rce, report)
 
 
 
