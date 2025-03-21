@@ -91,7 +91,7 @@ def __check_lfi_and_rfi(batch: list[Record]):
 			for arg in args:
 				data = arg.split("=")
 				if len(data) > 1:
-					lfi = re.findall(r"(.*://)*([(A-z)*(0-9)*,(\.\.)*][/,//,\\,\\]){1,}", data[1])
+					lfi = re.findall(r"^(?!javascript)(.*://)*([%, ,A-z,0-9,\.\.]*[/,//,\\,\\\\]){1,}", data[1])
 					if lfi:
 						res["potential"].append(rec)
 						if rec.code == 200:
