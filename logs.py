@@ -145,18 +145,19 @@ def __check_rce(batch: list[Record]):
 
 def __write_report(title, potential, vulnerable, report):
 	if vulnerable:
-		print(f"\n[green bold][red bold][!][/red bold] {title} [/green bold]")
+		print(f"\n[green bold][red bold][!][/red bold] Эксплуатация {title} [/green bold]:")
 	report.write("\n")
-	report.write(f"[+] {title} " + "\n")
+	report.write(f"[!] Эксплуатация {title}: " + "\n")
 	potential = list(set(potential))
 	vulnerable = list(set(vulnerable))
 	for rec in vulnerable:
 		print("    - [red]" + rec.line +"[/red]")
 		report.write("    - " + str(rec) + "\n")
-	report.write("\n")
-	report.write(f"[+] {title} - неуспешные\n")
-	for rec in potential:
-		report.write("    - " + str(rec) + "\n")
+	if potential:
+		report.write("\n")
+		report.write(f"[!] Попытки {title}:\n")
+		for rec in potential:
+			report.write("    - " + str(rec) + "\n")
 	
 
 def __analyze(*args):
@@ -182,6 +183,7 @@ def __analyze(*args):
 				else:
 					ip_report[ip]["fuzz"] += brute_analysis_report[ip]["accuracy"]
 					ip_report[ip]["fuzz"] /= 2
+			ip_report[ip]["fuzz"] = round(ip_report[ip]["fuzz"], 2)
 			lfi_analysis_report = __check_lfi_and_rfi(batch)
 			potential_lfi += lfi_analysis_report["potential"]
 			vulnerable_lfi += lfi_analysis_report["vulnerable"]
@@ -198,9 +200,9 @@ def __analyze(*args):
 				report.write(f"[!] Вероятность фаззинга от {ip}: {ip_report[ip]["fuzz"]}" + "\n")
 
 
-		__write_report("Эксплуатация LFI и RFI:", potential_lfi, vulnerable_lfi, report)
-		__write_report("Эксплуатация XSS:", potential_xss, vulnerable_xss, report)
-		__write_report("Эксплуатация RCE:", potential_rce, vulnerable_rce, report)
+		__write_report("LFI и RFI", potential_lfi, vulnerable_lfi, report)
+		__write_report("XSS", potential_xss, vulnerable_xss, report)
+		__write_report("RCE", potential_rce, vulnerable_rce, report)
 
 
 
