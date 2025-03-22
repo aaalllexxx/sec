@@ -8,7 +8,7 @@ import shutil
 
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
-with open(base + os.sep + "RCE.list", "r", encoding="utf-8") as file:
+with open(base + os.sep + "__RCE.list", "r", encoding="utf-8") as file:
 	rce_list = file.read().split("\n")
 
 BRUTE_TIMEOUT_TARGET=2
@@ -142,10 +142,9 @@ def __check_rce(batch: list[Record]):
 							
 	return res
 
-
 def __write_report(title, potential, vulnerable, report):
 	if vulnerable:
-		print(f"\n[green bold][red bold][!][/red bold] Эксплуатация {title} [/green bold]:")
+		print(f"\n[green bold][red bold][!][/red bold] Эксплуатация {title}[/green bold]:")
 	report.write("\n")
 	report.write(f"[!] Эксплуатация {title}: " + "\n")
 	potential = list(set(potential))
@@ -159,7 +158,6 @@ def __write_report(title, potential, vulnerable, report):
 		for rec in potential:
 			report.write("    - " + str(rec) + "\n")
 	
-
 def __analyze(*args):
 	batch = []
 	args = args[0]
@@ -203,7 +201,6 @@ def __analyze(*args):
 		__write_report("LFI и RFI", potential_lfi, vulnerable_lfi, report)
 		__write_report("XSS", potential_xss, vulnerable_xss, report)
 		__write_report("RCE", potential_rce, vulnerable_rce, report)
-
 
 
 def run(*args, **kwargs):
