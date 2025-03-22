@@ -63,13 +63,13 @@ def __check_fuzz(batch: list[Record]):
 			if not "error" in ips[rec.address]:
 				ips[rec.address]["error"] = []
 
-			ips[rec.address]["error"].append(rec.endpoint)
+			ips[rec.address]["error"].append(rec)
 			ips[rec.address]["last"] = rec.date.timestamp()
 
 		if rec.code == 200:
 			if not "success" in ips[rec.address]:
 				ips[rec.address]["success"] = []
-			ips[rec.address]["success"].append(rec.endpoint)
+			ips[rec.address]["success"].append(rec)
 	for ip in ips:
 		try:
 			if len(ips[ip].get("error") or []) + len(ips[ip].get("success") or []) > MIN_REQUESTS_FOR_BRUTE:
@@ -98,7 +98,7 @@ def __check_lfi_and_rfi(batch: list[Record]):
 							res["vulnerable"].append(rec)
 	return res
 
-def __check_XSS(batch: list[Record]):
+def __check_xss(batch: list[Record]):
 	res = {
 		"potential": [],
 		"vulnerable": []
@@ -168,12 +168,18 @@ def __analyze(*args):
 	vulnerable_xss = []
 	potential_rce = []
 	vulnerable_rce = []
+	vulnerable_brute = {}
 	with open("logs/app.log", encoding="utf-8") as file, open("report.txt", "w", encoding="utf-8") as report:
 		ip_report = {}
 		batch = __read_next_n(file, lines)
 		while batch:
 			batch = __read_next_n(file, lines)
 			brute_analysis_report = __check_fuzz(batch)
+			for ip in brute_analysis_report:
+				if ip not in vulnerable_brute:
+					vulnerable_brute[ip] = []
+				if "success" in brute_analysis_report[ip]:
+					vulnerable_brute[ip] += brute_analysis_report[ip]["success"]
 			for ip in brute_analysis_report:
 				if ip not in ip_report:
 					ip_report[ip] = {}
@@ -185,7 +191,7 @@ def __analyze(*args):
 			lfi_analysis_report = __check_lfi_and_rfi(batch)
 			potential_lfi += lfi_analysis_report["potential"]
 			vulnerable_lfi += lfi_analysis_report["vulnerable"]
-			xss_analysis_report = __check_XSS(batch)
+			xss_analysis_report = __check_xss(batch)
 			potential_xss += xss_analysis_report["potential"]
 			vulnerable_xss += xss_analysis_report["vulnerable"]
 			rce_analysis_report = __check_rce(batch)
@@ -196,8 +202,8 @@ def __analyze(*args):
 			if ip_report[ip]["fuzz"] != 0:
 				print(f"[yellow][!][/yellow] [blue]Вероятность фаззинга от[/blue] [green]{ip}[/green]: [red]{ip_report[ip]["fuzz"]}[/red]")
 				report.write(f"[!] Вероятность фаззинга от {ip}: {ip_report[ip]["fuzz"]}" + "\n")
-
-
+		for ip in vulnerable_brute:
+			__write_report(f"Fuzzing от {ip}", [], vulnerable_brute[ip], report)
 		__write_report("LFI и RFI", potential_lfi, vulnerable_lfi, report)
 		__write_report("XSS", potential_xss, vulnerable_xss, report)
 		__write_report("RCE", potential_rce, vulnerable_rce, report)
