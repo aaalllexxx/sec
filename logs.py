@@ -161,7 +161,7 @@ def __write_report(title, potential, vulnerable, report):
 def __analyze(*args):
 	batch = []
 	args = args[0]
-	lines = int(args[args.index("-l") + 1]) if "-l" in args else 300
+	lines = int(args[args.index("-l") + 1]) if "-l" in args else 1000
 	potential_lfi = []
 	vulnerable_lfi = []
 	potential_xss = []
@@ -181,7 +181,7 @@ def __analyze(*args):
 				else:
 					ip_report[ip]["fuzz"] += brute_analysis_report[ip]["accuracy"]
 					ip_report[ip]["fuzz"] /= 2
-			ip_report[ip]["fuzz"] = round(ip_report[ip]["fuzz"], 2)
+			ip_report[ip]["fuzz"] = round(ip_report[ip]["fuzz"], 1)
 			lfi_analysis_report = __check_lfi_and_rfi(batch)
 			potential_lfi += lfi_analysis_report["potential"]
 			vulnerable_lfi += lfi_analysis_report["vulnerable"]
