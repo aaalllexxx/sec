@@ -10,7 +10,8 @@ class IDS:
         self.app.before_request(self.detect)
         self.detect_func = []
         self.xss_dangerous = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "://", "cookie", "document."]
-        self.sql_dangerous = ["@variable", "AND", "OR", "\,", "AS", "WHERE", "ORDER", "\-\-", "\/\*", "\#", "RLIKE", "SLEEP", "SELECT", "UNION", " * "]
+        self.sql_dangerous = ["@variable", "AND", "OR", ",", "AS", "WHERE", "ORDER", "--", "/*", "#", "RLIKE", "SLEEP", "SELECT", "UNION", " * "]
+        self.rce_dangerous = ["echo"]
 
 
     
@@ -19,7 +20,7 @@ class IDS:
         if args:
             for arg in args:
                 for el in unquote(arg).split():
-                    if shutil.which(el):
+                    if shutil.which(el) or el in self.rce_dangerous:
                         self.app.logger.critical(f"DETECTED RCE: {request.full_path}")
                         if self.detect_func:
                             for func in self.detect_func:
@@ -50,11 +51,10 @@ class IDS:
         args = request.args.values()
         if args:
             for arg in args:
-                data = arg.split("=")
                 potentiality = 0
-                if len(data) > 1:
+                if len(arg) > 1:
                     for ch in self.xss_dangerous:
-                        potentiality += 1 if ch in data[1] else 0
+                        potentiality += 1 if ch in arg else 0
                     if potentiality != 0:
                         self.app.logger.critical(f"DETECTED XSS: {request.full_path}")
                         if self.detect_func:
