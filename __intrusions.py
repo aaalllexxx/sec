@@ -1,6 +1,5 @@
 from flask import request, Flask, abort
 from urllib.parse import unquote
-import sqlvalidator as sql
 import shutil
 import os
 import re
@@ -41,7 +40,7 @@ class IDS:
         if args:
             for arg in args:
                 arg = arg.upper()
-                if sql.parse(unquote(arg)).is_valid() or any([el in arg for el in self.sql_dangerous]) or arg.startswith("'") or arg.startswith('"'):
+                if any([el in arg for el in self.sql_dangerous]) or arg.startswith("'") or arg.startswith('"'):
                     self.app.logger.critical(f"DETECTED SQL injection: {request.full_path}")
                     if self.detect_func:
                         for func in self.detect_func:
