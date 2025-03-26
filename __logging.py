@@ -28,11 +28,12 @@ class Logger:
         self.app = app.flask
         
         # Создадим папку logs, если её нет
-        if not os.path.exists("logs"):
-            os.mkdir("logs")
+        if not os.path.exists(app.project_root + "logs"):
+            os.mkdir(app.project_root + "logs")
+            
 
         # --- Хендлер, пишущий в файл ---
-        file_handler = FileHandler("logs/app.log")
+        file_handler = FileHandler(app.project_root + "logs/app.log")
         file_handler.setLevel(logging.INFO)
 
         # --- Хендлер, пишущий в консоль ---
