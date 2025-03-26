@@ -10,7 +10,7 @@ class IDS:
         self.app.before_request(self.detect)
         self.detect_func = []
         self.xss_dangerous = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "://", "cookie", "document."]
-        self.sql_dangerous = ["@variable", "AND", "OR", "\,", "AS", "WHERE", "ORDER", "\-\-", "\/\*", "\#", "RLIKE", "SLEEP"]
+        self.sql_dangerous = ["@variable", "AND", "OR", "\,", "AS", "WHERE", "ORDER", "\-\-", "\/\*", "\#", "RLIKE", "SLEEP", "SELECT", "UNION", " * "]
 
 
     
