@@ -1,89 +1,119 @@
-from flask import request, Flask, abort
+from flask import Flask, request, abort
 from urllib.parse import unquote
-import shutil
+import psutil
 import os
 import re
+import shutil
+from abc import ABC, abstractmethod
 
+# === Абстрактный класс детектора ===
+class BaseDetector(ABC):
+    def __init__(self, app: Flask):
+        self.app = app
+
+    @abstractmethod
+    def run(self):
+        pass
+
+    def log(self, message):
+        self.app.logger.critical(message)
+
+    def trigger_response(self):
+        pass
+
+
+# === Конкретные реализации детекторов ===
+class RCEDetector(BaseDetector):
+    dangerous = ["echo"]
+
+    def run(self):
+        for arg in request.args.values():
+            decoded = unquote(arg)
+            for el in decoded.split():
+                if shutil.which(el) or el in self.dangerous:
+                    self.log(f"DETECTED RCE: {request.full_path}")
+                    self.trigger_response()
+
+
+class LFIDetector(BaseDetector):
+    def run(self):
+        for arg in request.args.values():
+            decoded = unquote(arg)
+            if os.path.exists(decoded) or re.findall(r"^(?!javascript)(.*://)*([%, ,A-z,0-9,\\.\\.]*[/,//,\\,\\\\]){1,}", decoded):
+                self.log(f"DETECTED LFI or RFI: {request.full_path}")
+                self.trigger_response()
+
+
+class SQLiDetector(BaseDetector):
+    dangerous = ["@variable", "AND", "OR", ",", "AS", "WHERE", "ORDER", "--", "/*", "#", "RLIKE", "SLEEP", "SELECT", "UNION", " * "]
+
+    def run(self):
+        for arg in request.args.values():
+            upper = unquote(arg).upper()
+            if any([el in upper for el in self.dangerous]) or upper.startswith("'") or upper.startswith('"'):
+                self.log(f"DETECTED SQL injection: {request.full_path}")
+                self.trigger_response()
+
+
+class XSSDetector(BaseDetector):
+    patterns = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "://", "cookie", "document."]
+
+    def run(self):
+        for arg in request.args.values():
+            decoded = unquote(arg).lower()
+            potentiality = 0
+            if len(decoded) > 1:
+                for ch in self.patterns:
+                    potentiality += 1 if ch in decoded else 0
+                if potentiality != 0:
+                    self.log(f"DETECTED XSS: {request.full_path}")
+                    self.trigger_response()
+
+
+# === IDS / IPS основной класс ===
 class IDS:
     def __init__(self, app):
-        self.app: Flask = app.flask
-        self.app.before_request(self.detect)
-        self.detect_func = []
-        self.xss_dangerous = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "://", "cookie", "document."]
-        self.sql_dangerous = ["@variable", "AND", "OR", ",", "AS", "WHERE", "ORDER", "--", "/*", "#", "RLIKE", "SLEEP", "SELECT", "UNION", " * "]
-        self.rce_dangerous = ["echo"]
+        self.app: Flask = app.flask  # как ты и сказал — app имеет .flask
+        self.detectors: list[BaseDetector] = []
+        self.detect_funcs = []
+        self.app.before_request(self.run_detectors)
 
+    def add_detector(self, detector_cls):
+        self.detectors.append(detector_cls(self.app))
 
-    
-    def __detect_RCE(self):
-        args = request.args.values()
-        if args:
-            for arg in args:
-                for el in unquote(arg).split():
-                    if shutil.which(el) or el in self.rce_dangerous:
-                        self.app.logger.critical(f"DETECTED RCE: {request.full_path}")
-                        if self.detect_func:
-                            for func in self.detect_func:
-                                func()
+    def run_detectors(self):
+        for detector in self.detectors:
+            detector.trigger_response = self.on_detection_triggered
+            detector.run()
 
-    def __detect_LFI(self):
-        args = request.args.values()
-        if args:
-            for arg in args:
-                if os.path.exists("arg") or re.findall(r"^(?!javascript)(.*://)*([%, ,A-z,0-9,\.\.]*[/,//,\\,\\\\]){1,}", arg):
-                    self.app.logger.critical(f"DETECTED LFI or RFI: {request.full_path}")
-                    if self.detect_func:
-                        for func in self.detect_func:
-                            func()
-    
-    def __detect_SQLinj(self):
-        args = request.args.values()
-        if args:
-            for arg in args:
-                arg = arg.upper()
-                if any([el in arg for el in self.sql_dangerous]) or arg.startswith("'") or arg.startswith('"'):
-                    self.app.logger.critical(f"DETECTED SQL injection: {request.full_path}")
-                    if self.detect_func:
-                        for func in self.detect_func:
-                            func()
-    
-    def __detect_XSS(self):
-        args = request.args.values()
-        if args:
-            for arg in args:
-                potentiality = 0
-                if len(arg) > 1:
-                    for ch in self.xss_dangerous:
-                        potentiality += 1 if ch in arg else 0
-                    if potentiality != 0:
-                        self.app.logger.critical(f"DETECTED XSS: {request.full_path}")
-                        if self.detect_func:
-                            for func in self.detect_func:
-                                func()
-    
+    def on_detection_triggered(self):
+        for func in self.detect_funcs:
+            func()
 
-    
     @property
     def on_detection(self):
-        return None
-    
+        return self.detect_funcs
+
     @on_detection.setter
-    def on_detection(self, value):
-        self.detect_func.append(value)
+    def on_detection(self, func):
+        self.detect_funcs.append(func)
 
-    def detect(self):
-        self.__detect_RCE()
-        self.__detect_LFI()
-        self.__detect_XSS()
-        self.__detect_SQLinj()
 
+# === IPS класс ===
 class IPS(IDS):
     def __init__(self, app):
         super().__init__(app)
-        self.on_detection = self.__on_detection
+        self.on_detection = self.block_request
 
-    def __on_detection(self):
+    def block_request(self):
         self.app.logger.info(f"ABORTING CONNECTION: {request.remote_addr}")
-        return abort(400)
+        abort(400)
 
 
+# === Пример инициализации (не включено в основной файл) ===
+# app = SomeApp()
+# ids = IPS(app)
+# ids.add_detector(RCEDetector)
+# ids.add_detector(LFIDetector)
+# ids.add_detector(SQLiDetector)
+# ids.add_detector(XSSDetector)
