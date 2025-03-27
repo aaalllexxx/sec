@@ -87,7 +87,7 @@ IDS - класс модуля AEngineApps.intrusions, который позво�
 
 ```py
 from AEngineApps.app import App
-from AEngineApps.intrusion import IDS,  XSSDetector
+from AEngineApps.intrusion import IDS, XSSDetector
 app = App()
 ids = IDS(app)
 ids.add_detector(XSSDetector)
