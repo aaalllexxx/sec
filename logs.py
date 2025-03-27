@@ -27,7 +27,8 @@ with open(base + os.sep + "__RCE.list", "r", encoding="utf-8") as file:
 # Шаблон для каждой переменной. При желании расширяйте/уточняйте.
 PLACEHOLDER_PATTERNS = {
     "D": r"\d{1,2}",         # День
-    "M": r"\d{1,2}",         # Месяц или минуты (общее упрощение)
+    "m": r"\d{1,2}",         # Месяц
+    "M": r"\d{1,2}",         # Минуты
     "Y": r"\d{4}",           # Год
     "H": r"\d{1,2}",         # Часы
     "S": r"\d{1,2}",         # Секунды (или что-то еще)
@@ -43,7 +44,7 @@ PLACEHOLDER_PATTERNS = {
 def compile_log_template(template: str) -> re.Pattern:
     """
     Превращает шаблон вида:
-        "%{D}.%{M}.%{Y} %{H}:%{M}:%{S}.%{MS} - %{ip} - "%{endpoint} %{method} - %{level} - %{proto} - %{code}"
+        "%{D}.%{m}.%{Y} %{H}:%{M}:%{S}.%{MS} - %{ip} - "%{endpoint} %{method} - %{level} - %{proto} - %{code}"
     в строгую регулярку с named-groups.
     Неизменяемая часть экранируется, %{...} превращается в (?P<имя>паттерн).
     """
@@ -151,11 +152,11 @@ class Record:
         # Заметьте, что M может означать "месяц" и "минуты", если шаблон повторяется, но в примере считаем,
         # что M_1 — месяц, M_2 — минуты (либо наоборот — на ваше усмотрение).
         D = g.get("D", None) or g.get("D_1", None)
-        M = g.get("M", None) or g.get("M_1", None)
+        M = g.get("m", None)
         Y = g.get("Y", None) or g.get("Y_1", None)
         
         H = g.get("H", None) or g.get("H_1", None)
-        M2 = g.get("M_2", None)  # вдруг второе появление M — минуты
+        M2 = g.get("M", None)  # вдруг второе появление M — минуты
         S = g.get("S", None) or g.get("S_1", None)
         MS = g.get("MS", None) or g.get("MS_1", None)
         
@@ -305,24 +306,55 @@ class RCEDetector(BaseLogDetector):
 
 
 class SQLiDetector(BaseLogDetector):
-    patterns = {"SELECT", "UNION", "SLEEP", "RLIKE", "AND", "OR", "WHERE", "ORDER", "--", "/*", "#", "AS", "@VARIABLE", " *"}
+    import re
+
+class SQLiDetector(BaseLogDetector):
+    # Список (или множество) опасных ключевых слов и символов,
+    # которые часто встречаются в SQL-инъекциях
+    patterns = {
+        "SELECT", "UNION", "SLEEP", "RLIKE", "AND", "OR", "WHERE",
+        "ORDER", "--", "/*", "*/", "#", "AS", "@VARIABLE", "DROP",
+        "INSERT", "UPDATE", "DELETE"
+    }
 
     def analyze(self, records):
         for rec in records:
+            # Если в запросе нет вопросительного знака, значит параметров нет
             if "?" not in rec.endpoint:
                 continue
-            args = rec.endpoint.split("?", 1)[1].split("&")
-            for arg in args:
-                parts = arg.split("=", 1)
+            
+            # Пример: /search?query=SELECT%20id%20FROM%20users&sort=asc
+            # Берём всё после '?': query=SELECT%20id%20FROM%20users&sort=asc
+            query_string = rec.endpoint.split("?", 1)[1]
+
+            # Делим строку по & — получаем список "query=..." и "sort=asc"
+            params = query_string.split("&")
+
+            for param in params:
+                # Делим по '=', чтобы взять имя параметра и значение
+                parts = param.split("=", 1)
                 if len(parts) < 2:
-                    continue
+                    continue  # нет значения
+                
+                # value — всё, что после =
+                # Приводим к верхнему регистру, чтобы сравнивать без учёта регистра
                 value = parts[1].upper()
-                # Ищем совпадение паттерна
-                if any(word in value for word in self.patterns):
+
+                # Разделяем значение параметра на «слова»:
+                # \W означает любой не буквенно-цифровой символ; добавляем _ к этому набору
+                # Если нужно, можно расширить регулярку.
+                words = re.split(r"[\W_]+", value)
+                # Удалим пустые строки (если были несколько небуквенных символов подряд)
+                words = [w for w in words if w]
+
+                # Проверяем, есть ли среди разбитых слов «опасное»
+                # Если хотя бы одно из слов входит в patterns → подозрение на SQLi
+                if any(word in self.patterns for word in words):
                     if rec.code < 400:
                         self.vulnerable.append(rec)
                     else:
                         self.potential.append(rec)
+
 
 
 ########################################################################
@@ -343,28 +375,43 @@ class LogAnalyzer:
             SQLiDetector(log_template)
         ]
         self.log_template = log_template
-
+    
     def __read_next_n(self, stream, n):
         """
-        Читает n строк, для каждой пытается создать Record (с учётом шаблона).
-        Если строка не подходит под шаблон, пропускаем. 
+        Читает до n строк (или меньше, если достигнут конец файла).
+        Возвращает:
+        - None, если мы вообще не смогли прочитать ни одной новой строки (EOF).
+        - Список распарсенных Record, даже если он пуст (но в этом случае файл еще не закончился).
         """
         records = []
+        lines_read = 0
+
         for _ in range(n):
-            line = next(stream, None)
-            if not line:
+            line = next(stream, None)  # Читаем следующую строку
+            if line is None:
+                # Точно достигнут конец файла.
                 break
+            lines_read += 1
             line = line.strip()
             if not line:
+                # Пустая строка — пропустим
                 continue
+
             try:
-                # Создаём Record, используя общий скомпилированный паттерн (если не default)
                 rec = Record(line, self.log_template, compiled_pattern=self._compiled_pattern)
                 records.append(rec)
             except ValueError:
-                # Эта строка не подходит под шаблон -- пропускаем
+                # Строка не соответствует шаблону — пропускаем
                 pass
+
+        # Если мы не прочитали ни одной строки из файла, значит EOF
+        if lines_read == 0:
+            return None
+
+        # Иначе возвращаем список распарсенных Record — даже если он пуст
         return records
+
+
 
     def __write_report(self, title, potential, vulnerable, report):
         if vulnerable:
@@ -382,8 +429,9 @@ class LogAnalyzer:
         with open(log_path, encoding="utf-8") as file, open(report_path, "w", encoding="utf-8") as report:
             while True:
                 batch = self.__read_next_n(file, lines)
-                if not batch:
+                if batch is None:
                     break
+
                 for detector in self.detectors:
                     detector.analyze(batch)
 
