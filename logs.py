@@ -255,7 +255,7 @@ class FuzzDetector(BaseLogDetector):
 
 
 class XSSDetector(BaseLogDetector):
-    dangerous = ["<", ">",  "/*", "*/", "'", '"', "script", " src=", " href=", "javascript", "://", "cookie", "document."]
+    patterns = ["<", ">",  "/*", "*/", "'", '"', "script", " src=", " href=", "javascript", "://", "cookie", "document."]
     
     def analyze(self, records):
         for rec in records:
@@ -264,7 +264,7 @@ class XSSDetector(BaseLogDetector):
                 for arg in args:
                     data = arg.split("=", 1)
                     if len(data) > 1:
-                        if any(ch in data[1].lower() for ch in self.dangerous):
+                        if any(ch in data[1].lower() for ch in self.patterns):
                             if rec.code < 400:
                                 self.vulnerable.append(rec)
                             else:

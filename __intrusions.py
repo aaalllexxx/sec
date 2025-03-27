@@ -108,12 +108,3 @@ class IPS(IDS):
     def block_request(self):
         self.app.logger.info(f"ABORTING CONNECTION: {request.remote_addr}")
         abort(400)
-
-
-# === Пример инициализации (не включено в основной файл) ===
-# app = SomeApp()
-# ids = IPS(app)
-# ids.add_detector(RCEDetector)
-# ids.add_detector(LFIDetector)
-# ids.add_detector(SQLiDetector)
-# ids.add_detector(XSSDetector)
