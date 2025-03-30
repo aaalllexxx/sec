@@ -110,7 +110,7 @@ ids.add_detector(XSSDetector)
 ...
 
 def on_detection():
-    return abort(404)
+    print("detected intrusion")
 
 ids.on_trigger(on_detection)
 ```

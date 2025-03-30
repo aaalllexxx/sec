@@ -82,10 +82,10 @@ class IDS:
 
     def run_detectors(self):
         for detector in self.detectors:
-            detector.trigger_response = self.on_detection_triggered
+            detector.trigger_response = self.__on_detection_triggered
             detector.run()
 
-    def on_detection_triggered(self):
+    def __on_detection_triggered(self):
         for func in self.detect_funcs:
             func()
 
