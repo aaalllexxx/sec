@@ -47,6 +47,7 @@ Logger - класс модуля AEngineApps.logging
 ```py
 from AEngineApps.app import App
 from AEngineApps.logging import Logger
+
 app = App()
 logger = Logger(app)
 ```
@@ -98,6 +99,7 @@ IDS - класс модуля AEngineApps.intrusions, который позво�
 ```py
 from AEngineApps.app import App
 from AEngineApps.intrusion import IDS, XSSDetector
+
 app = App()
 ids = IDS(app)
 ids.add_detector(XSSDetector)
@@ -130,6 +132,7 @@ IPS - класс модуля AEngineApps.intrusions, который позво�
 ```py
 from AEngineApps.app import App
 from AEngineApps.intrusion import IDS, XSSDetector
+
 app = App()
 ips = IPS(app)
 ips.add_detector(XSSDetector)
