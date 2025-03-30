@@ -2,11 +2,21 @@
 
 Этот модуль содержит скрипты для обеспечения информационной безопасности приложений AEngineApps
 
+## Установка
+
+Локальная установка в проект:
+```sh
+$ apm install https://github.com/aaalllexxx/sec
+```
+
+Глобальная установка:
+```sh
+$ apm install -g https://github.com/aaalllexxx/sec
+```
+
 ## Модули
 
 > logs
-
----
 
 > intrusion
 
@@ -93,3 +103,76 @@ ids = IDS(app)
 ids.add_detector(XSSDetector)
 ```
 На этом этапе добавляется IDS с единственным детектором XSSDetector
+
+Чтобы добавить действие при срабатывании:
+
+```py
+...
+
+def on_detection():
+    return abort(404)
+
+ids.on_trigger(on_detection)
+```
+
+#### IPS
+IPS - класс модуля AEngineApps.intrusions, который позволяет определять попытки вторжения и прерывать их при обнаружении.
+
+Позволяет определять 4 известных типа атак:
+
+1) XSS
+2) RCE
+3) LFI
+4) SQL injection
+
+Чтобы добавить IPS в приложение:
+
+```py
+from AEngineApps.app import App
+from AEngineApps.intrusion import IDS, XSSDetector
+app = App()
+ips = IPS(app)
+ips.add_detector(XSSDetector)
+```
+На этом этапе добавляется IPS с единственным детектором XSSDetector
+
+### Классы детекторов
+
+Доступные детекторы:
+
+> RCEDetector
+
+> LFIDetector
+
+> SQLiDetector
+
+> XSSDetector
+
+А также для создания собственных детекторов доступна абстракция:
+
+> BaseDetector
+
+Детектор должен наследоваться от BaseDetector и обязательно содержать в себе метод run. 
+
+Дополнительные методы:
+
+> detector.log(message) - отправка критического лога в приложение
+
+> detector.trigger_response() - метод, который выполняется при срабатывании детектора. Если нужно персональное поведение под каждый вид атаки - можно переопределить этот метод
+
+#### Пример
+
+```py
+from AEngineApps.intrusions import BaseDetector
+from urllib.parse import unquote
+
+class HWDetector(BaseDetector):
+    def run(self):
+        for arg in request.args.values():
+            if "hello world" in unquote(arg):
+                self.log(f"DETECTED HW: {request.full_path}")
+                self.trigger_response()
+
+    def trigger_response(self):
+        print("О боже, какой ужас")
+```

@@ -1,6 +1,5 @@
 from flask import Flask, request, abort
 from urllib.parse import unquote
-import psutil
 import os
 import re
 import shutil
@@ -90,12 +89,9 @@ class IDS:
         for func in self.detect_funcs:
             func()
 
-    @property
-    def on_detection(self):
-        return self.detect_funcs
 
-    @on_detection.setter
-    def on_detection(self, func):
+
+    def on_trigger(self, func):
         self.detect_funcs.append(func)
 
 
