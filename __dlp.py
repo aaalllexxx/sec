@@ -13,7 +13,7 @@ class BasicFilter():
     def hide(cls, raw):
         data = cls.check(raw)
         while data:
-            return re.sub(cls.regex, "#" * len(data.group(0)), raw)
+            return re.sub(cls.regex, "", raw)
         return raw
 
     @classmethod
@@ -29,7 +29,7 @@ class PhoneFilter(BasicFilter):
     regex = r"\+*\d{11}"
 
 class PassportFilter(BasicFilter):
-    regex = r"[0-9]{4} [0-9]{6}"
+    regex = r"[0-9]{4} {0,1}[0-9]{6}(?![0-9]+)"
 
 class DLP:
     allowed = []
