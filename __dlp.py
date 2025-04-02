@@ -28,6 +28,9 @@ class MailFilter(BasicFilter):
 class PhoneFilter(BasicFilter):
     regex = r"\+*\d{11}"
 
+class PassportFilter(BasicFilter):
+    regex = r"[0-9]{4} [0-9]{6}"
+
 class DLP:
     allowed = []
     def __init__(self, app, mode = DLPMode.Agressive):
