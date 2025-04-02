@@ -12,7 +12,7 @@ __help__ = "Устанавливает логирование"
 BRUTE_TIMEOUT_TARGET = 2
 MIN_REQUESTS_FOR_BRUTE = 10
 
-DEFAULT_LOG_TEMPLATE = "%{Y}-%{M}-%{D} %{H}:%{M}:%{S},%{MS} - %{level} - %{ip} - -  \"%{method} %{endpoint} %{proto}\" %{code} -"
+DEFAULT_LOG_TEMPLATE = "%{Y}-%{m}-%{D} %{H}:%{M}:%{S},%{MS} - %{level} - %{ip} - -  \"%{method} %{endpoint} %{proto}\" %{code} -"
 
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
@@ -104,6 +104,7 @@ class Record:
     def __init__(self, line: str, log_template: str, compiled_pattern: re.Pattern = None):
         self.line = line.rstrip("\n\r")
         self.template = log_template or DEFAULT_LOG_TEMPLATE
+
         # Если уже есть скомпилированный паттерн, используем его
         self.compiled_pattern = compiled_pattern or compile_log_template(self.template)
         
