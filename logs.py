@@ -441,8 +441,6 @@ class LogAnalyzer:
             for ip, acc in fuzz_summary.items():
                 print(f"[yellow][!][/yellow] [blue]Вероятность фаззинга от[/blue] [green]{ip}[/green]: [red]{acc}[/red]")
                 report.write(f"[!] Вероятность фаззинга от {ip}: {acc}\n")
-            if fuzz_records:
-                self.__write_report("Fuzzing", [], fuzz_records, report)
 
             for detector in self.detectors[1:]:
                 potential, vulnerable = detector.summary()
