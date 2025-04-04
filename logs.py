@@ -12,7 +12,7 @@ __help__ = "Устанавливает логирование"
 BRUTE_TIMEOUT_TARGET = 2
 MIN_REQUESTS_FOR_BRUTE = 10
 
-DEFAULT_LOG_TEMPLATE = "%{Y}-%{m}-%{D} %{H}:%{M}:%{S},%{MS} - %{level} - %{ip} - -  \"%{method} %{endpoint} %{proto}\" %{code} -"
+DEFAULT_LOG_TEMPLATE = "%{Y}-%{m}-%{D} %{H}:%{M}:%{S},%{MS} - %{level} - %{ip} %{method} %{endpoint} - %{user_agent} - %{code}"
 
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
@@ -39,6 +39,7 @@ PLACEHOLDER_PATTERNS = {
     "level": r"[A-Z]+",      # Уровень (INFO, ERROR, WARN ...)
     "proto": r"[A-Za-z0-9/\.]+",
     "code": r"\d{3}",        # Код ответа (обычно 3 цифры)
+    "user_agent": r".+?",  # всё до конца строки
 }
 
 def compile_log_template(template: str) -> re.Pattern:
@@ -110,14 +111,15 @@ class Record:
         
         # В этот словарь сложим значения, извлечённые из группы
         self.values = {}
-        
         # Попытка распарсить строку:
         if not self._parse_line():
+            print(f"Строка не соответствует шаблону:\n{self.line}\n{self.template}")
             # Если не подходит под шаблон, выбрасываем ошибку, чтобы верхний код пропустил эту строку
             raise ValueError("Строка лога не соответствует шаблону")
         
         # Попробуем заполнить "стандартные" поля (date, time, ip, endpoint и т.п.)
         self._fill_standard_fields()
+
 
     def _parse_line(self) -> bool:
         """
@@ -145,6 +147,7 @@ class Record:
         self.endpoint = "/"
         self.protocol = "HTTP/1.1"
         self.code = 200
+        self.user_agent = "-"
         
         # Для удобства возьмём все группы:
         g = self.values
@@ -160,6 +163,7 @@ class Record:
         M2 = g.get("M", None)  # вдруг второе появление M — минуты
         S = g.get("S", None) or g.get("S_1", None)
         MS = g.get("MS", None) or g.get("MS_1", None)
+
         
         if D and M and Y and H and (M2 or M) and S:
             # Попробуем понять, где месяц, где минуты
@@ -199,6 +203,8 @@ class Record:
                 self.code = int(g["code"])
             except ValueError:
                 pass
+        if "user_agent" in g:
+            self.user_agent = g["user_agent"]
 
     def __str__(self):
         return self.line
@@ -226,6 +232,37 @@ class BaseLogDetector(ABC):
     def summary(self):
         return self.potential, self.vulnerable
 
+class UserAgentDetector(BaseLogDetector):
+    xss_patterns = [
+        "<", ">", "\"", "'", "script", "javascript", "alert", "onerror", "onload", "src=", "href="
+    ]
+
+    rce_keywords = [
+        "curl", "wget", "python", "perl", "java", "powershell", "nc", "bash", "sh",
+        "cmd.exe", "system32", "os.system", "subprocess", "eval", "exec"
+    ]
+
+    sqli_keywords = [
+        "UNION", "SELECT", "SLEEP", "AND", "OR", "WHERE", "DROP", "--", "/*", "*/", "#"
+    ]
+
+    scanner_keywords = [
+        "sqlmap", "nikto", "acunetix", "nessus", "nmap", "whatweb", "wafw00f", "fuzz"
+    ]
+
+    def analyze(self, records):
+        for rec in records:
+            ua = rec.user_agent.lower()
+            xss_detected = any(x in ua for x in self.xss_patterns)
+            rce_detected = any(k in ua for k in self.rce_keywords)
+            sqli_detected = any(k.lower() in ua for k in self.sqli_keywords)
+            scanner_detected = any(k in ua for k in self.scanner_keywords)
+
+            if xss_detected or rce_detected or sqli_detected or scanner_detected:
+                if rec.code < 400:
+                    self.vulnerable.append(rec)
+                else:
+                    self.potential.append(rec)
 
 class FuzzDetector(BaseLogDetector):
     def __init__(self, log_template):
@@ -373,7 +410,8 @@ class LogAnalyzer:
             XSSDetector(log_template),
             LFIDetector(log_template),
             RCEDetector(log_template),
-            SQLiDetector(log_template)
+            SQLiDetector(log_template),
+            UserAgentDetector(log_template)
         ]
         self.log_template = log_template
     

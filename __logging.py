@@ -2,7 +2,7 @@ import os
 import re
 import logging
 from logging import FileHandler, StreamHandler
-from flask import Flask, request
+from flask import Flask, request, Response
 from rich import print
 
 class RemoveAnsiAndRichMarkupFormatter(logging.Formatter):
@@ -26,7 +26,9 @@ class Logger:
     def __init__(self, app):
         # Здесь app — это ваш класс App, у которого есть поле flask: Flask
         self.app = app.flask
-        
+        self.app.logger.propagate = False
+        self.app.logger.handlers.clear()
+
         # Создадим папку logs, если её нет
         if not os.path.exists(app.project_root + "logs"):
             os.mkdir(app.project_root + "logs")
@@ -56,8 +58,10 @@ class Logger:
         self.app.logger.addHandler(console_handler)
 
         # Логгер Werkzeug (для GET /… 200)
+        # Удалим добавление хендлеров в werkzeug:
         werkzeug_logger = logging.getLogger('werkzeug')
-        werkzeug_logger.setLevel(logging.INFO)
+        werkzeug_logger.setLevel(logging.WARNING)  # вместо INFO, чтобы он молчал
+
         # Чтобы не плодить дубли в консоли, можете убрать этот хендлер,
         # но если нужно видеть запросы и там, и там — оставьте
         werkzeug_logger.addHandler(file_handler)
@@ -67,7 +71,12 @@ class Logger:
         self.register_hooks()
 
     def register_hooks(self):
-        @self.app.before_request
-        def log_ip():
+        @self.app.after_request
+        def log_ip(response: Response):
             ip = request.remote_addr or 'Unknown IP'
             method = request.method
+            user_agent = request.headers.get('User-Agent', 'Unknown User-Agent')
+            path = request.path
+            self.app.logger.info(f"{ip} {method} {path} - {user_agent} - {response.status_code}")
+            return response
+
