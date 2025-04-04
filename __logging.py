@@ -76,7 +76,7 @@ class Logger:
             ip = request.remote_addr or 'Unknown IP'
             method = request.method
             user_agent = request.headers.get('User-Agent', 'Unknown User-Agent')
-            path = request.path
+            path = request.full_path
             self.app.logger.info(f"{ip} {method} {path} - {user_agent} - {response.status_code}")
             return response
 
