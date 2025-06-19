@@ -55,7 +55,7 @@ class SQLiDetector(BaseDetector):
 
 
 class XSSDetector(BaseDetector):
-    patterns = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "://", "cookie", "document."]
+    patterns = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "cookie", "document."]
 
     def run(self):
         for arg in request.args.values():
@@ -90,7 +90,6 @@ class IDS:
             func()
 
 
-
     def on_trigger(self, func):
         self.detect_funcs.append(func)
 
@@ -99,7 +98,7 @@ class IDS:
 class IPS(IDS):
     def __init__(self, app):
         super().__init__(app)
-        self.on_detection = self.block_request
+        self.on_trigger(self.block_request)
 
     def block_request(self):
         self.app.logger.info(f"ABORTING CONNECTION: {request.remote_addr}")
