@@ -9,27 +9,27 @@ base = os.sep.join(__file__.split(os.sep)[:-1])
 # ─── Маппинг: имя модуля -> список файлов для объединения в один целевой ───
 MODULE_MAP = {
     "intrusion": {
-        "sources": ["__intrusions.py"],
+        "sources": ["intrusions.py"],
         "target": "AEngineApps/intrusions.py",
         "description": "IDS/IPS и детекторы атак (SQLi, XSS, RCE, LFI, RateLimiter)",
     },
     "logs": {
-        "sources": ["__logging.py"],
+        "sources": ["logging.py"],
         "target": "AEngineApps/logging.py",
         "description": "Логирование запросов (Logger)",
     },
     "os_protect": {
-        "sources": ["__os_protect.py", "os_protect.py"],
+        "sources": ["os_protect.py"],
         "target": "AEngineApps/os_protect.py",
         "description": "Защита ОС: контроль CPU/RAM, проверка привилегий",
     },
     "net_analyzer": {
-        "sources": ["__net_analyzer.py", "net_analyzer.py"],
+        "sources": ["net_analyzer.py"],
         "target": "AEngineApps/net_analyzer.py",
         "description": "Анализ сетевого трафика: SYN Flood, аномальные IP",
     },
     "sys_protect": {
-        "sources": ["__sys_protect.py", "sys_protect.py"],
+        "sources": ["sys_protect.py"],
         "target": "AEngineApps/sys_protect.py",
         "description": "Продвинутая защита: сканер процессов, конфигураций, пользователей",
     },
@@ -39,12 +39,12 @@ MODULE_MAP = {
         "description": "Админ-панель безопасности с авторизацией (требует шаблоны и конфиг)",
     },
     "cluster": {
-        "sources": ["__cluster.py", "cluster.py"],
+        "sources": ["cluster.py"],
         "target": "AEngineApps/cluster.py",
         "description": "Active-Passive кластеризация (межсерверная, Heartbeat + File Sync)",
     },
     "auto_cluster": {
-        "sources": ["__auto_cluster.py", "auto_cluster.py"],
+        "sources": ["auto_cluster.py"],
         "target": "AEngineApps/auto_cluster.py",
         "description": "Локальная кластеризация (один сервер, multiprocessing)",
     },
