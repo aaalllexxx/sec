@@ -42,6 +42,34 @@ WEAK_SECRET_KEYS = [
     "12345", "admin", "key", "supersecretkey", "flask_secret",
 ]
 
+# ─────────── Утилиты заголовков безопасности ───────────
+
+def enable_cors(app, origins: str = "*", methods: str = "GET,POST,PUT,DELETE,OPTIONS",
+                headers: str = "Content-Type,Authorization") -> None:
+    """Включает CORS для API-режима."""
+    # Получаем исходный инстанс Flask
+    flask_app = app.flask if hasattr(app, 'flask') else app
+    
+    @flask_app.after_request
+    def cors_headers(response):
+        response.headers["Access-Control-Allow-Origin"] = origins
+        response.headers["Access-Control-Allow-Methods"] = methods
+        response.headers["Access-Control-Allow-Headers"] = headers
+        return response
+
+def enable_csp(app, policy: str = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';") -> None:
+    """Включает Content Security Policy (CSP) и другие базовые заголовки защиты от XSS."""
+    flask_app = app.flask if hasattr(app, 'flask') else app
+
+    @flask_app.after_request
+    def security_headers(response):
+        response.headers["Content-Security-Policy"] = policy
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        return response
+
+
 # Топ-120+ самых распространенных слабых паролей для аудита
 COMMON_PASSWORDS = [
     "123456", "password", "123456789", "12345678", "12345", "qwerty", "1234567890", "1234", "111111", 

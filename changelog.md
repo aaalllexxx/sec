@@ -1,5 +1,12 @@
 # Changelog (sec)
 
+## [2.5.0] - 2026-03-03
+### Added
+- **Advanced Traffic Analysis**: Signature-based detection for known CVEs (Log4Shell, etc.) and Rule-based custom blocking via `SignatureDetector` and `RuleDetector`.
+- **Anomaly Detection**: Traffic baselining with spike detection to catch DoS/DDoS behavior in `NetworkAnalyzer`.
+- **Stored XSS Protection**: Background scanner (`_check_stored_xss` in `AdvancedSystemProtection`) to find persistent payloads in databases.
+- **Security Headers Integration**: `enable_cors` and `enable_csp` were migrated from the core AEngineApps into `sec.__sys_protect` for centralized security policies.
+
 ## [2.4.0] - 2026-03-03
 ### Added
 - **Major Dashboard Overhaul**: Switched to a premium sidebar-based layout with deep Glassmorphism effects.
