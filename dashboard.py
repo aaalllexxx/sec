@@ -106,10 +106,11 @@ class SecDashboardService(Service):
                 
                 logs = []
                 # Путь к логам приложения
-                log_file = os.path.join(self.service.app.project_root, "logs", "app.log")
+                # В AEngineApps экран имеет доступ к приложению через self._app
+                log_file = os.path.join(self._app.project_root, "logs", "app.log")
                 if not os.path.exists(log_file):
                     # Пытаемся найти альтернативный путь или старый файл
-                    log_file = os.path.join(self.service.app.project_root, "app.log")
+                    log_file = os.path.join(self._app.project_root, "app.log")
                 
                 if os.path.exists(log_file):
                     try:
