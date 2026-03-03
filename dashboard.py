@@ -26,7 +26,7 @@ class SecDashboardService(Service):
 
     def _setup_routes(self):
         # Передаем конфигурацию в классы экранов
-        class LoginScreen(Screen):
+        class LoginScreen(API):
             service = self
             methods = ["GET", "POST"]
             
@@ -44,7 +44,7 @@ class SecDashboardService(Service):
                     return redirect(f"{self.service.prefix}/dashboard")
                 return render_template_string(self.service._get_login_html(), error="Неверный логин или пароль")
 
-        class DashboardScreen(Screen):
+        class DashboardScreen(API):
             service = self
             methods = ["GET"]
             
