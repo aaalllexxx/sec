@@ -82,10 +82,10 @@ ips.add_detector(RCEDetector)
 
 ## 🔍 Доступные Детекторы
 
-1. **`RCEDetector`** — Обнаруживает Remote Code Execution (запуск системных команд: *eval, exec, system, bash*).
-2. **`LFIDetector`** — Обнаруживает Local/Remote File Inclusion (чтение файловой системы: *../, /etc/passwd, %00*).
-3. **`SQLiDetector`** — Обнаруживает SQL-иньекции (ключевые слова и спецсимволы: *OR, SELECT, DROP, '--, /* *).
-4. **`XSSDetector`** — Обнаруживает межсайтовый скриптинг (теги и эвенты: *<script>, javascript:, onerror=, onload=*).
+1. **`RCEDetector`** — Обнаруживает Remote Code Execution (запуск системных команд: `eval`, `exec`, `system`, `bash`).
+2. **`LFIDetector`** — Обнаруживает Local/Remote File Inclusion (чтение файловой системы: `../`, `/etc/passwd`, `%00`).
+3. **`SQLiDetector`** — Обнаруживает SQL-иньекции (ключевые слова и спецсимволы: `OR`, `SELECT`, `DROP`, `'--`, `/*`).
+4. **`XSSDetector`** — Обнаруживает межсайтовый скриптинг (теги и эвенты: `<script>`, `javascript:`, `onerror=`, `onload=`).
 
 ### Создание собственных детекторов (BaseDetector)
 
@@ -149,3 +149,63 @@ apm sec logs analyze --template "[%{Y}-%{m}-%{D} %{H}:%{M}:%{S}] %{level} in %{i
 - Время: `%{H}`, `%{M}`, `%{S}`, `%{MS}`
 - Сеть: `%{ip}`, `%{method}`, `%{endpoint}`, `%{proto}`, `%{code}`
 - Уровни: `%{level}`
+
+---
+
+## 🛡️ Защита ОС и Сети (Новое в v2.1)
+
+Модуль `sec` теперь также включает механизмы анти-DDoS и High Availability на уровне ОС. Для полноценной работы данных модулей требуется установленная бибилотека `psutil`.
+
+### OS Protection (`os_protect.py`)
+Обеспечивает контроль за потреблением ресурсов (CPU/RAM) и запуск веб-сервиса с минимальными привилегиями.
+
+```python
+from sec.os_protect import get_os_protection_module
+
+# Мониторинг: предупреждение при 90% загрузке CPU или RAM
+os_protect = get_os_protection_module(max_cpu_percent=90.0, max_ram_percent=90.0)
+health = os_protect.run_health_check()
+
+if health["status"] == "danger":
+    print("КРИТИЧЕСКАЯ ОШИБКА: Сервер под DDoS (Аномальная загрузка)")
+elif health["privileges"]["status"] == "warning":
+    print("ВНИМАНИЕ: Приложение запущено от имени root/Administrator!")
+```
+
+### Анализ Сетевого Трафика (`net_analyzer.py`)
+Инструмент для выявления SYN Flood атак и подозрительной активности соединений на хосте.
+
+```python
+from sec.net_analyzer import get_network_analyzer
+
+net_analyzer = get_network_analyzer(max_syn_requests=100, max_connections_per_ip=50)
+net_status = net_analyzer.run_analysis()
+
+if net_status["syn_flood"]["status"] == "danger":
+    print("ВНИМАНИЕ: Обнаружена SYN Flood атака!")
+    
+if net_status["abnormal_ips"]["status"] == "warning":
+    print(f"Подозрительные IP: {net_status['abnormal_ips']['abnormal_ips']}")
+```
+
+### Кластеризация Active-Passive (`cluster.py`)
+Инструмент обеспечения отказоустойчивости. Позволяет запускать прозрачные "страхующие" (Slave) ноды. Они синхронизируют файлы проекта с основной (Master) нодой по запуску. Если Master падает (перестаёт отправлять Heartbeat), Slave автоматически становится Master'ом.
+
+```python
+from sec.cluster import create_cluster_node
+
+def on_failover():
+    print("Master нода упала! Запускаем резервное приложение...")
+    # Здесь вызывается app.run() резервного сервера
+
+node = create_cluster_node(
+    node_id="slave_1",
+    role="slave", 
+    master_ip="192.168.1.100", # IP активного сервера
+    master_port=8888,
+    sync_dir="." # Откуда/куда копировать исходники
+)
+
+node.on_failover = on_failover
+node.start() # При старте сначала скачает актуальный код с Master
+```
