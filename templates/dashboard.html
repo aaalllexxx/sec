@@ -130,7 +130,7 @@
 <body>
     <div class="navbar">
         <h1>🛡️ Sec Admin Portal</h1>
-        <a href="{{ url_for('sec_dashboard.sec_dashboard_LogoutAPI') }}" class="logout-btn">Выйти</a>
+        <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}" class="logout-btn">Выйти</a>
     </div>
     <div class="container">
         <div class="grid">
@@ -184,16 +184,13 @@
     </div>
 
     <script>
-        // API endpoints
-        const API_BASE = '{{ url_for("sec_dashboard.index_redirect") }}'.replace('/dashboard', '');
-
         async function runScan() {
             const btn = document.querySelector('.scan-btn');
             btn.innerText = "Сканирование...";
             btn.disabled = true;
 
             try {
-                const res = await fetch(API_BASE + '/api/scan');
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_scan') }}");
                 const data = await res.json();
                 document.getElementById('scan-results').style.display = 'block';
                 document.getElementById('scan-json').innerText = JSON.stringify(data, null, 2);
@@ -207,7 +204,7 @@
 
         async function loadLogs() {
             try {
-                const res = await fetch(API_BASE + '/api/logs');
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_logs') }}");
                 const data = await res.json();
                 const tbody = document.getElementById('logs-body');
                 tbody.innerHTML = '';
@@ -238,7 +235,7 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch(API_BASE + '/api/sys_scan');
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_sys_scan') }}");
                 const data = await res.json();
                 document.getElementById('deep-scan-results').style.display = 'block';
                 document.getElementById('deep-scan-json').innerText = JSON.stringify(data, null, 2);

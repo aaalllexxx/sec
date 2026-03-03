@@ -50,7 +50,7 @@ class SecDashboardService(Service):
             
             def get(self):
                 if session.get("sec_admin_logged_in"):
-                    return redirect(f"{self.service.prefix}/dashboard")
+                    return redirect(url_for("sec_dashboard.sec_dashboard__dashboard"))
                 return render_template("sec/login.html", error=None)
                 
             def post(self):
@@ -59,7 +59,7 @@ class SecDashboardService(Service):
                 
                 if login == self.service.admin_login and password == self.service.admin_pass:
                     session["sec_admin_logged_in"] = True
-                    return redirect(f"{self.service.prefix}/dashboard")
+                    return redirect(url_for("sec_dashboard.sec_dashboard__dashboard"))
                 return render_template("sec/login.html", error="Неверный логин или пароль")
 
         class DashboardScreen(API):
@@ -68,7 +68,7 @@ class SecDashboardService(Service):
             
             def get(self):
                 if not session.get("sec_admin_logged_in"):
-                    return redirect(f"{self.service.prefix}/login")
+                    return redirect(url_for("sec_dashboard.sec_dashboard__login"))
                 return render_template("sec/dashboard.html")
 
         class LogoutAPI(API):
@@ -77,7 +77,7 @@ class SecDashboardService(Service):
             
             def get(self):
                 session.pop("sec_admin_logged_in", None)
-                return redirect(f"{self.service.prefix}/login")
+                return redirect(url_for("sec_dashboard.sec_dashboard__login"))
 
         class ScanAPI(API):
             """API для выполнения сканирования (возвращает JSON)"""
