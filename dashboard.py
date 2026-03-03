@@ -14,10 +14,18 @@ except ImportError:
     from AEngineApps.sys_protect import AdvancedSystemProtection
 
 # Загрузка конфига
+sec_config = None
 try:
-    import AEngineApps.sec_config as sec_config
+    import AEngineApps.sec_config as sec_config_mod
+    sec_config = sec_config_mod
 except ImportError:
-    # Fallback на дефолты если конфиг не создан
+    try:
+        import sec_config as sec_config_mod
+        sec_config = sec_config_mod
+    except ImportError:
+        pass
+
+if not sec_config:
     class sec_config:
         ADMIN_LOGIN = "admin"
         ADMIN_PASS = "admin"

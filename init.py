@@ -145,13 +145,20 @@ def _install_module(base_dir, name: str) -> bool:
 
 def run(*args, **kwargs):
     arg = kwargs.get("args", [])
-    base_dir = kwargs.get("base_dir") or os.getcwd()
+    # Приоритет за CWD, так как apm может передавать свой путь установки
+    base_dir = kwargs.get("base_dir")
+    cwd = os.getcwd()
+    
+    if os.path.exists(os.path.join(cwd, "AEngineApps")):
+        base_dir = cwd
+    elif not base_dir or not os.path.exists(os.path.join(base_dir, "AEngineApps")):
+        base_dir = cwd
 
     if "--help" in arg or "-h" in arg:
         _print_help()
         return
 
-    print("\n[bold cyan]🛡️  Инициализация модулей безопасности sec[/bold cyan]\n")
+    print(f"\n[bold cyan]🛡️  Инициализация модулей безопасности sec (в {base_dir})[/bold cyan]\n")
 
     # Настройка общих параметров (всегда при полной установке или если выбран dashboard)
     if "--modules" not in arg or "dashboard" in arg:

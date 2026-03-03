@@ -12,11 +12,21 @@ MODULE_MAP = {
     "auto_cluster": "auto_cluster.py"
 }
 
-def run(base_dir=None, gconf_path=None, args=None):
+def run(*args, **kwargs):
     """
     Удаляет модули безопасности sec из проекта.
     """
-    print("\n🗑️  Удаление модулей безопасности sec\n")
+    arg = kwargs.get("args", [])
+    # Приоритет за CWD, так как apm может передавать свой путь установки
+    base_dir = kwargs.get("base_dir")
+    cwd = os.getcwd()
+    
+    if os.path.exists(os.path.join(cwd, "AEngineApps")):
+        base_dir = cwd
+    elif not base_dir or not os.path.exists(os.path.join(base_dir, "AEngineApps")):
+        base_dir = cwd
+
+    print(f"\n🗑️  Удаление модулей безопасности sec (в {base_dir})\n")
     
     apps_dir = os.path.join(base_dir, "AEngineApps")
     if not os.path.exists(apps_dir):
