@@ -1,105 +1,253 @@
+"""
+sec/__intrusions.py — IDS/IPS система для AEngineApps.
+Проверяет GET, POST, JSON данные запросов.
+"""
+
 from flask import Flask, request, abort
 from urllib.parse import unquote
+from typing import Callable, Optional
+from collections import defaultdict
 import os
 import re
 import shutil
+import time
 from abc import ABC, abstractmethod
 
-# === Абстрактный класс детектора ===
+
+# ─── Утилиты ─────────────────────────────────────────────────
+
+def _get_all_input_values() -> list[str]:
+    """Извлекает ВСЕ пользовательские данные из запроса (GET, POST, JSON)."""
+    values = []
+    
+    # GET параметры
+    for val in request.args.values():
+        values.append(val)
+    
+    # POST form data
+    if request.form:
+        for val in request.form.values():
+            values.append(val)
+    
+    # JSON body
+    if request.is_json:
+        try:
+            json_data = request.get_json(silent=True) or {}
+            values.extend(_flatten_json(json_data))
+        except Exception:
+            pass
+    
+    return values
+
+
+def _flatten_json(data, prefix: str = "") -> list[str]:
+    """Рекурсивно извлекает все строковые значения из JSON."""
+    values = []
+    if isinstance(data, dict):
+        for k, v in data.items():
+            values.extend(_flatten_json(v, f"{prefix}.{k}"))
+    elif isinstance(data, list):
+        for item in data:
+            values.extend(_flatten_json(item, prefix))
+    elif isinstance(data, str):
+        values.append(data)
+    return values
+
+
+# ─── Абстрактный детектор ─────────────────────────────────────
+
 class BaseDetector(ABC):
+    """Базовый класс детектора атак."""
+    
     def __init__(self, app: Flask):
         self.app = app
 
     @abstractmethod
-    def run(self):
+    def run(self) -> None:
         pass
 
-    def log(self, message):
+    def log(self, message: str) -> None:
+        """Логирует критическое событие."""
         self.app.logger.critical(message)
 
-    def trigger_response(self):
+    def trigger_response(self) -> None:
+        """Вызывается при обнаружении атаки (переопределяется IDS/IPS)."""
         pass
 
 
-# === Конкретные реализации детекторов ===
-class RCEDetector(BaseDetector):
-    dangerous = ["echo"]
+# ─── Детекторы ─────────────────────────────────────────────────
 
-    def run(self):
-        for arg in request.args.values():
+class RCEDetector(BaseDetector):
+    """Обнаружение Remote Code Execution."""
+    dangerous = ["echo", "eval", "exec", "system", "popen", "subprocess"]
+
+    def run(self) -> None:
+        for arg in _get_all_input_values():
             decoded = unquote(arg)
             for el in decoded.split():
-                if shutil.which(el) or el in self.dangerous:
-                    self.log(f"DETECTED RCE: {request.full_path}")
+                if shutil.which(el) or el.lower() in self.dangerous:
+                    self.log(f"DETECTED RCE: {request.method} {request.full_path} | input: {decoded[:100]}")
                     self.trigger_response()
+                    return
 
 
 class LFIDetector(BaseDetector):
-    def run(self):
-        for arg in request.args.values():
+    """Обнаружение Local/Remote File Inclusion."""
+    
+    patterns = re.compile(
+        r"(?:\.\./|\.\.\\|%2e%2e|%252e%252e|/etc/|/proc/|c:\\|%00)",
+        re.IGNORECASE
+    )
+    
+    def run(self) -> None:
+        for arg in _get_all_input_values():
             decoded = unquote(arg)
-            if os.path.exists(decoded) or re.findall(r"^(?!javascript)(.*://)*([%, ,A-z,0-9,\\.\\.]*[/,//,\\,\\\\]){1,}", decoded):
-                self.log(f"DETECTED LFI or RFI: {request.full_path}")
+            if self.patterns.search(decoded) or os.path.exists(decoded):
+                self.log(f"DETECTED LFI/RFI: {request.method} {request.full_path} | input: {decoded[:100]}")
                 self.trigger_response()
+                return
 
 
 class SQLiDetector(BaseDetector):
-    dangerous = ["@variable", "AND", "OR", ",", "AS", "WHERE", "ORDER", "--", "/*", "#", "RLIKE", "SLEEP", "SELECT", "UNION", " * "]
+    """Обнаружение SQL Injection."""
+    dangerous = {
+        "@VARIABLE", "AND", "OR", "AS", "WHERE", "ORDER", 
+        "RLIKE", "SLEEP", "SELECT", "UNION", "DROP",
+        "INSERT", "UPDATE", "DELETE", "CONCAT", "BENCHMARK"
+    }
+    special = {"--", "/*", "*/", "#", ";"}
 
-    def run(self):
-        for arg in request.args.values():
+    def run(self) -> None:
+        for arg in _get_all_input_values():
             upper = unquote(arg).upper()
-            if any([el in upper for el in self.dangerous]) or upper.startswith("'") or upper.startswith('"'):
-                self.log(f"DETECTED SQL injection: {request.full_path}")
+            # Проверяем SQL ключевые слова
+            words = re.split(r"[\W_]+", upper)
+            words = [w for w in words if w]
+            if any(w in self.dangerous for w in words):
+                self.log(f"DETECTED SQLi: {request.method} {request.full_path} | input: {arg[:100]}")
                 self.trigger_response()
+                return
+            # Проверяем спецсимволы
+            if any(s in upper for s in self.special) or upper.startswith("'") or upper.startswith('"'):
+                self.log(f"DETECTED SQLi: {request.method} {request.full_path} | input: {arg[:100]}")
+                self.trigger_response()
+                return
 
 
 class XSSDetector(BaseDetector):
-    patterns = ["<", ">",  "/*", "*/", "script", " src=", " href=", "javascript", "cookie", "document."]
+    """Обнаружение Cross-Site Scripting."""
+    patterns = [
+        "<", ">", "/*", "*/", "script", " src=", " href=",
+        "javascript:", "onerror=", "onload=", "onclick=",
+        "document.", "cookie", "eval(", "alert("
+    ]
 
-    def run(self):
-        for arg in request.args.values():
+    def run(self) -> None:
+        for arg in _get_all_input_values():
             decoded = unquote(arg).lower()
-            potentiality = 0
             if len(decoded) > 1:
-                for ch in self.patterns:
-                    potentiality += 1 if ch in decoded else 0
-                if potentiality != 0:
-                    self.log(f"DETECTED XSS: {request.full_path}")
+                matches = sum(1 for ch in self.patterns if ch in decoded)
+                if matches >= 1:
+                    self.log(f"DETECTED XSS: {request.method} {request.full_path} | input: {decoded[:100]}")
                     self.trigger_response()
+                    return
 
 
-# === IDS / IPS основной класс ===
+# ─── Rate Limiter ─────────────────────────────────────────────
+
+class RateLimiter:
+    """Ограничитель частоты запросов по IP.
+    
+    Пример:
+        limiter = RateLimiter(app, max_requests=100, window=60)
+        # Макс. 100 запросов в минуту с одного IP
+    """
+    
+    def __init__(self, app, max_requests: int = 100, window: int = 60):
+        self.flask_app: Flask = app.flask
+        self.max_requests = max_requests
+        self.window = window  # секунды
+        self._requests: dict[str, list[float]] = defaultdict(list)
+        self.flask_app.before_request(self._check_rate)
+    
+    def _check_rate(self):
+        ip = request.remote_addr or "unknown"
+        now = time.time()
+        
+        # Убираем устаревшие записи
+        self._requests[ip] = [
+            t for t in self._requests[ip] 
+            if now - t < self.window
+        ]
+        
+        if len(self._requests[ip]) >= self.max_requests:
+            self.flask_app.logger.warning(f"RATE LIMIT: {ip} ({len(self._requests[ip])} req/{self.window}s)")
+            abort(429)
+        
+        self._requests[ip].append(now)
+
+
+# ─── IDS ──────────────────────────────────────────────────────
+
 class IDS:
+    """Intrusion Detection System.
+    
+    Пример:
+        from AEngineApps.app import App
+        from AEngineApps.intrusions import IDS, XSSDetector, SQLiDetector
+        
+        app = App()
+        ids = IDS(app)
+        ids.add_detector(XSSDetector)
+        ids.add_detector(SQLiDetector)
+        
+        @ids.on_trigger
+        def on_attack():
+            print("Атака обнаружена!")
+    """
+    
     def __init__(self, app):
-        self.app: Flask = app.flask  # как ты и сказал — app имеет .flask
+        self.app: Flask = app.flask
         self.detectors: list[BaseDetector] = []
-        self.detect_funcs = []
+        self.detect_funcs: list[Callable] = []
         self.app.before_request(self.run_detectors)
 
-    def add_detector(self, detector_cls):
+    def add_detector(self, detector_cls: type) -> None:
+        """Добавляет детектор."""
         self.detectors.append(detector_cls(self.app))
 
-    def run_detectors(self):
+    def run_detectors(self) -> None:
+        """Запускает все детекторы на текущем запросе."""
         for detector in self.detectors:
-            detector.trigger_response = self.__on_detection_triggered
+            detector.trigger_response = self._on_detection_triggered
             detector.run()
 
-    def __on_detection_triggered(self):
+    def _on_detection_triggered(self) -> None:
         for func in self.detect_funcs:
             func()
 
-
-    def on_trigger(self, func):
+    def on_trigger(self, func: Callable) -> Callable:
+        """Регистрирует обработчик срабатывания (можно как декоратор)."""
         self.detect_funcs.append(func)
+        return func
 
 
-# === IPS класс ===
+# ─── IPS ──────────────────────────────────────────────────────
+
 class IPS(IDS):
+    """Intrusion Prevention System — блокирует запрос при обнаружении атаки.
+    
+    Пример:
+        ips = IPS(app)
+        ips.add_detector(XSSDetector)
+        ips.add_detector(RCEDetector)
+        # Атаки автоматически блокируются (abort 400)
+    """
+    
     def __init__(self, app):
         super().__init__(app)
         self.on_trigger(self.block_request)
 
-    def block_request(self):
-        self.app.logger.info(f"ABORTING CONNECTION: {request.remote_addr}")
+    def block_request(self) -> None:
+        self.app.logger.info(f"BLOCKED: {request.remote_addr} {request.method} {request.full_path}")
         abort(400)

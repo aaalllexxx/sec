@@ -343,8 +343,6 @@ class RCEDetector(BaseLogDetector):
                             break
 
 
-class SQLiDetector(BaseLogDetector):
-    import re
 
 class SQLiDetector(BaseLogDetector):
     # Список (или множество) опасных ключевых слов и символов,
