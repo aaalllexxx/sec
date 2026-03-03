@@ -3,202 +3,509 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>SecAdmin - Дашборд</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecAdmin | Premium Security Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
+        :root {
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-cyan: #38bdf8;
+            --accent-rose: #f43f5e;
+            --accent-emerald: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --bg-deep: #0f172a;
         }
 
+        body {
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Navbar */
         .navbar {
-            background: #1e293b;
-            padding: 1rem 2rem;
+            padding: 1.25rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
         }
 
         .navbar h1 {
             margin: 0;
-            color: #38bdf8;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .navbar h1 span {
+            color: var(--accent-cyan);
+            font-weight: 700;
         }
 
         .logout-btn {
-            background: #f43f5e;
+            background: var(--accent-rose);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
         }
 
         .logout-btn:hover {
-            background: #e11d48;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(244, 63, 94, 0.4);
+            filter: brightness(1.1);
         }
 
+        /* Layout */
         .container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 2rem;
-            max-width: 1200px;
-            margin: auto;
         }
 
+        /* Tabs */
+        .tabs-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-trigger {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-trigger.active {
+            color: var(--accent-cyan);
+        }
+
+        .tab-trigger.active::after {
+            content: '';
+            position: absolute;
+            bottom: -0.6rem;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-cyan);
+            border-radius: 3px;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cards and Grid */
         .grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            color: var(--accent-cyan);
         }
 
         .card {
-            background: #1e293b;
-            border-radius: 12px;
             padding: 1.5rem;
-            border: 1px solid #334155;
+            height: 100%;
+            box-sizing: border-box;
         }
 
         .card h3 {
             margin-top: 0;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 0.5rem;
-            color: #94a3b8;
+            font-size: 1.15rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
         }
 
-        .status-ok {
-            color: #10b981;
-            font-weight: bold;
-        }
-
-        .status-warning {
-            color: #f59e0b;
-            font-weight: bold;
-        }
-
-        .status-danger {
-            color: #ef4444;
-            font-weight: bold;
-        }
-
-        .scan-btn {
-            background: #0284c7;
-            color: white;
+        .btn {
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 1rem;
+            font-weight: 700;
+            font-size: 0.95rem;
             width: 100%;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        .scan-btn:hover {
-            background: #0369a1;
+        .btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        #scan-results pre {
-            background: #0f172a;
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Monitoring */
+        #chart-container {
+            height: 250px;
+            margin-bottom: 1rem;
+        }
+
+        pre {
+            background: rgba(15, 23, 42, 0.5);
             padding: 1rem;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-size: 0.9rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
             color: #a5b4fc;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
         }
 
         th,
         td {
+            padding: 1rem;
             text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid var(--glass-border);
         }
 
         th {
-            color: #94a3b8;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .bg-ok {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-emerald);
+        }
+
+        .bg-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .bg-danger {
+            background: rgba(244, 63, 94, 0.2);
+            color: var(--accent-rose);
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 3px;
         }
     </style>
 </head>
 
 <body>
     <div class="navbar">
-        <h1>🛡️ Sec Admin Portal</h1>
-        <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}" class="logout-btn">Выйти</a>
+        <h1>🛡️ <span>SEC</span> ADMIN PORTAL</h1>
+        <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}" class="logout-btn">ВЫЙТИ</a>
     </div>
+
     <div class="container">
-        <div class="grid">
-            <div class="card">
-                <h3>Системный Сканер (System Health)</h3>
-                <p>Нажмите для актуализации данных о CPU, ОЗУ, Привилегиях (OS Protection) и Сетевых соединениях
-                    (Network Analyzer).</p>
-                <button class="scan-btn" onclick="runScan()">Запустить сканирование</button>
-                <div id="scan-results" style="margin-top: 1rem; display: none;">
-                    <pre id="scan-json"></pre>
+        <!-- Dashboard Tabs -->
+        <div class="tabs-header">
+            <button class="tab-trigger active" onclick="showTab('overview')">ОБЗОР</button>
+            <button class="tab-trigger" onclick="showTab('logs')">ЛОГИ ИНЦИДЕНТОВ</button>
+            <button class="tab-trigger" onclick="showTab('system')">СИСТЕМНЫЙ СКАНЕР</button>
+            <button class="tab-trigger" onclick="showTab('network')">СЕТЬ</button>
+        </div>
+
+        <!-- TAB: OVERVIEW -->
+        <div id="overview" class="tab-content active">
+            <div class="grid stats-grid">
+                <div class="glass-panel stat-card">
+                    <h4>Загрузка CPU</h4>
+                    <div id="val-cpu" class="value">0%</div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <h4>Память RAM</h4>
+                    <div id="val-ram" class="value">0%</div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <h4>Режим работы</h4>
+                    <div class="value" style="font-size: 1.2rem; color: var(--accent-emerald);">NORMAL</div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <h4>Привилегии</h4>
+                    <div id="val-priv" class="value" style="font-size: 1.2rem;">--</div>
                 </div>
             </div>
 
-            <div class="card" style="grid-column: span 1;">
-                <h3>Парсинг логов атак (IDS/IPS)</h3>
-                <p>Загрузка последних инцидентов из <code>sec_logs.txt</code></p>
-                <button class="scan-btn" onclick="loadLogs()" style="background: #4f46e5;">Обновить логи</button>
-            </div>
-
-            <div class="card" style="grid-column: span 2;">
-                <h3>Глубокое сканирование системы (Processes / Users / Config)</h3>
-                <p>Сканирует запущенные процессы, перегрузки, подозрительных пользователей ОС и небезопасные
-                    конфигурации.</p>
-                <button class="scan-btn" onclick="deepScan()" style="background: #dc2626;">Глубокое
-                    сканирование</button>
-                <div id="deep-scan-results" style="margin-top: 1rem; display: none;">
-                    <pre id="deep-scan-json"></pre>
+            <div class="grid">
+                <div class="glass-panel card">
+                    <h3>📊 Мониторинг ресурсов</h3>
+                    <div id="chart-container">
+                        <canvas id="sysChart"></canvas>
+                    </div>
+                    <button class="btn" onclick="runScan()">ОБНОВИТЬ ДАННЫЕ</button>
+                </div>
+                <div class="glass-panel card">
+                    <h3>🚨 Последние аномалии</h3>
+                    <div id="recent-threats">
+                        <pre id="quick-status">Нажмите 'Обновить данные' для получения статуса...</pre>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card" style="grid-column: span 2;">
-            <h3>Последние срабатывания защиты</h3>
-            <div style="overflow-x: auto;">
-                <table id="logs-table">
-                    <thead>
-                        <tr>
-                            <th>Дата Время</th>
-                            <th>Уровень</th>
-                            <th>Событие</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logs-body">
-                        <tr>
-                            <td colspan="3" style="text-align:center;">Нажмите "Обновить логи" для загрузки...</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- TAB: LOGS -->
+        <div id="logs" class="tab-content">
+            <div class="glass-panel card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom:0;">📃 Журнал безопасности (IDS/IPS)</h3>
+                    <button class="btn" onclick="loadLogs()" style="width:auto; padding:0.5rem 1.5rem;">ОБНОВИТЬ
+                        ЛОГИ</button>
+                </div>
+                <div class="table-container">
+                    <table id="logs-table">
+                        <thead>
+                            <tr>
+                                <th>ВРЕМЯ</th>
+                                <th>УРОВЕНЬ</th>
+                                <th>ИНЦИДЕНТ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-body">
+                            <tr>
+                                <td colspan="3" style="text-align:center; padding: 3rem;">Загрузка истории...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SYSTEM -->
+        <div id="system" class="tab-content">
+            <div class="glass-panel card">
+                <h3>🔍 Глубокое сканирование системы</h3>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Проверка процессов, пользователей и
+                    критических конфигураций приложения.</p>
+                <div id="deep-scan-results" style="margin-bottom: 1.5rem; display: none;">
+                    <pre id="deep-scan-json"></pre>
+                </div>
+                <button class="btn" onclick="deepScan()" style="background: #dc2626; color: white;">ЗАПУСТИТЬ ГЛУБОКИЙ
+                    СКАН</button>
+            </div>
+        </div>
+
+        <!-- TAB: NETWORK -->
+        <div id="network" class="tab-content">
+            <div class="glass-panel card">
+                <h3>🌐 Сетевой анализатор</h3>
+                <div id="network-results">
+                    <pre>Данные сетевого трафика будут доступны после общего сканирования...</pre>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Tab switching
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-trigger').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Initialize Chart
+        const ctx = document.getElementById('sysChart').getContext('2d');
+        const sysChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'CPU %',
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'RAM %',
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        function updateChart(cpu, ram) {
+            const now = new Date().toLocaleTimeString();
+            if (sysChart.data.labels.length > 10) {
+                sysChart.data.labels.shift();
+                sysChart.data.datasets[0].data.shift();
+                sysChart.data.datasets[1].data.shift();
+            }
+            sysChart.data.labels.push(now);
+            sysChart.data.datasets[0].data.push(cpu);
+            sysChart.data.datasets[1].data.push(ram);
+            sysChart.update();
+        }
+
+        // API interaction
         async function runScan() {
-            const btn = document.querySelector('.scan-btn');
-            btn.innerText = "Сканирование...";
+            const btn = document.querySelector('.scan-btn') || event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "СКАН...";
             btn.disabled = true;
 
             try {
                 const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_scan') }}");
                 const data = await res.json();
-                document.getElementById('scan-results').style.display = 'block';
-                document.getElementById('scan-json').innerText = JSON.stringify(data, null, 2);
+
+                // Update stats
+                document.getElementById('val-cpu').innerText = data.os.resources.cpu_percent + '%';
+                document.getElementById('val-ram').innerText = data.os.resources.ram_percent + '%';
+                document.getElementById('val-priv').innerText = data.os.privileges.is_admin ? 'ROOT' : 'USER';
+                document.getElementById('val-priv').style.color = data.os.privileges.is_admin ? 'var(--accent-rose)' : 'var(--accent-emerald)';
+
+                document.getElementById('quick-status').innerText = JSON.stringify(data, null, 2);
+                updateChart(data.os.resources.cpu_percent, data.os.resources.ram_percent);
+
+                // Update Network tab preview
+                document.querySelector('#network pre').innerText = JSON.stringify(data.network, null, 2);
+
             } catch (e) {
-                alert("Ошибка сканирования: " + e);
+                console.error(e);
             }
 
-            btn.innerText = "Запустить сканирование";
+            btn.innerText = originalText;
             btn.disabled = false;
         }
 
@@ -210,28 +517,31 @@
                 tbody.innerHTML = '';
 
                 if (data.logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Логи чисты!</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">Логи чисты. Инцидентов не зафиксировано.</td></tr>';
                     return;
                 }
 
                 data.logs.forEach(log => {
                     const tr = document.createElement('tr');
-                    let color = log.level.includes("CRITICAL") ? "#ef4444" : (log.level.includes("WARNING") ? "#f59e0b" : "white");
+                    let badgeClass = "bg-ok";
+                    if (log.level.includes("CRITICAL")) badgeClass = "bg-danger";
+                    else if (log.level.includes("WARNING")) badgeClass = "bg-warning";
+
                     tr.innerHTML = `
-                        <td style="color: #94a3b8;">${log.timestamp}</td>
-                        <td style="color: ${color}; font-weight: bold;">${log.level}</td>
-                        <td style="font-family: monospace;">${log.message}</td>
+                        <td style="color: var(--text-muted); font-size: 0.9rem;">${log.timestamp}</td>
+                        <td><span class="status-badge ${badgeClass}">${log.level}</span></td>
+                        <td style="font-family: monospace; font-size: 0.9rem;">${log.message}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (e) {
-                alert("Ошибка загрузки логов: " + e);
+                console.error(e);
             }
         }
 
         async function deepScan() {
-            const btn = document.querySelectorAll('.scan-btn')[2];
-            btn.innerText = "Сканирование...";
+            const btn = event.target;
+            btn.innerText = "ВЫПОЛНЯЕТСЯ СКАНИРОВАНИЕ...";
             btn.disabled = true;
 
             try {
@@ -240,12 +550,18 @@
                 document.getElementById('deep-scan-results').style.display = 'block';
                 document.getElementById('deep-scan-json').innerText = JSON.stringify(data, null, 2);
             } catch (e) {
-                alert("Ошибка глубокого сканирования: " + e);
+                alert("Ошибка: " + e);
             }
 
-            btn.innerText = "Глубокое сканирование";
+            btn.innerText = "ЗАПУСТИТЬ ГЛУБОКИЙ СКАН";
             btn.disabled = false;
         }
+
+        // Initial load
+        window.onload = () => {
+            runScan();
+            loadLogs();
+        };
     </script>
 </body>
 
