@@ -1,50 +1,129 @@
-# Пакет sec для AEngineApps
+# Модуль sec (AEngine v2.0)
 
-Этот модуль содержит скрипты для обеспечения информационной безопасности приложений AEngineApps
+Этот модуль содержит инструменты для обеспечения информационной безопасности приложений AEngineApps (IDS/IPS, Rate Limiting, Logging).
 
-## Установка
+## 🚀 Установка
 
-Локальная установка в проект:
+Установка в текущий проект:
 ```sh
-$ apm install https://github.com/aaalllexxx/sec
+apm install https://github.com/aaalllexxx/sec
 ```
 
 Глобальная установка:
 ```sh
-$ apm install -g https://github.com/aaalllexxx/sec
+apm install -g https://github.com/aaalllexxx/sec
 ```
 
-## Модули
+---
 
-> logs
+## 🛡️ IDS / IPS и Ограничения (`__intrusions.py`)
 
-> intrusion
+Модуль позволяет обнаруживать (IDS) и предотвращать (IPS) атаки. Все детекторы **глубоко сканируют** `GET`-параметры, `POST`-формы и `JSON`-тела (с рекурсивной проверкой вложенностей).
 
-## Модуль logs
+### Инициализация
+Чтобы создать базовые файлы в проекте, выполните:
 ```sh
-$ apm sec logs
+apm sec intrusion init
 ```
-> Модуль logs позволяет облегчить работу с логами проекта.
 
-### logs init
+### RateLimiter (Ограничение запросов)
+> Блокирует IP-адрес, если он отправляет слишком много запросов за определённое время (DDoS, брутфорс). При превышении лимита возвращает HTTP `429 Too Many Requests`.
+
+```python
+from AEngineApps.app import App
+from AEngineApps.intrusions import RateLimiter
+
+app = App()
+
+# Максимум 100 запросов за 60 секунд (1 минута) с одного IP
+limit = RateLimiter(app, max_requests=100, window=60)
+```
+
+### IDS (Intrusion Detection System)
+> Только **обнаруживает** атаки и логирует их, но не прерывает запрос.
+
+**Методы IDS:**
+- `__init__(app)` — привязка к приложению.
+- `add_detector(DetectorClass)` — добавление детектора атак.
+- `on_trigger(func)` — регистрация коллбэка (срабатывает при обнаружении). Отрабатывает как декоратор или прямой метод.
+
+```python
+from AEngineApps.app import App
+from AEngineApps.intrusions import IDS, XSSDetector
+
+app = App()
+ids = IDS(app)
+
+# Подключение детекторов
+ids.add_detector(XSSDetector)
+
+# Коллбэк при атаке
+@ids.on_trigger
+def on_attack():
+    print("Обнаружена подозрительная активность!")
+```
+
+### IPS (Intrusion Prevention System)
+> Наследуется от `IDS`. Не только логирует, но и **прерывает** запрос (возвращает HTTP `400 Bad Request`).
+
+**Методы IPS:**
+- Все методы `IDS`.
+- `block_request()` — метод прерывания запроса (регистрируется автоматически).
+
+```python
+from AEngineApps.intrusions import IPS, SQLiDetector, RCEDetector
+
+ips = IPS(app)
+ips.add_detector(SQLiDetector)
+ips.add_detector(RCEDetector)
+```
+
+---
+
+## 🔍 Доступные Детекторы
+
+1. **`RCEDetector`** — Обнаруживает Remote Code Execution (запуск системных команд: *eval, exec, system, bash*).
+2. **`LFIDetector`** — Обнаруживает Local/Remote File Inclusion (чтение файловой системы: *../, /etc/passwd, %00*).
+3. **`SQLiDetector`** — Обнаруживает SQL-иньекции (ключевые слова и спецсимволы: *OR, SELECT, DROP, '--, /* *).
+4. **`XSSDetector`** — Обнаруживает межсайтовый скриптинг (теги и эвенты: *<script>, javascript:, onerror=, onload=*).
+
+### Создание собственных детекторов (BaseDetector)
+
+Вы можете создать свой собственный детектор, унаследовав его от `BaseDetector`.
+Обязательно нужно реализовать метод `run()`.
+
+**Вспомогательные методы BaseDetector:**
+- `self.log(message)` — отправляет лог с уровнем `CRITICAL`.
+- `self.trigger_response()` — обязательный вызов для активации коллбэков `IDS/IPS`.
+- `_get_all_input_values()` — глобальная функция модуля для извлечения всех входных данных.
+
+```python
+from AEngineApps.intrusions import BaseDetector, _get_all_input_values
+from flask import request
+from urllib.parse import unquote
+
+class MyCustomDetector(BaseDetector):
+    def run(self):
+        # Получаем GET, POST и JSON
+        for arg in _get_all_input_values():
+            if "bad_word" in unquote(arg).lower():
+                self.log(f"DETECTED BAD WORD: {request.full_path}")
+                self.trigger_response() # Активируем триггеры IDS/IPS
+```
+
+---
+
+## 📝 Анализатор логов (`logs.py`)
+
+### Инициализация
+Создает в проекте файл логирования:
 ```sh
-$ apm sec logs init
+apm sec logs init
 ```
 
-Скрипт, позволяющий инициализировать файл loggging в модуле AEngineApps.
-
-Должен запускаться в корневой директрии проекта.
-
-После выполнения создаёт в директории AEngineApps файл logging.py, который содержит класс Logger.
-
-#### Logger
-Logger - класс модуля AEngineApps.logging
-
-При инициализации требует объекта приложения AEngine
-
-Пример
-
-```py
+### Logger (Класс логирования)
+После инициализации, класс `Logger` автоматически настраивает базовое логирование для AEngine.
+```python
 from AEngineApps.app import App
 from AEngineApps.logging import Logger
 
@@ -52,155 +131,21 @@ app = App()
 logger = Logger(app)
 ```
 
-На этом этапе класс автоматически настраивает логирование приложения (только для формата web)
+### `apm sec logs analyze`
+Инструмент статического анализа. Парсит текстовые логи сервера и ищет в них паттерны успешных атак (SQLi, XSS, RCE, LFI) по сохранённым URL и телам запросов.
 
-### logs analyze
 ```sh
-$ apm sec logs analyze
+apm sec logs analyze
 ```
 
-Скрипт, позволяющий проанализировать логи приложения на наличие известных уязвимостей:
+Вы можете задать собственный формат парсинга логов с помощью флага `--template`:
 
-1) XSS
-2) RCE
-3) LFI
-4) SQL injection
-
-Запускать необходимо из корневой директории проекта.
-
-Чтобы указать свой формат логов используйте ключ --template, после чего укажите формат логов со всеми знаками.
-Переменные параметры:
-
-    Дата:
-        %{Y} - Год
-        %{m} - Месяц
-        %{D} - День
-
-    Время:
-        %{H} - Часы
-        %{M} - Минуты
-        %{S} - Секунды
-        %{MS} - Миллисекунды
-    
-    Запрос:
-        %{level} - Тип логов (Info, Warning, Critical и т.д.)
-        %{ip} - IP адрес
-        %{method} - HTTP метод
-        %{endpoint} - Путь запроса
-        %{proto} - Протокол запроса
-        %{code} - Код ответа
-
-Не забудте экранировать знаки, которые могут повлиять на работу скрипта (Например: ', ")
-
-
-## Модуль intrusion
 ```sh
-$ apm sec intrusion
-```
-> Позволяет интегрировать IDS/IPS в веб-приложение
-
-### intrusion init
-```sh
-$ apm sec intrusion init
-```
-Скрит, позволяющий инициализировать файл intrusions.py в модуле AEngineApps. 
-
-Должен запускаться в корневой директрии проекта.
-
-После выполнения создаёт в директории AEngineApps файл intrusions.py, который содержит классы IDS и IPS, а также классы детекторов.
-
-#### IDS
-IDS - класс модуля AEngineApps.intrusions, который позволяет определять попытки вторжения и выполнять действия при их обнаружение.
-
-Позволяет определять 4 известных типа атак:
-
-1) XSS
-2) RCE
-3) LFI
-4) SQL injection
-
-Чтобы добавить IDS в приложение:
-
-```py
-from AEngineApps.app import App
-from AEngineApps.intrusion import IDS, XSSDetector
-
-app = App()
-ids = IDS(app)
-ids.add_detector(XSSDetector)
-```
-На этом этапе добавляется IDS с единственным детектором XSSDetector
-
-Чтобы добавить действие при срабатывании:
-
-```py
-...
-
-def on_detection():
-    print("detected intrusion")
-
-ids.on_trigger(on_detection)
+apm sec logs analyze --template "[%{Y}-%{m}-%{D} %{H}:%{M}:%{S}] %{level} in %{ip}: %{method} %{endpoint}"
 ```
 
-#### IPS
-IPS - класс модуля AEngineApps.intrusions, который позволяет определять попытки вторжения и прерывать их при обнаружении.
-
-Позволяет определять 4 известных типа атак:
-
-1) XSS
-2) RCE
-3) LFI
-4) SQL injection
-
-Чтобы добавить IPS в приложение:
-
-```py
-from AEngineApps.app import App
-from AEngineApps.intrusion import IDS, XSSDetector
-
-app = App()
-ips = IPS(app)
-ips.add_detector(XSSDetector)
-```
-На этом этапе добавляется IPS с единственным детектором XSSDetector
-
-### Классы детекторов
-
-Доступные детекторы:
-
-> RCEDetector
-
-> LFIDetector
-
-> SQLiDetector
-
-> XSSDetector
-
-А также для создания собственных детекторов доступна абстракция:
-
-> BaseDetector
-
-Детектор должен наследоваться от BaseDetector и обязательно содержать в себе метод run. 
-
-Дополнительные методы:
-
-> detector.log(message) - отправка критического лога в приложение
-
-> detector.trigger_response() - метод, который выполняется при срабатывании детектора. Если нужно персональное поведение под каждый вид атаки - можно переопределить этот метод
-
-#### Пример
-
-```py
-from AEngineApps.intrusions import BaseDetector
-from urllib.parse import unquote
-
-class HWDetector(BaseDetector):
-    def run(self):
-        for arg in request.args.values():
-            if "hello world" in unquote(arg):
-                self.log(f"DETECTED HW: {request.full_path}")
-                self.trigger_response()
-
-    def trigger_response(self):
-        print("О боже, какой ужас")
-```
+**Доступные переменные парсера:**
+- Даты: `%{Y}`, `%{m}`, `%{D}`
+- Время: `%{H}`, `%{M}`, `%{S}`, `%{MS}`
+- Сеть: `%{ip}`, `%{method}`, `%{endpoint}`, `%{proto}`, `%{code}`
+- Уровни: `%{level}`

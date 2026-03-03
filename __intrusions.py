@@ -174,7 +174,7 @@ class RateLimiter:
         ip = request.remote_addr or "unknown"
         now = time.time()
         
-        # Убираем устаревшие записи
+        # Убираем устаревшие записи для текущего IP
         self._requests[ip] = [
             t for t in self._requests[ip] 
             if now - t < self.window
@@ -185,6 +185,13 @@ class RateLimiter:
             abort(429)
         
         self._requests[ip].append(now)
+
+        # Легковесная очистка словаря от старых IP (защита от утечек памяти)
+        if len(self._requests) > 1000:
+            for k in list(self._requests.keys()):
+                self._requests[k] = [t for t in self._requests[k] if now - t < self.window]
+                if not self._requests[k]:
+                    del self._requests[k]
 
 
 # ─── IDS ──────────────────────────────────────────────────────
