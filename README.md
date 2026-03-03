@@ -1,6 +1,6 @@
-# Модуль sec (AEngine v2.0)
+# Модуль sec (AEngine v2.2)
 
-Этот модуль содержит инструменты для обеспечения информационной безопасности приложений AEngineApps (IDS/IPS, Rate Limiting, Logging).
+Комплексный модуль информационной безопасности для AEngineApps. Включает защиту веб-приложения (IDS/IPS), защиту операционной системы, анализ сетевого трафика, кластеризацию и визуальный дашборд.
 
 ## 🚀 Установка
 
@@ -12,6 +12,11 @@ apm install https://github.com/aaalllexxx/sec
 Глобальная установка:
 ```sh
 apm install -g https://github.com/aaalllexxx/sec
+```
+
+Зависимости:
+```sh
+pip install psutil
 ```
 
 ---
@@ -152,93 +157,228 @@ apm sec logs analyze --template "[%{Y}-%{m}-%{D} %{H}:%{M}:%{S}] %{level} in %{i
 
 ---
 
-## 🛡️ Защита ОС и Сети (Новое в v2.1)
+## 🖥️ Защита ОС (`os_protect.py`)
 
-Модуль `sec` теперь также включает механизмы анти-DDoS и High Availability на уровне ОС. Для полноценной работы данных модулей требуется установленная бибилотека `psutil`.
+Кроссплатформенный контроль за потреблением ресурсов (CPU/RAM) и проверка привилегий. Использует `psutil`.
 
-### OS Protection (`os_protect.py`)
-Обеспечивает контроль за потреблением ресурсов (CPU/RAM) и запуск веб-сервиса с минимальными привилегиями.
-
-Вы можете интегрировать его **автоматически**, просто передав объект приложения `app`. Он повесит проверяющий хук, который будет выполняться в фоне:
-
+**Автоматический режим** — передайте `app`, защита включится сама:
 ```python
 from sec.os_protect import get_os_protection_module
-from AEngineApps.app import App
 
-app = App()
-
-# Мониторинг: предупреждение при 90% загрузке CPU или RAM.
-# Передача `app` автоматически активирует хук перед каждым запросом.
+# Автоматическая проверка перед каждым HTTP-запросом.
+# При перегрузке CPU/RAM сервер вернёт 503.
 os_protect = get_os_protection_module(app, max_cpu_percent=90.0, max_ram_percent=90.0)
 ```
 
-Отслеживание можно вызывать и в ручном режиме, не передавая `app`:
+**Ручной режим** — без привязки к приложению:
 ```python
+os_protect = get_os_protection_module()
 health = os_protect.run_health_check()
 
 if health["status"] == "danger":
-    print("КРИТИЧЕСКАЯ ОШИБКА: Сервер под DDoS (Аномальная загрузка)")
+    print("Сервер под нагрузкой!")
 ```
 
-### Анализ Сетевого Трафика (`net_analyzer.py`)
-Инструмент для выявления SYN Flood атак и подозрительной активности соединений на хосте.
+---
 
-Так же, как и OS Protection, работает автоматически при передаче `app`:
+## 🌐 Анализ сетевого трафика (`net_analyzer.py`)
 
+Выявление SYN Flood атак и подозрительных скоплений соединений с одного IP. Использует `psutil`.
+
+**Автоматический режим:**
 ```python
 from sec.net_analyzer import get_network_analyzer
 
-# Передача app автоматически запустит защиту от SYN-флуда в фоновом режиме перед каждым запросом
+# Автоматическая проверка SYN Flood перед каждым HTTP-запросом.
 net_analyzer = get_network_analyzer(app, max_syn_requests=100, max_connections_per_ip=50)
 ```
 
-Либо ручной запуск анализа:
+**Ручной режим:**
 ```python
-net_status = net_analyzer.run_analysis()
+net_analyzer = get_network_analyzer()
+result = net_analyzer.run_analysis()
 
-if net_status["syn_flood"]["status"] == "danger":
-    print("ВНИМАНИЕ: Обнаружена SYN Flood атака!")
+if result["syn_flood"]["status"] == "danger":
+    print("SYN Flood обнаружен!")
 ```
 
-### Кластеризация Active-Passive (`cluster.py`)
-Инструмент обеспечения отказоустойчивости. Позволяет запускать прозрачные "страхующие" (Slave) ноды. Они синхронизируют файлы проекта с основной (Master) нодой по запуску. Если Master падает (перестаёт отправлять Heartbeat), Slave автоматически становится Master'ом.
+---
+
+## 🔒 Продвинутая Защита Системы (`sys_protect.py`) — Новое в v2.2
+
+Единый модуль глубокого сканирования хоста. Подключается **одной строкой** и работает в фоне.
+
+### Что сканирует
+
+| Категория | Что проверяет | Примеры |
+|---|---|---|
+| **Процессы** | Поиск известных вредоносных программ | `xmrig`, `mimikatz`, `nmap`, `hydra`, `netcat` |
+| **Пути запуска** | Процессы из временных директорий | `/tmp/`, `/dev/shm/`, `%TEMP%`, `%APPDATA%` |
+| **Конфигурации** | Небезопасные настройки приложения | `debug=True`, слабый `secret_key`, CORS `*` |
+| **Привилегии** | Запуск от имени суперпользователя | root / Administrator |
+| **Пользователи** | Аномальные терминальные сессии | > 5 сессий, один юзер с разных хостов |
+| **Ресурсы** | Перегрузка хоста | CPU > 90%, RAM > 90%, Disk > 95% |
+
+### Подключение (одна строка)
+```python
+from sec.sys_protect import AdvancedSystemProtection
+
+# Всё! Фоновый сканер запустится автоматически.
+protection = AdvancedSystemProtection(app)
+```
+
+### Расширенная настройка
+```python
+protection = AdvancedSystemProtection(
+    app,
+    scan_interval=15,     # Сканировать каждые 15 секунд (по умолчанию 30)
+    max_cpu=85.0,         # Порог CPU
+    max_ram=85.0,         # Порог RAM
+    max_users=3,          # Максимум терминальных сессий
+)
+
+# Колбэк при обнаружении угрозы
+@protection.on_alert
+def handle_alert(report):
+    print(f"🚨 Обнаружено {len(report['alerts'])} угроз!")
+    for alert in report["alerts"]:
+        print(f"  - {alert}")
+```
+
+### Ручной запуск сканирования
+```python
+# Без привязки к приложению (без фонового потока)
+scanner = AdvancedSystemProtection(scan_interval=0, auto_start=False)
+report = scanner.scan()
+
+print(report["status"])       # "ok" | "danger"
+print(report["alerts"])       # Список строк-предупреждений
+print(report["processes"])    # Подозрительные процессы
+print(report["users"])        # Активные пользователи ОС
+print(report["config"])       # Проблемы конфигурации
+print(report["resources"])    # CPU/RAM/Disk
+```
+
+---
+
+## 🔄 Кластеризация
+
+### Active-Passive на разных серверах (`cluster.py`)
+
+Отказоустойчивость через Heartbeat (UDP) и автоматическую синхронизацию файлов проекта по TCP.
 
 ```python
 from sec.cluster import create_cluster_node
 
 def on_failover():
     print("Master нода упала! Запускаем резервное приложение...")
-    # Здесь вызывается app.run() резервного сервера
 
 node = create_cluster_node(
     node_id="slave_1",
     role="slave", 
-    master_ip="192.168.1.100", # IP активного сервера
+    master_ip="192.168.1.100",
     master_port=8888,
-    sync_dir="." # Откуда/куда копировать исходники
+    sync_dir="."
 )
 
 node.on_failover = on_failover
-node.start() # При старте сначала скачает актуальный код с Master
+node.start()
 ```
 
-### Админ-Панель Безопасности (`dashboard.py`)
-Микросервис-дашборд для визуального мониторинга здоровья ОС, сети и просмотра логов `sec_logs.txt`. Защищен сессионной авторизацией.
+### Локальный кластер на одном сервере (`auto_cluster.py`) — Новое в v2.2
 
-Для интеграции достаточно подключить его в папку `services` (для автоопределения AEngineApps) или зарегистрировать вручную:
+Запускает несколько копий приложения на разных портах через `multiprocessing`. Первый порт = Master, остальные = Slave. При падении Master'а автоматический failover.
 
+```python
+from sec.auto_cluster import LocalCluster
+
+app = ShowcaseApp()
+
+# Вместо app.run() — запускаем кластер:
+cluster = LocalCluster(app, ports=[5000, 5001, 5002])
+cluster.run()
+```
+
+**Что происходит:**
+1. Порт `5000` — Master (Active), обрабатывает трафик.
+2. Порты `5001`, `5002` — Slave (Passive), горячий резерв.
+3. Watchdog мониторит все ноды.
+4. Если Master падает — первый живой Slave автоматически становится Master.
+5. Упавшие Slave-ноды автоматически перезапускаются.
+
+```python
+# Получить текущее состояние кластера:
+status = cluster.get_status()
+print(status["master_port"])  # 5000
+print(status["alive"])        # 3
+```
+
+---
+
+## 📊 Админ-Панель Безопасности (`dashboard.py`)
+
+Микросервис-дашборд с сессионной авторизацией. Визуально отображает здоровье ОС, сети, логи инцидентов и позволяет запускать сканирование в интерактивном режиме.
+
+### Подключение
 ```python
 from sec.dashboard import SecDashboardService
 
-# Инициализируем панель с кастомными учетными данными и URL:
-admin_dashboard = SecDashboardService(
-    prefix="/admin", 
-    admin_login="superadmin", 
-    admin_pass="strongpass"
+admin = SecDashboardService(
+    prefix="/admin",           # URL-адрес панели
+    admin_login="superadmin",  # Логин
+    admin_pass="strongpass"    # Пароль
 )
 
-# Если используете AEngineApps/App:
-app.register_service(admin_dashboard)
+# Регистрация в приложении:
+app.register_service(admin)
 ```
 
-После запуска перейдите по адресу `http://localhost:5000/admin`, чтобы попасть в защищенный дашборд.
+После запуска: `http://localhost:5000/admin`
+
+### Возможности дашборда
+
+| Кнопка | API | Описание |
+|---|---|---|
+| **Запустить сканирование** | `GET /admin/api/scan` | CPU, RAM, SYN Flood, соединения |
+| **Обновить логи** | `GET /admin/api/logs` | Последние 50 записей из `sec_logs.txt` |
+| **Глубокое сканирование** | `GET /admin/api/sys_scan` | Процессы, пользователи, конфигурации |
+
+---
+
+## 🧩 Полный пример интеграции
+
+```python
+from AEngineApps.app import App
+from AEngineApps.intrusions import IPS, SQLiDetector, XSSDetector, RateLimiter
+from sec.os_protect import get_os_protection_module
+from sec.net_analyzer import get_network_analyzer
+from sec.sys_protect import AdvancedSystemProtection
+from sec.dashboard import SecDashboardService
+
+app = App("MySecureApp")
+
+# 1. Ограничение запросов (анти-DDoS L7)
+RateLimiter(app, max_requests=100, window=60)
+
+# 2. Предотвращение вторжений (IPS)
+ips = IPS(app)
+ips.add_detector(SQLiDetector)
+ips.add_detector(XSSDetector)
+
+# 3. Защита ОС (автоматический хук)
+get_os_protection_module(app)
+
+# 4. Анализ сети (автоматический хук)
+get_network_analyzer(app)
+
+# 5. Глубокая защита системы (фоновый сканер)
+AdvancedSystemProtection(app)
+
+# 6. Админ-панель
+admin = SecDashboardService(prefix="/admin", admin_login="admin", admin_pass="password")
+app.register_service(admin)
+
+app.run()
+```
+
+**Результат:** Приложение автоматически защищено на уровнях L3-L7 + хоста, с визуальным мониторингом по адресу `/admin`.

@@ -5,6 +5,7 @@ import os
 from flask import session, redirect, url_for, render_template_string
 from sec.os_protect import get_os_protection_module
 from sec.net_analyzer import get_network_analyzer
+from sec.sys_protect import AdvancedSystemProtection
 
 class SecDashboardService(Service):
     """
@@ -104,11 +105,23 @@ class SecDashboardService(Service):
                         
                 return {"logs": logs}
 
+        class SysProtectScanAPI(API):
+            """Полное сканирование системы (processes, users, config)"""
+            service = self
+            methods = ["GET"]
+            
+            def get(self):
+                if not session.get("sec_admin_logged_in"):
+                    return {"error": "Unauthorized"}, 401
+                scanner = AdvancedSystemProtection(scan_interval=0, auto_start=False)
+                return scanner.scan()
+
         self.add_screen("/login", LoginScreen)
         self.add_screen("/dashboard", DashboardScreen)
         self.add_screen("/logout", LogoutAPI)
         self.add_screen("/api/scan", ScanAPI)
         self.add_screen("/api/logs", LogReaderAPI)
+        self.add_screen("/api/sys_scan", SysProtectScanAPI)
         
         # Редирект с корня сервиса на дашборд
         @self.blueprint.route("/")
@@ -198,6 +211,15 @@ class SecDashboardService(Service):
                         <p>Загрузка последних инцидентов из <code>sec_logs.txt</code></p>
                         <button class="scan-btn" onclick="loadLogs()" style="background: #4f46e5;">Обновить логи</button>
                     </div>
+                    
+                    <div class="card" style="grid-column: span 2;">
+                        <h3>Глубокое сканирование системы (Processes / Users / Config)</h3>
+                        <p>Сканирует запущенные процессы, перегрузки, подозрительных пользователей ОС и небезопасные конфигурации.</p>
+                        <button class="scan-btn" onclick="deepScan()" style="background: #dc2626;">Глубокое сканирование</button>
+                        <div id="deep-scan-results" style="margin-top: 1rem; display: none;">
+                            <pre id="deep-scan-json"></pre>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="card" style="grid-column: span 2;">
@@ -266,6 +288,24 @@ class SecDashboardService(Service):
                     } catch (e) {
                         alert("Ошибка загрузки логов: " + e);
                     }
+                }
+                
+                async function deepScan() {
+                    const btn = document.querySelectorAll('.scan-btn')[2];
+                    btn.innerText = "Сканирование...";
+                    btn.disabled = true;
+                    
+                    try {
+                        const res = await fetch(API_BASE + '/api/sys_scan');
+                        const data = await res.json();
+                        document.getElementById('deep-scan-results').style.display = 'block';
+                        document.getElementById('deep-scan-json').innerText = JSON.stringify(data, null, 2);
+                    } catch (e) {
+                        alert("Ошибка глубокого сканирования: " + e);
+                    }
+                    
+                    btn.innerText = "Глубокое сканирование";
+                    btn.disabled = false;
                 }
             </script>
         </body>
