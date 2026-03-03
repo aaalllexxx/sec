@@ -1,5 +1,17 @@
 # Changelog (sec)
 
+## [2.4.0] - 2026-03-03
+### Added
+- **Major Dashboard Overhaul**: Switched to a premium sidebar-based layout with deep Glassmorphism effects.
+- **Protection Gauge**: Integrated a real-time SVG health gauge on the Overview page.
+- **Interactive Metrics**: Added tooltips and trend indicators for CPU, RAM, and Security status.
+- **Global Settings**: Refresh rate control is now persistent in the sidebar.
+
+### Fixed
+- **Dashboard Freeze**: Fixed critical JavaScript error when accessing Network API properties (`TypeError: data.network.issues`).
+- **Data Robustness**: Added defensive checks for all API responses to ensure UI stability.
+- **Scanner UI**: Fixed broken property access in "Deep Scan" results visualization.
+
 ## [2.3.0] - 2026-03-03
 ### Added
 - **Credentials Management**: `apm sec init` now prompts for `admin_login` and `admin_password`.
