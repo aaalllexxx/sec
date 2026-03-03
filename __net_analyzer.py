@@ -70,9 +70,8 @@ class NetworkAnalyzer:
             # Мониторим только активные TCP соединения
             if conn.status == psutil.CONN_ESTABLISHED and conn.raddr:
                 remote_ip = conn.raddr.ip
-                # Игнорируем локальные коннекты для тестов (в проде стоит аккуратнее фильтровать)
-                if remote_ip not in ["127.0.0.1", "::1"]:
-                    ip_counts[remote_ip] += 1
+                # Включаем мониторинг локальных соединений для возможности тестирования
+                ip_counts[remote_ip] += 1
         
         abnormal_ips = {}
         for ip, count in ip_counts.items():
