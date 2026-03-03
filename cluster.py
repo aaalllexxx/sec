@@ -172,3 +172,6 @@ class ClusterNode:
 
     def stop(self):
         self.running = False
+
+
+__all__ = ['ClusterAdmin']

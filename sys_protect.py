@@ -42,6 +42,7 @@ WEAK_SECRET_KEYS = [
     "12345", "admin", "key", "supersecretkey", "flask_secret",
 ]
 
+
 # ─────────── Утилиты заголовков безопасности ───────────
 
 def enable_cors(app, origins: str = "*", methods: str = "GET,POST,PUT,DELETE,OPTIONS",
@@ -460,3 +461,6 @@ class AdvancedSystemProtection:
 
 
 __all__ = ["AdvancedSystemProtection"]
+
+
+__all__ = ['AdvancedSystemProtection', 'enable_cors', 'enable_csp']

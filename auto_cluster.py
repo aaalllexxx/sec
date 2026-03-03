@@ -193,3 +193,6 @@ class LocalCluster:
         # Перезапускаем упавшую ноду как Slave
         self._roles[dead_master_port] = "slave"
         self._start_node(dead_master_port)
+
+
+__all__ = ['LocalCluster']
