@@ -90,14 +90,41 @@ def _merge_sources(sources: list) -> str:
 def _setup_credentials(base_dir):
     """Запрашивает логин/пароль и создает AEngineApps/sec_config.py"""
     print("\n[bold yellow]🔐 Настройка учетных данных администратора безопасности[/bold yellow]")
-    login = Prompt.ask("Введите логиn админа", default="admin")
-    password = Prompt.ask("Введите пароль админа", default="admin", password=True)
+    login = Prompt.ask("Введите логин админа", default="admin")
+    
+    # Ввод пароля со звездочками
+    print("Введите пароль админа: ", end="", flush=True)
+    password = ""
+    try:
+        import msvcrt
+        while True:
+            ch = msvcrt.getch()
+            if ch in (b'\r', b'\n'):
+                print()
+                break
+            if ch == b'\x08': # backspace
+                if len(password) > 0:
+                    password = password[:-1]
+                    print('\b \b', end='', flush=True)
+            else:
+                try:
+                    char = ch.decode('utf-8')
+                    password += char
+                    print('*', end='', flush=True)
+                except: pass
+    except (ImportError, Exception):
+        # Fallback если msvcrt недоступен (например на Linux)
+        password = Prompt.ask("", password=True)
+    
+    if not password:
+        password = "admin"
     
     config_content = f"""# Автоматически сгенерированный конфиг безопасности sec
 ADMIN_LOGIN = "{login}"
 ADMIN_PASS = "{password}"
 """
     config_path = os.path.join(base_dir, "AEngineApps", "sec_config.py")
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
     with open(config_path, "w", encoding="utf-8") as f:
         f.write(config_content)
     print(f"  [green]✓[/green] Конфигурация сохранена в {config_path}")
@@ -129,8 +156,7 @@ def _install_module(base_dir, name: str) -> bool:
 
     target_dir = os.path.dirname(target_path)
     if target_dir and not os.path.exists(target_dir):
-        print(f"  [yellow]![/yellow] Директория {target_dir} не найдена, пропускаем {name}")
-        return False
+        os.makedirs(target_dir, exist_ok=True)
 
     merged = _merge_sources(info["sources"])
     if not merged.strip():
