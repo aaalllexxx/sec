@@ -868,6 +868,12 @@
             `).join('');
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         async function loadLogs() {
             try {
                 const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_logs') }}");
@@ -881,7 +887,7 @@
                     let badge = "bg-ok";
                     if (log.level.includes("CRITICAL")) badge = "bg-danger";
                     else if (log.level.includes("WARNING")) badge = "bg-warning";
-                    return `<tr><td>${log.timestamp}</td><td><span class="status-badge ${badge}">${log.level}</span></td><td style="font-family:monospace; font-size:0.85rem;">${log.message}</td></tr>`;
+                    return `<tr><td>${log.timestamp}</td><td><span class="status-badge ${badge}">${log.level}</span></td><td style="font-family:monospace; font-size:0.85rem;">${escapeHtml(log.message)}</td></tr>`;
                 }).join('');
             } catch (e) { }
         }

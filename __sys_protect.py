@@ -42,6 +42,23 @@ WEAK_SECRET_KEYS = [
     "12345", "admin", "key", "supersecretkey", "flask_secret",
 ]
 
+# Топ-120+ самых распространенных слабых паролей для аудита
+COMMON_PASSWORDS = [
+    "123456", "password", "123456789", "12345678", "12345", "qwerty", "1234567890", "1234", "111111", 
+    "123123", "1234567", "654321", "p@ssword", "admin", "admin123", "root", "guest", "user", "login",
+    "letmein", "password123", "football", "dragon", "monkey", "shadow", "master", "superman", "batman",
+    "iloveyou", "princess", "sunshine", "welcome", "abc123", "password1", "secret", "666666", "888888",
+    "999999", "000000", "777777", "555555", "444444", "333333", "222222", "121212", "search", "google",
+    "youtube", "facebook", "twitter", "instagram", "tiktok", "netflix", "disney", "marvel", "starwars",
+    "minecraft", "roblox", "fortnite", "pokemon", "nintendo", "xbox", "playstation", "apple", "iphone",
+    "samsung", "android", "microsoft", "windows", "linux", "ubuntu", "chrome", "firefox", "safari",
+    "opera", "internet", "network", "server", "database", "system", "security", "hacker", "hacking",
+    "cyber", "expert", "pro", "master", "elite", "god", "boss", "king", "queen", "prince", "lord",
+    "knight", "warrior", "ninja", "samurai", "hero", "legend", "myth", "magic", "spirit", "ghost",
+    "alien", "zombie", "vampire", "werewolf", "dragon", "phoenix", "tiger", "lion", "eagle", "wolf",
+    "bear", "shark", "whale", "dolphin", "panda", "koala", "penguin", "monkey", "elephant", "giraffe"
+]
+
 
 class AdvancedSystemProtection:
     """
@@ -124,11 +141,13 @@ class AdvancedSystemProtection:
             "resources": self._check_resources(),
             "processes": self._scan_processes(),
             "users": self._check_users(),
+            "accounts": self._check_user_accounts(),
+            "stored_xss": self._check_stored_xss(),
             "config": self._check_app_config(self.app) if self.app else {"status": "skipped"},
         }
 
         # Собираем все алерты
-        for section in ["resources", "processes", "users", "config"]:
+        for section in ["resources", "processes", "users", "accounts", "stored_xss", "config"]:
             data = report[section]
             if isinstance(data, dict) and data.get("alerts"):
                 report["alerts"].extend(data["alerts"])
@@ -314,10 +333,102 @@ class AdvancedSystemProtection:
         if is_admin:
             alerts.append("Приложение запущено с правами Administrator/root!")
 
+        # Глубокий аудит Flask config (Session security)
+        if hasattr(app, "flask"):
+            f_conf = app.flask.config
+            
+            # HttpOnly
+            if not f_conf.get("SESSION_COOKIE_HTTPONLY", True):
+                warnings.append("Флаг SESSION_COOKIE_HTTPONLY отключен! Это увеличивает риск XSS-кражи сессий.")
+            
+            # Secure (только HTTPS)
+            if not f_conf.get("SESSION_COOKIE_SECURE", False):
+                warnings.append("Флаг SESSION_COOKIE_SECURE отключен! Сессии будут передаваться по HTTP в открытом виде.")
+            
+            # SameSite
+            if f_conf.get("SESSION_COOKIE_SAMESITE") is None:
+                warnings.append("Флаг SESSION_COOKIE_SAMESITE не установлен. Рекомендуется 'Lax' или 'Strict'.")
+            
+            # Permanent Session
+            if not f_conf.get("SESSION_REFRESH_EACH_REQUEST", True):
+                warnings.append("Агрессивное продление сессий отключено (SESSION_REFRESH_EACH_REQUEST=False).")
+
         all_issues = alerts + warnings
         return {
             "status": "danger" if alerts else ("warning" if warnings else "ok"),
             "alerts": all_issues,
             "debug_mode": debug,
             "is_admin": is_admin,
+            "flask_security_score": 100 - (len(warnings) * 15) - (len(alerts) * 40)
         }
+
+    def _check_user_accounts(self) -> dict:
+        """Аудит учетных записей пользователей на предмет слабых паролей."""
+        from AEngineApps.global_storage import GlobalStorage
+        storage = GlobalStorage()
+        db = storage.get("db")
+        
+        alerts = []
+        weak_count = 0
+        
+        if db and hasattr(db, "dictionary"):
+            users = db.dictionary.get("users", [])
+            for user in users:
+                pwd = str(user.get("password", "")).lower()
+                if not pwd:
+                    continue
+                
+                # Проверка по списку
+                if pwd in COMMON_PASSWORDS:
+                    alerts.append(f"Обнаружен пользователь со слабым паролем: '{user.get('username', 'Unknown')}'")
+                    weak_count += 1
+                elif len(pwd) < 6:
+                    alerts.append(f"Слишком короткий пароль у пользователя: '{user.get('username', 'Unknown')}'")
+                    weak_count += 1
+        
+        return {
+            "status": "danger" if alerts else "ok",
+            "weak_passwords_found": weak_count,
+            "alerts": alerts
+        }
+
+    def _check_stored_xss(self) -> dict:
+        """Сканирование GlobalStorage на наличие внедрённых XSS-скриптов."""
+        from AEngineApps.global_storage import GlobalStorage
+        import re
+        
+        storage = GlobalStorage()
+        db = storage.get("db")
+        
+        alerts = []
+        # Паттерны для поиска XSS (упрощенная версия из intrusions.py)
+        xss_patterns = [
+            r"<script.*?>", r"javascript:", r"onerror=", r"onload=", 
+            r"onclick=", r"eval\(", r"alert\("
+        ]
+        regex = re.compile("|".join(xss_patterns), re.I)
+        
+        def scan_recursive(data, path=""):
+            found = []
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    found.extend(scan_recursive(v, f"{path}.{k}" if path else k))
+            elif isinstance(data, list):
+                for i, v in enumerate(data):
+                    found.extend(scan_recursive(v, f"{path}[{i}]"))
+            elif isinstance(data, str):
+                if regex.search(data):
+                    found.append(f"Обнаружена подозрительная строка в поле '{path}': {data[:50]}")
+            return found
+
+        if db and hasattr(db, "dictionary"):
+            alerts = scan_recursive(db.dictionary)
+        
+        return {
+            "status": "danger" if alerts else "ok",
+            "xss_payloads_found": len(alerts),
+            "alerts": alerts
+        }
+
+
+__all__ = ["AdvancedSystemProtection"]

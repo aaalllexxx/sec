@@ -54,6 +54,40 @@ def _flatten_json(data, prefix: str = "") -> list[str]:
     return values
 
 
+def _get_request_full_data() -> str:
+    """Извлекает АБСОЛЮТНО ВСЕ данные запроса для полнотекстового анализа.
+    
+    Включает:
+    - Полный путь и параметры (Full Path)
+    - Все заголовки (Headers)
+    - Тело запроса (Raw Body)
+    """
+    parts = []
+    
+    # 1. Путь и Query String
+    parts.append(f"PATH: {request.full_path}")
+    
+    # 2. Заголовки (Headers)
+    header_str = "\n".join([f"{k}: {v}" for k, v in request.headers.items()])
+    parts.append(f"HEADERS:\n{header_str}")
+    
+    # 3. Тело (Body)
+    if request.is_json:
+        parts.append(f"BODY (JSON): {request.get_data(as_text=True)}")
+    elif request.form:
+        parts.append(f"BODY (FORM): {request.get_data(as_text=True)}")
+    else:
+        # Пытаемся взять сырые данные, если они есть
+        try:
+            raw = request.get_data(as_text=True)
+            if raw:
+                parts.append(f"BODY (RAW): {raw}")
+        except:
+            pass
+            
+    return "\n---\n".join(parts)
+
+
 # ─── Абстрактный детектор ─────────────────────────────────────
 
 class BaseDetector(ABC):
@@ -82,13 +116,15 @@ class RCEDetector(BaseDetector):
     dangerous = ["echo", "eval", "exec", "system", "popen", "subprocess"]
 
     def run(self) -> None:
-        for arg in _get_all_input_values():
-            decoded = unquote(arg)
-            for el in decoded.split():
-                if shutil.which(el) or el.lower() in self.dangerous:
-                    self.log(f"DETECTED RCE: {request.method} {request.full_path} | input: {decoded[:100]}")
-                    self.trigger_response()
-                    return
+        full_data = _get_request_full_data()
+        decoded = unquote(full_data)
+        
+        # Проверка по списку опасных команд
+        for el in decoded.lower().split():
+            if el in self.dangerous or shutil.which(el):
+                self.log(f"DETECTED RCE: {request.method} {request.path} | payload found in stream")
+                self.trigger_response()
+                return
 
 
 class LFIDetector(BaseDetector):
@@ -100,10 +136,18 @@ class LFIDetector(BaseDetector):
     )
     
     def run(self) -> None:
+        full_data = _get_request_full_data()
+        decoded = unquote(full_data)
+        
+        if self.patterns.search(decoded):
+            self.log(f"DETECTED LFI/RFI: {request.method} {request.path} | payload found in stream")
+            self.trigger_response()
+            return
+            
+        # Дополнительная проверка на существование путей (для тех, что в параметрах)
         for arg in _get_all_input_values():
-            decoded = unquote(arg)
-            if self.patterns.search(decoded) or os.path.exists(decoded):
-                self.log(f"DETECTED LFI/RFI: {request.method} {request.full_path} | input: {decoded[:100]}")
+            if os.path.exists(unquote(arg)) and len(arg) > 3:
+                self.log(f"DETECTED LFI (path exists): {request.method} {request.path} | path: {arg[:50]}")
                 self.trigger_response()
                 return
 
@@ -118,18 +162,26 @@ class SQLiDetector(BaseDetector):
     special = {"--", "/*", "*/", "#", ";"}
 
     def run(self) -> None:
-        for arg in _get_all_input_values():
-            upper = unquote(arg).upper()
-            # Проверяем SQL ключевые слова
-            words = re.split(r"[\W_]+", upper)
-            words = [w for w in words if w]
-            if any(w in self.dangerous for w in words):
-                self.log(f"DETECTED SQLi: {request.method} {request.full_path} | input: {arg[:100]}")
-                self.trigger_response()
-                return
-            # Проверяем спецсимволы
-            if any(s in upper for s in self.special) or upper.startswith("'") or upper.startswith('"'):
-                self.log(f"DETECTED SQLi: {request.method} {request.full_path} | input: {arg[:100]}")
+        full_data = _get_request_full_data()
+        upper = unquote(full_data).upper()
+        
+        # Проверяем SQL ключевые слова
+        words = re.split(r"[\W_]+", upper)
+        words = [w for w in words if w]
+        if any(w in self.dangerous for w in words):
+            self.log(f"DETECTED SQLi: {request.method} {request.path} | payload found in stream")
+            self.trigger_response()
+            return
+
+        # Проверяем спецсимволы
+        if any(s in upper for s in self.special):
+            # Исключаем ложное срабатывание на точку с запятой в User-Agent
+            ua = request.headers.get("User-Agent", "").upper()
+            if ";" in upper and ";" in ua and upper.count(";") == ua.count(";") and all(s not in upper.replace(ua, "") for s in self.special):
+                 # Если точка с запятой только в UA и больше ничего нет - это не атака
+                 pass
+            else:
+                self.log(f"DETECTED SQLi: {request.method} {request.path} | special chars found in stream")
                 self.trigger_response()
                 return
 
@@ -143,14 +195,65 @@ class XSSDetector(BaseDetector):
     ]
 
     def run(self) -> None:
-        for arg in _get_all_input_values():
-            decoded = unquote(arg).lower()
-            if len(decoded) > 1:
-                matches = sum(1 for ch in self.patterns if ch in decoded)
-                if matches >= 1:
-                    self.log(f"DETECTED XSS: {request.method} {request.full_path} | input: {decoded[:100]}")
+        full_data = _get_request_full_data()
+        decoded = unquote(full_data).lower()
+        
+        if len(decoded) > 5:
+            matches = sum(1 for ch in self.patterns if ch in decoded)
+            if matches >= 1:
+                # Пытаемся вычленить что именно нашли (для лога)
+                found = [p for p in self.patterns if p in decoded]
+                self.log(f"DETECTED XSS: {request.method} {request.path} | patterns: {found}")
+                self.trigger_response()
+                return
+
+
+class SignatureDetector(BaseDetector):
+    """Сигнатурный анализ: поиск известных CVE и паттернов атак."""
+    
+    signatures = {
+        "Log4Shell (CVE-2021-44228)": re.compile(r"\$\{jndi:(ldap|rmi|ldaps|dns):", re.I),
+        "Spring4Shell (CVE-2022-22965)": re.compile(r"class\.module\.classLoader\.(resources|urls)", re.I),
+        "Shellshock (CVE-2014-6271)": re.compile(r"\(\)\s*\{\s*[:;]\s*\}\s*;", re.I),
+        "Struts2 RCE (S2-045)": re.compile(r"%\{\(#[^}]+\)\.?(stack\.findValue|java\.lang\.Runtime)", re.I),
+        "PHP Serialization Exploit": re.compile(r"O:\d+:\"[^\"]+\":\d+:\{", re.I),
+        "Generic Web Shell": re.compile(r"(passthru|shell_exec|system|phpinfo|base64_decode)\s*\(", re.I),
+    }
+
+    def run(self) -> None:
+        full_data = _get_request_full_data()
+        decoded = unquote(full_data)
+        
+        for name, pattern in self.signatures.items():
+            if pattern.search(decoded):
+                self.log(f"DETECTED SIGNATURE: {name} | {request.method} {request.path}")
+                self.trigger_response()
+                return
+
+
+class RuleDetector(BaseDetector):
+    """Анализ на основе правил (Rule-based Analysis)."""
+    
+    rules = [] # Список функций-правил или объектов
+
+    def add_rule(self, condition_fn, action_msg="Rule Triggered"):
+        self.rules.append((condition_fn, action_msg))
+
+    def run(self) -> None:
+        # Пример дефолтного правила: блокировка curl (если нужно)
+        # if "curl" in request.headers.get("User-Agent", "").lower():
+        #     self.log("BLOCK RULE: curl access denied")
+        #     self.trigger_response()
+        #     return
+
+        for condition, msg in self.rules:
+            try:
+                if condition(request):
+                    self.log(f"BLOCK RULE: {msg} | {request.method} {request.path}")
                     self.trigger_response()
                     return
+            except Exception as e:
+                pass
 
 
 # ─── Rate Limiter ─────────────────────────────────────────────
@@ -254,7 +357,20 @@ class IPS(IDS):
     def __init__(self, app):
         super().__init__(app)
         self.on_trigger(self.block_request)
+        
+        # Регистрация стандартных детекторов по умолчанию
+        self.add_detector(SQLiDetector)
+        self.add_detector(XSSDetector)
+        self.add_detector(LFIDetector)
+        self.add_detector(RCEDetector)
+        self.add_detector(SignatureDetector)
+        self.add_detector(RuleDetector)
 
     def block_request(self) -> None:
         self.app.logger.info(f"BLOCKED: {request.remote_addr} {request.method} {request.full_path}")
         abort(400)
+__all__ = [
+    "IDS", "IPS", "BaseDetector", 
+    "SQLiDetector", "XSSDetector", "LFIDetector", "RCEDetector",
+    "SignatureDetector", "RuleDetector", "RateLimiter"
+]
