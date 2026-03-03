@@ -2,6 +2,7 @@ from rich import print
 from rich.prompt import Prompt
 import os
 import shutil
+import sys
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
 
@@ -100,17 +101,21 @@ def _setup_credentials(base_dir):
         while True:
             ch = msvcrt.getch()
             if ch in (b'\r', b'\n'):
-                print()
+                sys.stdout.write('\n')
+                sys.stdout.flush()
                 break
-            if ch == b'\x08': # backspace
+            if ch in (b'\x08', b'\x7f'): # backspace variants
                 if len(password) > 0:
                     password = password[:-1]
-                    print('\b \b', end='', flush=True)
+                    sys.stdout.write('\b \b')
+                    sys.stdout.flush()
             else:
                 try:
                     char = ch.decode('utf-8')
-                    password += char
-                    print('*', end='', flush=True)
+                    if char.isprintable():
+                        password += char
+                        sys.stdout.write('*')
+                        sys.stdout.flush()
                 except: pass
     except (ImportError, Exception):
         # Fallback если msvcrt недоступен (например на Linux)
