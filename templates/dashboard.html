@@ -224,6 +224,39 @@
             cursor: not-allowed;
         }
 
+        /* Controls */
+        .control-group {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .select-input {
+            background: var(--bg-deep);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            width: 100%;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .select-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
         /* Status Blocks */
         .status-block {
             background: rgba(15, 23, 42, 0.4);
@@ -349,7 +382,7 @@
         <h1>🛡️ <span>SEC</span> ADMIN PORTAL</h1>
         <div style="display:flex; align-items:center; gap: 2rem;">
             <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; align-items:center;">
-                <span class="live-indicator"></span> LIVE UPDATING
+                <span id="live-dot" class="live-indicator"></span> <span id="live-text">LIVE UPDATING (5s)</span>
             </div>
             <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}" class="logout-btn">ВЫЙТИ</a>
         </div>
@@ -391,8 +424,16 @@
                     <div style="height: 250px; margin-bottom: 1rem;">
                         <canvas id="sysChart"></canvas>
                     </div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Обновление каждые 5
-                        секунд</div>
+                    <div class="control-group">
+                        <label class="control-label">ЧАСТОТА ОБНОВЛЕНИЯ</label>
+                        <select id="refresh-rate" class="select-input" onchange="changeRefreshRate()">
+                            <option value="2000">Быстро (2 сек)</option>
+                            <option value="5000" selected>Нормально (5 сек)</option>
+                            <option value="10000">Медленно (10 сек)</option>
+                            <option value="30000">Редко (30 сек)</option>
+                            <option value="0">Отключить</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="glass-panel card">
                     <h3>🛡️ Статус безопасности</h3>
@@ -451,8 +492,8 @@
                 <div id="system-results-grid" class="grid"
                     style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
                     <!-- Cards will be injected here -->
-                    <div style="grid-column: 1/-1; text-align:center; padding: 4rem; color: var(--text-muted);">Введите
-                        запуск для получения данных о процессах и пользователях.</div>
+                    <div style="grid-column: 1/-1; text-align:center; padding: 4rem; color: var(--text-muted);">Нажните
+                        кнопку запуска для получения данных о процессах и пользователях.</div>
                 </div>
             </div>
         </div>
@@ -482,11 +523,15 @@
     </div>
 
     <script>
+        let scanIntervalId = null;
+        let logsIntervalId = null;
+        let currentIntervalMs = 5000;
+
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-trigger').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            if (event) event.currentTarget.classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
         }
 
         const ctx = document.getElementById('sysChart').getContext('2d');
@@ -617,17 +662,24 @@
             container.innerHTML = '';
 
             // User Card
-            const userCard = createScanCard("👥 Пользователи", `Обнаружено: ${data.users.length}`, data.users.join(', '));
+            const userData = (data.users && data.users.users) ? data.users.users : [];
+            const userNames = userData.map(u => u.name);
+            const userCard = createScanCard("👥 Пользователи", `Обнаружено: ${userNames.length}`, userNames.length ? userNames.join(', ') : "Нет активных сессий");
             container.appendChild(userCard);
 
             // Processes Card
-            const procCard = createScanCard("⚙️ Критические процессы", `Всего: ${data.processes.length}`, data.processes.map(p => `PID ${p.pid}: ${p.name}`).slice(0, 5).join('<br>') + (data.processes.length > 5 ? '<br>...' : ''));
+            const procData = (data.processes && data.processes.details) ? data.processes.details : [];
+            const procCard = createScanCard("⚙️ Подозрительные процессы", `Всего: ${procData.length}`, procData.length ? procData.map(p => `PID ${p.pid}: ${p.name}`).slice(0, 5).join('<br>') + (procData.length > 5 ? '<br>...' : '') : "Угроз в процессах не обнаружено");
             container.appendChild(procCard);
 
             // Config Card
-            const issuesCount = data.config_issues.length;
-            const configCard = createScanCard("🛠️ Конфигурация", issuesCount === 0 ? "Уязвимостей нет" : `Внимание: ${issuesCount}`, data.config_issues.length ? data.config_issues.join('<br>') : "Проверка безопасности приложения пройдена.");
-            if (issuesCount) configCard.querySelector('.status-badge').className = 'status-badge bg-warning';
+            const configAlerts = (data.config && data.config.alerts) ? data.config.alerts : [];
+            const issuesCount = configAlerts.length;
+            const configCard = createScanCard("🛠️ Конфигурация", issuesCount === 0 ? "Уязвимостей нет" : `Внимание: ${issuesCount}`, issuesCount ? configAlerts.join('<br>') : "Проверка безопасности приложения пройдена.");
+            if (issuesCount) {
+                const badge = configCard.querySelector('.status-badge');
+                if (badge) badge.className = 'status-badge bg-warning';
+            }
             container.appendChild(configCard);
         }
 
@@ -645,9 +697,41 @@
             return div;
         }
 
-        setInterval(runScan, 5000);
-        setInterval(loadLogs, 10000);
-        window.onload = () => { runScan(); loadLogs(); };
+        function startIntervals(ms) {
+            stopIntervals();
+            if (ms === 0) {
+                document.getElementById('live-dot').style.background = '#64748b';
+                document.getElementById('live-dot').style.boxShadow = 'none';
+                document.getElementById('live-dot').style.animation = 'none';
+                document.getElementById('live-text').innerText = 'PAUSED';
+                return;
+            }
+
+            document.getElementById('live-dot').style.background = 'var(--accent-emerald)';
+            document.getElementById('live-dot').style.boxShadow = '0 0 8px var(--accent-emerald)';
+            document.getElementById('live-dot').style.animation = 'pulse 2s infinite';
+            document.getElementById('live-text').innerText = `LIVE UPDATING (${ms / 1000}s)`;
+
+            scanIntervalId = setInterval(runScan, ms);
+            logsIntervalId = setInterval(loadLogs, ms * 2);
+        }
+
+        function stopIntervals() {
+            if (scanIntervalId) clearInterval(scanIntervalId);
+            if (logsIntervalId) clearInterval(logsIntervalId);
+        }
+
+        function changeRefreshRate() {
+            const val = parseInt(document.getElementById('refresh-rate').value);
+            currentIntervalMs = val;
+            startIntervals(val);
+        }
+
+        window.onload = () => {
+            runScan();
+            loadLogs();
+            startIntervals(currentIntervalMs);
+        };
     </script>
 </body>
 
