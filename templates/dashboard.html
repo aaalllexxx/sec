@@ -77,12 +77,10 @@
             font-weight: 600;
             font-size: 0.9rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
         }
 
         .logout-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(244, 63, 94, 0.4);
             filter: brightness(1.1);
         }
 
@@ -215,34 +213,43 @@
             gap: 0.5rem;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: scale(1.02);
             filter: brightness(1.1);
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        .btn-secondary {
-            background: rgba(148, 163, 184, 0.2);
-            color: var(--text-main);
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status Blocks */
+        .status-block {
+            background: rgba(15, 23, 42, 0.4);
             border: 1px solid var(--glass-border);
-        }
-
-        /* Monitoring */
-        #chart-container {
-            height: 250px;
-            margin-bottom: 1rem;
-        }
-
-        pre {
-            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
             padding: 1rem;
-            border-radius: 8px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-            color: #a5b4fc;
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--glass-border);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-block .info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .status-block .title {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .status-block .desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
         /* Tables */
@@ -297,7 +304,6 @@
             color: var(--accent-rose);
         }
 
-        /* Scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -310,17 +316,46 @@
             background: var(--glass-border);
             border-radius: 3px;
         }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-emerald);
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="navbar">
         <h1>🛡️ <span>SEC</span> ADMIN PORTAL</h1>
-        <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}" class="logout-btn">ВЫЙТИ</a>
+        <div style="display:flex; align-items:center; gap: 2rem;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; align-items:center;">
+                <span class="live-indicator"></span> LIVE UPDATING
+            </div>
+            <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}" class="logout-btn">ВЫЙТИ</a>
+        </div>
     </div>
 
     <div class="container">
-        <!-- Dashboard Tabs -->
         <div class="tabs-header">
             <button class="tab-trigger active" onclick="showTab('overview')">ОБЗОР</button>
             <button class="tab-trigger" onclick="showTab('logs')">ЛОГИ ИНЦИДЕНТОВ</button>
@@ -341,7 +376,8 @@
                 </div>
                 <div class="glass-panel stat-card">
                     <h4>Режим работы</h4>
-                    <div class="value" style="font-size: 1.2rem; color: var(--accent-emerald);">NORMAL</div>
+                    <div id="val-mode" class="value" style="font-size: 1.2rem; color: var(--accent-emerald);">NORMAL
+                    </div>
                 </div>
                 <div class="glass-panel stat-card">
                     <h4>Привилегии</h4>
@@ -351,16 +387,28 @@
 
             <div class="grid">
                 <div class="glass-panel card">
-                    <h3>📊 Мониторинг ресурсов</h3>
-                    <div id="chart-container">
+                    <h3>📊 Ресурсы в реальном времени</h3>
+                    <div style="height: 250px; margin-bottom: 1rem;">
                         <canvas id="sysChart"></canvas>
                     </div>
-                    <button class="btn" onclick="runScan()">ОБНОВИТЬ ДАННЫЕ</button>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Обновление каждые 5
+                        секунд</div>
                 </div>
                 <div class="glass-panel card">
-                    <h3>🚨 Последние аномалии</h3>
-                    <div id="recent-threats">
-                        <pre id="quick-status">Нажмите 'Обновить данные' для получения статуса...</pre>
+                    <h3>🛡️ Статус безопасности</h3>
+                    <div id="anomaly-container">
+                        <div class="status-block">
+                            <div class="info">
+                                <div class="title">OS Protection</div>
+                                <div class="desc">Ожидание...</div>
+                            </div><span class="status-badge bg-ok">CHECKING</span>
+                        </div>
+                        <div class="status-block">
+                            <div class="info">
+                                <div class="title">Network IDS</div>
+                                <div class="desc">Ожидание...</div>
+                            </div><span class="status-badge bg-ok">CHECKING</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -370,9 +418,7 @@
         <div id="logs" class="tab-content">
             <div class="glass-panel card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom:0;">📃 Журнал безопасности (IDS/IPS)</h3>
-                    <button class="btn" onclick="loadLogs()" style="width:auto; padding:0.5rem 1.5rem;">ОБНОВИТЬ
-                        ЛОГИ</button>
+                    <h3 style="margin-bottom:0;">📃 Журнал инцидентов</h3>
                 </div>
                 <div class="table-container">
                     <table id="logs-table">
@@ -396,60 +442,61 @@
         <!-- TAB: SYSTEM -->
         <div id="system" class="tab-content">
             <div class="glass-panel card">
-                <h3>🔍 Глубокое сканирование системы</h3>
-                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Проверка процессов, пользователей и
-                    критических конфигураций приложения.</p>
-                <div id="deep-scan-results" style="margin-bottom: 1.5rem; display: none;">
-                    <pre id="deep-scan-json"></pre>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                    <h3 style="margin:0;">🔍 Глубокое сканирование</h3>
+                    <button id="deepScanBtn" class="btn" onclick="deepScan()"
+                        style="width: auto; padding: 0.5rem 1.5rem; background: var(--accent-rose); color: white;">ЗАПУСТИТЬ
+                        СКАН</button>
                 </div>
-                <button class="btn" onclick="deepScan()" style="background: #dc2626; color: white;">ЗАПУСТИТЬ ГЛУБОКИЙ
-                    СКАН</button>
+                <div id="system-results-grid" class="grid"
+                    style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                    <!-- Cards will be injected here -->
+                    <div style="grid-column: 1/-1; text-align:center; padding: 4rem; color: var(--text-muted);">Введите
+                        запуск для получения данных о процессах и пользователях.</div>
+                </div>
             </div>
         </div>
 
         <!-- TAB: NETWORK -->
         <div id="network" class="tab-content">
             <div class="glass-panel card">
-                <h3>🌐 Сетевой анализатор</h3>
-                <div id="network-results">
-                    <pre>Данные сетевого трафика будут доступны после общего сканирования...</pre>
+                <h3>🌐 Сетевая активность</h3>
+                <div class="table-container">
+                    <table id="net-table">
+                        <thead>
+                            <tr>
+                                <th>IP АДРЕС</th>
+                                <th>СОЕДИНЕНИЙ</th>
+                                <th>СТАТУС</th>
+                            </tr>
+                        </thead>
+                        <tbody id="net-body">
+                            <tr>
+                                <td colspan="3" style="text-align:center; padding: 2rem;">Данные обновляются...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Tab switching
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-trigger').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            if (event) event.currentTarget.classList.add('active');
         }
 
-        // Initialize Chart
         const ctx = document.getElementById('sysChart').getContext('2d');
         const sysChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [
-                    {
-                        label: 'CPU %',
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        data: [],
-                        fill: true,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'RAM %',
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        data: [],
-                        fill: true,
-                        tension: 0.4
-                    }
+                    { label: 'CPU %', borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', data: [], fill: true, tension: 0.4 },
+                    { label: 'RAM %', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', data: [], fill: true, tension: 0.4 }
                 ]
             },
             options: {
@@ -459,15 +506,13 @@
                     y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
                     x: { grid: { display: false } }
                 },
-                plugins: {
-                    legend: { labels: { color: '#94a3b8' } }
-                }
+                plugins: { legend: { display: false } }
             }
         });
 
         function updateChart(cpu, ram) {
             const now = new Date().toLocaleTimeString();
-            if (sysChart.data.labels.length > 10) {
+            if (sysChart.data.labels.length > 15) {
                 sysChart.data.labels.shift();
                 sysChart.data.datasets[0].data.shift();
                 sysChart.data.datasets[1].data.shift();
@@ -475,38 +520,70 @@
             sysChart.data.labels.push(now);
             sysChart.data.datasets[0].data.push(cpu);
             sysChart.data.datasets[1].data.push(ram);
-            sysChart.update();
+            sysChart.update('none');
         }
 
-        // API interaction
         async function runScan() {
-            const btn = document.querySelector('.scan-btn') || event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "СКАН...";
-            btn.disabled = true;
-
             try {
                 const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_scan') }}");
                 const data = await res.json();
 
-                // Update stats
                 document.getElementById('val-cpu').innerText = data.os.resources.cpu_percent + '%';
                 document.getElementById('val-ram').innerText = data.os.resources.ram_percent + '%';
                 document.getElementById('val-priv').innerText = data.os.privileges.is_admin ? 'ROOT' : 'USER';
                 document.getElementById('val-priv').style.color = data.os.privileges.is_admin ? 'var(--accent-rose)' : 'var(--accent-emerald)';
 
-                document.getElementById('quick-status').innerText = JSON.stringify(data, null, 2);
                 updateChart(data.os.resources.cpu_percent, data.os.resources.ram_percent);
+                renderAnomalies(data);
+                renderNetwork(data.network);
+            } catch (e) { console.error(e); }
+        }
 
-                // Update Network tab preview
-                document.querySelector('#network pre').innerText = JSON.stringify(data.network, null, 2);
+        function renderAnomalies(data) {
+            const container = document.getElementById('anomaly-container');
+            let html = '';
 
-            } catch (e) {
-                console.error(e);
+            // OS Status
+            const osBadge = data.os.status === 'ok' ? 'bg-ok' : (data.os.status === 'danger' ? 'bg-danger' : 'bg-warning');
+            html += `<div class="status-block"><div class="info"><div class="title">Системные ресурсы</div><div class="desc">${data.os.resources.warnings.length ? data.os.resources.warnings[0] : 'Нагрузка в норме'}</div></div><span class="status-badge ${osBadge}">${data.os.status}</span></div>`;
+
+            // Network Status
+            const netBadge = data.network.status === 'ok' ? 'bg-ok' : 'bg-warning';
+            html += `<div class="status-block"><div class="info"><div class="title">Сетевой анализатор</div><div class="desc">${data.network.issues.length ? data.network.issues[0] : 'Угрозы не обнаружены'}</div></div><span class="status-badge ${netBadge}">${data.network.status}</span></div>`;
+
+            container.innerHTML = html;
+
+            const modeEl = document.getElementById('val-mode');
+            if (data.os.status === 'danger' || data.network.status === 'danger') {
+                modeEl.innerText = 'CRITICAL';
+                modeEl.style.color = 'var(--accent-rose)';
+            } else {
+                modeEl.innerText = 'NORMAL';
+                modeEl.style.color = 'var(--accent-emerald)';
+            }
+        }
+
+        function renderNetwork(netData) {
+            const tbody = document.getElementById('net-body');
+            tbody.innerHTML = '';
+
+            const ips = Object.keys(netData.ips);
+            if (ips.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Активности не обнаружено</td></tr>';
+                return;
             }
 
-            btn.innerText = originalText;
-            btn.disabled = false;
+            ips.forEach(ip => {
+                const count = netData.ips[ip];
+                const tr = document.createElement('tr');
+                const isSafe = count < 20;
+                tr.innerHTML = `
+                    <td style="font-family: monospace;">${ip}</td>
+                    <td>${count} соед.</td>
+                    <td><span class="status-badge ${isSafe ? 'bg-ok' : 'bg-danger'}">${isSafe ? 'SAFE' : 'LIMIT EXCEEDED'}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         async function loadLogs() {
@@ -514,54 +591,63 @@
                 const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_logs') }}");
                 const data = await res.json();
                 const tbody = document.getElementById('logs-body');
-                tbody.innerHTML = '';
-
-                if (data.logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">Логи чисты. Инцидентов не зафиксировано.</td></tr>';
-                    return;
-                }
-
-                data.logs.forEach(log => {
-                    const tr = document.createElement('tr');
-                    let badgeClass = "bg-ok";
-                    if (log.level.includes("CRITICAL")) badgeClass = "bg-danger";
-                    else if (log.level.includes("WARNING")) badgeClass = "bg-warning";
-
-                    tr.innerHTML = `
-                        <td style="color: var(--text-muted); font-size: 0.9rem;">${log.timestamp}</td>
-                        <td><span class="status-badge ${badgeClass}">${log.level}</span></td>
-                        <td style="font-family: monospace; font-size: 0.9rem;">${log.message}</td>
-                    `;
-                    tbody.appendChild(tr);
+                const rows = data.logs.map(log => {
+                    let badge = "bg-ok";
+                    if (log.level.includes("CRITICAL")) badge = "bg-danger";
+                    else if (log.level.includes("WARNING")) badge = "bg-warning";
+                    return `<tr><td style="color: var(--text-muted); font-size: 0.8rem;">${log.timestamp}</td><td><span class="status-badge ${badge}">${log.level}</span></td><td style="font-family: monospace; font-size: 0.85rem;">${log.message}</td></tr>`;
                 });
-            } catch (e) {
-                console.error(e);
-            }
+                tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="3" style="text-align:center; padding:2rem;">Инцидентов нет</td></tr>';
+            } catch (e) { console.error(e); }
         }
 
         async function deepScan() {
-            const btn = event.target;
-            btn.innerText = "ВЫПОЛНЯЕТСЯ СКАНИРОВАНИЕ...";
-            btn.disabled = true;
-
+            const btn = document.getElementById('deepScanBtn');
+            btn.innerText = "СКАН..."; btn.disabled = true;
             try {
                 const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_sys_scan') }}");
                 const data = await res.json();
-                document.getElementById('deep-scan-results').style.display = 'block';
-                document.getElementById('deep-scan-json').innerText = JSON.stringify(data, null, 2);
-            } catch (e) {
-                alert("Ошибка: " + e);
-            }
-
-            btn.innerText = "ЗАПУСТИТЬ ГЛУБОКИЙ СКАН";
-            btn.disabled = false;
+                renderSystemScan(data);
+            } catch (e) { alert(e); }
+            btn.innerText = "ЗАПУСТИТЬ СКАН"; btn.disabled = false;
         }
 
-        // Initial load
-        window.onload = () => {
-            runScan();
-            loadLogs();
-        };
+        function renderSystemScan(data) {
+            const container = document.getElementById('system-results-grid');
+            container.innerHTML = '';
+
+            // User Card
+            const userCard = createScanCard("👥 Пользователи", `Обнаружено: ${data.users.length}`, data.users.join(', '));
+            container.appendChild(userCard);
+
+            // Processes Card
+            const procCard = createScanCard("⚙️ Критические процессы", `Всего: ${data.processes.length}`, data.processes.map(p => `PID ${p.pid}: ${p.name}`).slice(0, 5).join('<br>') + (data.processes.length > 5 ? '<br>...' : ''));
+            container.appendChild(procCard);
+
+            // Config Card
+            const issuesCount = data.config_issues.length;
+            const configCard = createScanCard("🛠️ Конфигурация", issuesCount === 0 ? "Уязвимостей нет" : `Внимание: ${issuesCount}`, data.config_issues.length ? data.config_issues.join('<br>') : "Проверка безопасности приложения пройдена.");
+            if (issuesCount) configCard.querySelector('.status-badge').className = 'status-badge bg-warning';
+            container.appendChild(configCard);
+        }
+
+        function createScanCard(title, subtitle, content) {
+            const div = document.createElement('div');
+            div.className = 'glass-panel card';
+            div.style.padding = '1.25rem';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 1rem;">
+                    <div><div style="font-weight:700; color:var(--accent-cyan);">${title}</div><div style="font-size:0.75rem; color:var(--text-muted);">${subtitle}</div></div>
+                    <span class="status-badge bg-ok">READY</span>
+                </div>
+                <div style="font-size:0.85rem; color: #a5b4fc; background: rgba(15,23,42,0.5); padding: 0.75rem; border-radius: 8px; line-height: 1.5;">${content}</div>
+            `;
+            return div;
+        }
+
+        setInterval(runScan, 5000);
+        setInterval(loadLogs, 10000);
+        window.onload = () => { runScan(); loadLogs(); };
     </script>
 </body>
 
