@@ -105,29 +105,50 @@ class SecDashboardService(Service):
                     return {"error": "Unauthorized"}, 401
                 
                 logs = []
-                log_file = "sec_logs.txt"
+                # Путь к логам приложения
+                log_file = os.path.join(self.service.app.project_root, "logs", "app.log")
+                if not os.path.exists(log_file):
+                    # Пытаемся найти альтернативный путь или старый файл
+                    log_file = os.path.join(self.service.app.project_root, "app.log")
+                
                 if os.path.exists(log_file):
                     try:
+                        import re
+                        # Парсер для формата: 2026-03-03 16:00:00,123 - LEVEL - Message
+                        log_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?:,\d+)? - (\w+) - (.+)$')
+                        
                         with open(log_file, "r", encoding="utf-8") as f:
                             lines = f.readlines()
-                            # Возвращаем последние 50 записей с конца
-                            for line in reversed(lines[-50:]):
+                            for line in reversed(lines[-100:]): # Больше строк для анализа
                                 if not line.strip(): continue
-                                parts = line.split("] ", 1)
-                                if len(parts) == 2:
-                                    ts, rest = parts
-                                    level_msg = rest.split(": ", 1)
-                                    if len(level_msg) == 2:
-                                        level, msg = level_msg
+                                match = log_pattern.match(line.strip())
+                                if match:
+                                    ts, level, msg = match.groups()
+                                    # Пропускаем обычные инфо-логи если их слишком много, но оставляем важные алерты
+                                    if level != "INFO" or "DETECTED" in msg or "BLOCKED" in msg:
                                         logs.append({
-                                            "timestamp": ts.replace("[", ""),
+                                            "timestamp": ts,
                                             "level": level,
-                                            "message": msg.strip()
+                                            "message": msg
                                         })
+                                else:
+                                    # Fallback для старого формата [] 
+                                    parts = line.split("] ", 1)
+                                    if len(parts) == 2:
+                                        ts, rest = parts
+                                        level_msg = rest.split(": ", 1)
+                                        if len(level_msg) == 2:
+                                            level, msg = level_msg
+                                            logs.append({
+                                                "timestamp": ts.replace("[", ""),
+                                                "level": level,
+                                                "message": msg.strip()
+                                            })
                     except Exception as e:
                         return {"error": str(e)}, 500
-                        
-                return {"logs": logs}
+                
+                # Возвращаем не более 50 последних отфильтрованных записей
+                return {"logs": logs[:50]}
 
         class SysProtectScanAPI(API):
             """Полное сканирование системы (processes, users, config)"""
