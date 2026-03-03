@@ -3,9 +3,15 @@ from AEngineApps.screen import Screen
 from AEngineApps.api import API
 import os
 from flask import session, redirect, url_for, render_template_string
-from sec.os_protect import get_os_protection_module
-from sec.net_analyzer import get_network_analyzer
-from sec.sys_protect import AdvancedSystemProtection
+
+try:
+    from sec.os_protect import get_os_protection_module
+    from sec.net_analyzer import get_network_analyzer
+    from sec.sys_protect import AdvancedSystemProtection
+except ImportError:
+    from AEngineApps.os_protect import get_os_protection_module
+    from AEngineApps.net_analyzer import get_network_analyzer
+    from AEngineApps.sys_protect import AdvancedSystemProtection
 
 class SecDashboardService(Service):
     """
