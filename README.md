@@ -159,33 +159,45 @@ apm sec logs analyze --template "[%{Y}-%{m}-%{D} %{H}:%{M}:%{S}] %{level} in %{i
 ### OS Protection (`os_protect.py`)
 Обеспечивает контроль за потреблением ресурсов (CPU/RAM) и запуск веб-сервиса с минимальными привилегиями.
 
+Вы можете интегрировать его **автоматически**, просто передав объект приложения `app`. Он повесит проверяющий хук, который будет выполняться в фоне:
+
 ```python
 from sec.os_protect import get_os_protection_module
+from AEngineApps.app import App
 
-# Мониторинг: предупреждение при 90% загрузке CPU или RAM
-os_protect = get_os_protection_module(max_cpu_percent=90.0, max_ram_percent=90.0)
+app = App()
+
+# Мониторинг: предупреждение при 90% загрузке CPU или RAM.
+# Передача `app` автоматически активирует хук перед каждым запросом.
+os_protect = get_os_protection_module(app, max_cpu_percent=90.0, max_ram_percent=90.0)
+```
+
+Отслеживание можно вызывать и в ручном режиме, не передавая `app`:
+```python
 health = os_protect.run_health_check()
 
 if health["status"] == "danger":
     print("КРИТИЧЕСКАЯ ОШИБКА: Сервер под DDoS (Аномальная загрузка)")
-elif health["privileges"]["status"] == "warning":
-    print("ВНИМАНИЕ: Приложение запущено от имени root/Administrator!")
 ```
 
 ### Анализ Сетевого Трафика (`net_analyzer.py`)
 Инструмент для выявления SYN Flood атак и подозрительной активности соединений на хосте.
 
+Так же, как и OS Protection, работает автоматически при передаче `app`:
+
 ```python
 from sec.net_analyzer import get_network_analyzer
 
-net_analyzer = get_network_analyzer(max_syn_requests=100, max_connections_per_ip=50)
+# Передача app автоматически запустит защиту от SYN-флуда в фоновом режиме перед каждым запросом
+net_analyzer = get_network_analyzer(app, max_syn_requests=100, max_connections_per_ip=50)
+```
+
+Либо ручной запуск анализа:
+```python
 net_status = net_analyzer.run_analysis()
 
 if net_status["syn_flood"]["status"] == "danger":
     print("ВНИМАНИЕ: Обнаружена SYN Flood атака!")
-    
-if net_status["abnormal_ips"]["status"] == "warning":
-    print(f"Подозрительные IP: {net_status['abnormal_ips']['abnormal_ips']}")
 ```
 
 ### Кластеризация Active-Passive (`cluster.py`)
@@ -209,3 +221,24 @@ node = create_cluster_node(
 node.on_failover = on_failover
 node.start() # При старте сначала скачает актуальный код с Master
 ```
+
+### Админ-Панель Безопасности (`dashboard.py`)
+Микросервис-дашборд для визуального мониторинга здоровья ОС, сети и просмотра логов `sec_logs.txt`. Защищен сессионной авторизацией.
+
+Для интеграции достаточно подключить его в папку `services` (для автоопределения AEngineApps) или зарегистрировать вручную:
+
+```python
+from sec.dashboard import SecDashboardService
+
+# Инициализируем панель с кастомными учетными данными и URL:
+admin_dashboard = SecDashboardService(
+    prefix="/admin", 
+    admin_login="superadmin", 
+    admin_pass="strongpass"
+)
+
+# Если используете AEngineApps/App:
+app.register_service(admin_dashboard)
+```
+
+После запуска перейдите по адресу `http://localhost:5000/admin`, чтобы попасть в защищенный дашборд.
