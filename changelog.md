@@ -1,4 +1,16 @@
-# Changelog — sec
+# Changelog (sec)
+
+## [2.3.0] - 2026-03-03
+### Added
+- **Credentials Management**: `apm sec init` now prompts for `admin_login` and `admin_password`.
+- **Global Config**: Credentials saved to `AEngineApps/sec_config.py`, accessible across modules.
+- **Uninstaller**: New `apm sec remove` command to cleanly delete security components.
+- **Selective Removal**: Support for `--modules` flag in removal command.
+
+### Changed
+- **Architecture Refactoring**: Dashboard HTML templates moved from Python code to separate `.html` files (`templates/sec/`).
+- **Improved Initializer**: Automated template deployment to the project's `templates` directory.
+- **Dashboard Logic**: Switched to `render_template` for better maintainability and cleaner code.
 
 ## [2.2.0] — 2026-03-03
 

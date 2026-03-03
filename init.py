@@ -1,19 +1,11 @@
-"""
-sec/init.py — Инициализатор модулей безопасности.
-
-Команды:
-    apm sec init                          — установить все модули безопасности
-    apm sec init --modules intrusion logs — установить только указанные модули
-    apm sec init --list                   — показать доступные модули
-"""
 from rich import print
+from rich.prompt import Prompt
 import os
+import shutil
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
 
 # ─── Маппинг: имя модуля -> список файлов для объединения в один целевой ───
-# "sources" — файлы из sec/, которые будут объединены в один self-contained файл
-# "target"  — куда записать результат
 MODULE_MAP = {
     "intrusion": {
         "sources": ["__intrusions.py"],
@@ -43,7 +35,7 @@ MODULE_MAP = {
     "dashboard": {
         "sources": ["dashboard.py"],
         "target": "AEngineApps/dashboard.py",
-        "description": "Админ-панель безопасности с авторизацией и AJAX-сканированием",
+        "description": "Админ-панель безопасности с авторизацией (требует шаблоны и конфиг)",
     },
     "cluster": {
         "sources": ["__cluster.py", "cluster.py"],
@@ -59,8 +51,6 @@ MODULE_MAP = {
 
 ALL_MODULES = list(MODULE_MAP.keys())
 
-# Строки-импорты из фасадных файлов, которые ссылаются на приватные __файлы.
-# Их нужно убрать при слиянии, т.к. класс уже будет в том же файле.
 INTERNAL_IMPORT_PREFIXES = [
     "from .__",
     "from __",
@@ -68,7 +58,6 @@ INTERNAL_IMPORT_PREFIXES = [
 
 
 def _read_source(filename: str) -> str:
-    """Читает исходный файл из папки sec/."""
     path = os.path.join(base, filename)
     if not os.path.exists(path):
         return ""
@@ -77,11 +66,6 @@ def _read_source(filename: str) -> str:
 
 
 def _merge_sources(sources: list) -> str:
-    """
-    Объединяет несколько файлов в один self-contained модуль.
-    Из фасадных файлов убираются строки `from .__xxx import ...`,
-    т.к. реализация уже включена выше.
-    """
     parts = []
     for i, src_file in enumerate(sources):
         content = _read_source(src_file)
@@ -89,13 +73,12 @@ def _merge_sources(sources: list) -> str:
             continue
 
         if i > 0:
-            # Это фасадный файл — убираем внутренние импорты
             lines = content.split("\n")
             filtered = []
             for line in lines:
                 stripped = line.strip()
                 if any(stripped.startswith(prefix) for prefix in INTERNAL_IMPORT_PREFIXES):
-                    continue  # Пропускаем `from .__os_protect import OSProtection`
+                    continue
                 filtered.append(line)
             content = "\n".join(filtered)
 
@@ -104,79 +87,95 @@ def _merge_sources(sources: list) -> str:
     return "\n\n".join(parts) + "\n"
 
 
-def _install_module(name: str) -> bool:
-    """Устанавливает один модуль. Возвращает True если успешно."""
+def _setup_credentials(base_dir):
+    """Запрашивает логин/пароль и создает AEngineApps/sec_config.py"""
+    print("\n[bold yellow]🔐 Настройка учетных данных администратора безопасности[/bold yellow]")
+    login = Prompt.ask("Введите логиn админа", default="admin")
+    password = Prompt.ask("Введите пароль админа", default="admin", password=True)
+    
+    config_content = f"""# Автоматически сгенерированный конфиг безопасности sec
+ADMIN_LOGIN = "{login}"
+ADMIN_PASS = "{password}"
+"""
+    config_path = os.path.join(base_dir, "AEngineApps", "sec_config.py")
+    with open(config_path, "w", encoding="utf-8") as f:
+        f.write(config_content)
+    print(f"  [green]✓[/green] Конфигурация сохранена в {config_path}")
+
+
+def _copy_templates(base_dir):
+    """Копирует шаблоны в директорию проекта templates/sec/"""
+    src_templates = os.path.join(base, "templates")
+    if not os.path.exists(src_templates):
+        return
+        
+    target_templates = os.path.join(base_dir, "templates", "sec")
+    if not os.path.exists(target_templates):
+        os.makedirs(target_templates, exist_ok=True)
+        
+    for item in os.listdir(src_templates):
+        s = os.path.join(src_templates, item)
+        d = os.path.join(target_templates, item)
+        shutil.copy2(s, d)
+        print(f"  [green]✓[/green] Шаблон {item} -> {d}")
+
+
+def _install_module(base_dir, name: str) -> bool:
     if name not in MODULE_MAP:
-        print(f"  [red]✗[/red] Неизвестный модуль: [bold]{name}[/bold]")
-        print(f"    Доступные: {', '.join(ALL_MODULES)}")
         return False
 
     info = MODULE_MAP[name]
-    target_path = info["target"]
+    target_path = os.path.join(base_dir, info["target"])
 
-    # Проверяем директорию назначения
     target_dir = os.path.dirname(target_path)
     if target_dir and not os.path.exists(target_dir):
         print(f"  [yellow]![/yellow] Директория {target_dir} не найдена, пропускаем {name}")
         return False
 
-    # Объединяем исходные файлы
     merged = _merge_sources(info["sources"])
     if not merged.strip():
-        print(f"  [red]✗[/red] Не удалось прочитать исходные файлы для {name}")
         return False
 
-    # Записываем
     with open(target_path, "w", encoding="utf-8") as f:
         f.write(merged)
 
-    print(f"  [green]✓[/green] [bold]{name}[/bold] -> {target_path}")
-    print(f"    {info['description']}")
+    print(f"  [green]✓[/green] [bold]{name}[/bold] -> {info['target']}")
     return True
 
 
-def _init_all():
-    """Устанавливает все модули безопасности."""
-    print("\n[bold cyan]🛡️  Инициализация всех модулей безопасности sec[/bold cyan]\n")
+def run(*args, **kwargs):
+    arg = kwargs.get("args", [])
+    base_dir = kwargs.get("base_dir") or os.getcwd()
+
+    if "--help" in arg or "-h" in arg:
+        _print_help()
+        return
+
+    print("\n[bold cyan]🛡️  Инициализация модулей безопасности sec[/bold cyan]\n")
+
+    # Настройка общих параметров (всегда при полной установке или если выбран dashboard)
+    if "--modules" not in arg or "dashboard" in arg:
+        _setup_credentials(base_dir)
+        _copy_templates(base_dir)
+
+    target_modules = ALL_MODULES
+    if "--modules" in arg:
+        idx = arg.index("--modules")
+        target_modules = []
+        for item in arg[idx + 1:]:
+            if item.startswith("--"):
+                break
+            target_modules.append(item)
+
     installed = 0
-    for name in ALL_MODULES:
-        if _install_module(name):
+    for name in target_modules:
+        if _install_module(base_dir, name):
             installed += 1
-    print(f"\n[green bold]Готово![/green bold] Установлено модулей: {installed}/{len(ALL_MODULES)}")
-    _print_usage_hint()
-
-
-def _init_selected(modules: list):
-    """Устанавливает только выбранные модули."""
-    print(f"\n[bold cyan]🛡️  Инициализация модулей: {', '.join(modules)}[/bold cyan]\n")
-    installed = 0
-    for name in modules:
-        if _install_module(name):
-            installed += 1
-    print(f"\n[green bold]Готово![/green bold] Установлено модулей: {installed}/{len(modules)}")
-    _print_usage_hint()
-
-
-def _print_usage_hint():
-    """Выводит подсказку по использованию."""
-    print("""
-[dim]Пример подключения в main.py:
-
-  from AEngineApps.intrusions import IPS, SQLiDetector
-  from AEngineApps.os_protect import get_os_protection_module
-  from AEngineApps.net_analyzer import get_network_analyzer
-  from AEngineApps.sys_protect import AdvancedSystemProtection
-
-  app = App()
-  IPS(app).add_detector(SQLiDetector)
-  get_os_protection_module(app)
-  get_network_analyzer(app)
-  AdvancedSystemProtection(app)
-[/dim]""")
+            
+    print(f"\n[green bold]Готово![/green bold] Установлено модулей: {installed}")
 
 
 def _print_help():
-    """Справка."""
     print("""
 [bold cyan]🛡️  sec init — Инициализатор модулей безопасности[/bold cyan]
 
@@ -188,33 +187,3 @@ def _print_help():
 [bold]Доступные модули:[/bold]""")
     for name, info in MODULE_MAP.items():
         print(f"  [green]{name:15s}[/green] {info['description']}")
-
-
-def run(*args, **kwargs):
-    """Точка входа для apm CLI."""
-    arg = kwargs.get("args", [])
-
-    if "--help" in arg or "-h" in arg:
-        _print_help()
-        return
-
-    if "--list" in arg:
-        print("\n[bold]Доступные модули:[/bold]")
-        for name, info in MODULE_MAP.items():
-            print(f"  [green]{name:15s}[/green] {info['description']}")
-        return
-
-    if "--modules" in arg:
-        idx = arg.index("--modules")
-        modules = []
-        for item in arg[idx + 1:]:
-            if item.startswith("--"):
-                break
-            modules.append(item)
-        if not modules:
-            print("[red]Ошибка: после --modules не указаны модули[/red]")
-            _print_help()
-            return
-        _init_selected(modules)
-    else:
-        _init_all()

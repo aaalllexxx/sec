@@ -28,6 +28,9 @@ pip install psutil
 apm sec init
 ```
 
+> [!IMPORTANT]
+> При инициализации (полной или модуля `dashboard`) установщик запросит логин и пароль администратора. Эти данные будут сохранены в `AEngineApps/sec_config.py`.
+
 Установить только **конкретные** модули:
 ```sh
 apm sec init --modules intrusion logs sys_protect dashboard
@@ -36,6 +39,18 @@ apm sec init --modules intrusion logs sys_protect dashboard
 Посмотреть список доступных модулей:
 ```sh
 apm sec init --list
+```
+
+## 🗑️ Удаление модулей (`apm sec remove`)
+
+Если вам нужно убрать модули безопасности из проекта:
+```sh
+apm sec remove
+```
+
+Удалить только определенные модули:
+```sh
+apm sec remove --modules cluster auto_cluster
 ```
 
 | Модуль | Описание |
