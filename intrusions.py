@@ -116,15 +116,18 @@ class RCEDetector(BaseDetector):
     dangerous = ["echo", "eval", "exec", "system", "popen", "subprocess"]
 
     def run(self) -> None:
-        full_data = _get_request_full_data()
-        decoded = unquote(full_data)
+        # Проверяем только параметры и тело для предотвращения логов от User-Agent и т.д.
+        user_inputs = _get_all_input_values()
+        user_inputs.append(request.full_path)
         
-        # Проверка по списку опасных команд
-        for el in decoded.lower().split():
-            if el in self.dangerous or shutil.which(el):
-                self.log(f"DETECTED RCE: {request.method} {request.path} | payload found in stream")
-                self.trigger_response()
-                return
+        for val in user_inputs:
+            decoded = unquote(val).lower()
+            # Проверка по списку опасных команд
+            for el in decoded.split():
+                if el in self.dangerous or shutil.which(el):
+                    self.log(f"DETECTED RCE: {request.method} {request.path} | payload: {val[:50]}")
+                    self.trigger_response()
+                    return
 
 
 class LFIDetector(BaseDetector):
@@ -136,20 +139,24 @@ class LFIDetector(BaseDetector):
     )
     
     def run(self) -> None:
-        full_data = _get_request_full_data()
-        decoded = unquote(full_data)
+        # Проверяем только параметры и тело
+        user_inputs = _get_all_input_values()
+        user_inputs.append(request.full_path)
         
-        if self.patterns.search(decoded):
-            self.log(f"DETECTED LFI/RFI: {request.method} {request.path} | payload found in stream")
-            self.trigger_response()
-            return
-            
-        # Дополнительная проверка на существование путей (для тех, что в параметрах)
-        for arg in _get_all_input_values():
-            if os.path.exists(unquote(arg)) and len(arg) > 3:
-                self.log(f"DETECTED LFI (path exists): {request.method} {request.path} | path: {arg[:50]}")
+        for val in user_inputs:
+            decoded = unquote(val)
+            if self.patterns.search(decoded):
+                self.log(f"DETECTED LFI/RFI: {request.method} {request.path} | payload: {val[:50]}")
                 self.trigger_response()
                 return
+            
+            # Дополнительная проверка на существование путей
+            if os.path.exists(decoded) and len(val) > 3:
+                # Исключаем базовые пути проекта и статику
+                if not any(x in decoded.replace("\\", "/") for x in ["/static/", "/templates/"]):
+                    self.log(f"DETECTED LFI (path exists): {request.method} {request.path} | path: {val[:50]}")
+                    self.trigger_response()
+                    return
 
 
 class SQLiDetector(BaseDetector):
@@ -162,48 +169,61 @@ class SQLiDetector(BaseDetector):
     special = {"--", "/*", "*/", "#", ";"}
 
     def run(self) -> None:
+        # 1. Проверка ключевых слов по всему потоку (включая заголовки)
         full_data = _get_request_full_data()
         upper = unquote(full_data).upper()
         
-        # Проверяем SQL ключевые слова
         words = re.split(r"[\W_]+", upper)
         words = [w for w in words if w]
         if any(w in self.dangerous for w in words):
-            self.log(f"DETECTED SQLi: {request.method} {request.path} | payload found in stream")
+            self.log(f"DETECTED SQLi (keyword): {request.method} {request.path} | keyword found in stream")
             self.trigger_response()
             return
 
-        # Проверяем спецсимволы
-        if any(s in upper for s in self.special):
-            # Исключаем ложное срабатывание на точку с запятой в User-Agent
-            ua = request.headers.get("User-Agent", "").upper()
-            if ";" in upper and ";" in ua and upper.count(";") == ua.count(";") and all(s not in upper.replace(ua, "") for s in self.special):
-                 # Если точка с запятой только в UA и больше ничего нет - это не атака
-                 pass
-            else:
-                self.log(f"DETECTED SQLi: {request.method} {request.path} | special chars found in stream")
+        # 2. Проверка спецсимволов ТОЛЬКО в данных пользователя (параметры и тело)
+        # Мы НЕ проверяем заголовки на спецсимволы, так как там часто бывают ';' и '#'
+        user_inputs = _get_all_input_values()
+        # Добавляем путь запроса в проверку
+        user_inputs.append(request.full_path)
+        
+        for val in user_inputs:
+            decoded_val = unquote(val).upper()
+            if any(s in decoded_val for s in self.special):
+                # Исключаем ложное срабатывание на простые ';' в параметрах, если это не похоже на инъекцию
+                # Но для безопасности блокируем большинство спецсимволов в параметрах
+                self.log(f"DETECTED SQLi (special char): {request.method} {request.path} | char in payload: {val[:50]}")
                 self.trigger_response()
                 return
 
 
 class XSSDetector(BaseDetector):
     """Обнаружение Cross-Site Scripting."""
-    patterns = [
-        "<", ">", "/*", "*/", "script", " src=", " href=",
-        "javascript:", "onerror=", "onload=", "onclick=",
-        "document.", "cookie", "eval(", "alert("
+    # Разделяем на критические (сразу бан) и подозрительные (нужно комбо)
+    critical_patterns = [
+        "<script", "javascript:", "onerror=", "onload=", "onclick=", "eval(", "alert("
+    ]
+    suspicious_patterns = [
+        "<", ">", "/*", "*/", " src=", " href=", "document.", "cookie"
     ]
 
     def run(self) -> None:
-        full_data = _get_request_full_data()
-        decoded = unquote(full_data).lower()
+        user_inputs = _get_all_input_values()
+        user_inputs.append(request.full_path)
         
-        if len(decoded) > 5:
-            matches = sum(1 for ch in self.patterns if ch in decoded)
-            if matches >= 3:
-                # Пытаемся вычленить что именно нашли (для лога)
-                found = [p for p in self.patterns if p in decoded]
-                self.log(f"DETECTED XSS: {request.method} {request.path} | patterns: {found}")
+        for val in user_inputs:
+            decoded = unquote(val).lower()
+            
+            # 1. Проверка критических паттернов
+            for p in self.critical_patterns:
+                if p in decoded:
+                    self.log(f"DETECTED XSS (critical): {request.method} {request.path} | pattern '{p}' in {val[:30]}")
+                    self.trigger_response()
+                    return
+            
+            # 2. Проверка комбинации подозрительных (3 и более)
+            matches = [p for p in self.suspicious_patterns if p in decoded]
+            if len(matches) >= 3:
+                self.log(f"DETECTED XSS (pattern match): {request.method} {request.path} | patterns {matches} in {val[:30]}")
                 self.trigger_response()
                 return
 

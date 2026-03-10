@@ -1,5 +1,17 @@
 # Changelog (sec)
 
+## [2.6.0] - 2026-03-10
+### Added
+- **Cross-Platform Protection**: Unified `auth.py` with `lock_file`/`unlock_file` supporting `attrib` (Windows) and `chmod` (POSIX).
+- **Advanced Attributes**: `sec_admin.json` is now protected with Hidden and System attributes on Windows.
+- **Improved CLI**: Switched all commands to underscored names (`add_admin`, `sign`, `unsign`) for consistency.
+- **Interactive Mode**: Fixed `add_admin` initialization when called without direct arguments via APM.
+
+### Changed
+- **Unified Security Base**: All auth checks, key management, and file protection concentrated in `sec/auth.py`.
+- **Enhanced Deployment**: `apm sec init` now correctly manages permissions during template installation.
+- **Dashboard Support**: Added CSP headers documentation and automated configuration for Chart.js and Fonts.
+
 ## [2.5.0] - 2026-03-03
 ### Added
 - **Advanced Traffic Analysis**: Signature-based detection for known CVEs (Log4Shell, etc.) and Rule-based custom blocking via `SignatureDetector` and `RuleDetector`.

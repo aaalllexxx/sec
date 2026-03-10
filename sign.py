@@ -3,51 +3,13 @@ import sys
 import json
 import hashlib
 import hmac
-import getpass
 import secrets
+try:
+    from . import auth
+except ImportError:
+    import auth
 
-def get_sec_admin_file(project_root):
-    return os.path.join(project_root, ".apm", "sec", "sec_admin.json")
-
-def verify_admin(project_root):
-    admin_file = get_sec_admin_file(project_root)
-    if not os.path.exists(admin_file):
-        print("[!] Администратор безопасности не настроен.")
-        print("[!] Выполните команду 'apm sec add-admin' перед подписью проекта.")
-        return False
-        
-    with open(admin_file, "r") as f:
-        data = json.load(f)
-        
-    password = getpass.getpass("Введите пароль администратора безопасности: ")
-    
-    key = hashlib.pbkdf2_hmac(
-        'sha256', 
-        password.encode('utf-8'), 
-        data["salt"].encode('utf-8'), 
-        100000
-    )
-    
-    if key.hex() != data["admin_hash"]:
-        print("[!] Неверный пароль. Доступ запрещен.")
-        return False
-        
-    return True
-
-def get_or_create_sign_key(project_root):
-    key_path = os.path.join(project_root, "sec_sign.key")
-    if os.path.exists(key_path):
-        with open(key_path, "rb") as f:
-            return f.read()
-            
-    # Генерируем новый 256-битный ключ
-    print("[*] Генерация нового случайного ключа подписи sec_sign.key...")
-    new_key = secrets.token_bytes(32)
-    with open(key_path, "wb") as f:
-        f.write(new_key)
-        
-    print("[WAIT] ВНИМАНИЕ: убедитесь что у файла sec_sign.key будут права 'только для чтения'!")
-    return new_key
+# Helper functions moved to auth.py
 
 def scan_files(directory):
     """Рекурсивно сканирует директорию на наличие python и html файлов, игнорируя служебные."""
@@ -86,7 +48,7 @@ def run(base_dir, gconf_path="", args=None):
     project_root = os.getcwd()
     print("=== AEngine: Подпись проекта (Code Signing) ===")
     
-    if not verify_admin(project_root):
+    if not auth.verify_admin(project_root):
         sys.exit(1)
         
     print("[+] Авторизация успешна. Сканирование файлов проекта...")
@@ -94,7 +56,7 @@ def run(base_dir, gconf_path="", args=None):
     file_hashes = scan_files(project_root)
     print(f"[*] Найдено файлов для подписи: {len(file_hashes)}")
     
-    sign_key = get_or_create_sign_key(project_root)
+    sign_key = auth.get_or_create_sign_key(project_root)
     
     # Создаем данные для подписи
     sig_data = {
@@ -123,7 +85,9 @@ def run(base_dir, gconf_path="", args=None):
     print("[*] Установка прав Read-Only на критичные файлы (Защита от перезаписи)...")
     critical_files = [
         "sec_sign.key",
+        "security.sig",
         "main.py",
+        os.path.join(".apm", "sec", "sec_admin.json"),
         os.path.join("AEngineApps", "code_signer.py")
     ]
     
@@ -133,30 +97,10 @@ def run(base_dir, gconf_path="", args=None):
     for relative_file in critical_files:
         filepath = os.path.join(project_root, relative_file)
         if os.path.exists(filepath):
-            try:
-                print(f"[*] Обработка {relative_file}...")
-                # Базовый UNIX/Windows chmod: S_IREAD
-                os.chmod(filepath, stat.S_IREAD)
-                # Проверим атрибут сразу
-                current_mode = os.stat(filepath).st_mode
-                if not (current_mode & stat.S_IWRITE):
-                    print(f"  [green]✓[/green] Атрибут Read-Only установлен.")
-                else:
-                    print(f"  [red]![/red] Атрибут Read-Only НЕ УСТАНОВЛЕН через chmod.")
-
-                # Для надежности в Windows используем команду attrib +R
-                if os.name == 'nt':
-                    res = subprocess.run(
-                        f'attrib +R "{filepath}"', 
-                        shell=True, capture_output=True, text=True
-                    )
-                    if res.returncode == 0:
-                        print(f"  [green]✓[/green] Атрибут +R (Win) установлен.")
-                    else:
-                        print(f"  [red]![/red] Ошибка attrib ({res.returncode}): {res.stderr.strip()}")
-                
-                print(f"  [green]✓[/green] Файл {relative_file} защищен.")
-            except Exception as e:
-                print(f"  [yellow]![/yellow] Не удалось заблокировать {relative_file}: {e}")
+            print(f"[*] Обработка {relative_file}...")
+            # Для критичных конфигов используем интенсивную блокировку (+R +H +S)
+            intense = "sec_admin.json" in relative_file or "sec_sign.key" in relative_file
+            auth.lock_file(filepath, intense=intense)
+            print(f"  [green]✓[/green] Файл {relative_file} защищен.")
                 
     print("[!!] ЗАЩИТА АКТИВИРОВАНА. Чтобы внести изменения в код, потребуется вернуть права на запись.")

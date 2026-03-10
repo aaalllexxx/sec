@@ -58,7 +58,7 @@ def enable_cors(app, origins: str = "*", methods: str = "GET,POST,PUT,DELETE,OPT
         response.headers["Access-Control-Allow-Headers"] = headers
         return response
 
-def enable_csp(app, policy: str = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';") -> None:
+def enable_csp(app, policy: str = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;") -> None:
     """Включает Content Security Policy (CSP) и другие базовые заголовки защиты от XSS."""
     flask_app = app.flask if hasattr(app, 'flask') else app
 

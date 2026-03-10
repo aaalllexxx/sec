@@ -188,7 +188,7 @@
             "name": "SSRF: Internal network scan",
             "category": "SSRF",
             "severity": "medium",
-            "pattern": "https?://(127\\.|10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)[^/]*/(admin|manager|console)",
+            "pattern": "[=\"'\\(]https?://(127\\.|10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)[^/]*/(admin|manager|console)",
             "flags": "i"
         },
         {

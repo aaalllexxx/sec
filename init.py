@@ -3,6 +3,10 @@ from rich.prompt import Prompt
 import os
 import shutil
 import sys
+try:
+    from . import auth
+except ImportError:
+    import auth
 
 base = os.sep.join(__file__.split(os.sep)[:-1])
 
@@ -56,6 +60,11 @@ MODULE_MAP = {
         "target": "AEngineApps/auto_cluster.py",
         "description": "Локальная кластеризация (один сервер, multiprocessing)",
     },
+    "unsign": {
+        "sources": ["unsign.py"],
+        "target": "AEngineApps/unsign.py",
+        "description": "Снятие электронной подписи и разблокировка файлов",
+    },
 }
 
 ALL_MODULES = list(MODULE_MAP.keys())
@@ -96,48 +105,30 @@ def _merge_sources(sources: list) -> str:
     return "\n\n".join(parts) + "\n"
 
 
-def _setup_credentials(base_dir):
-    """Запрашивает логин/пароль и создает AEngineApps/sec_config.py"""
-    print("\n[bold yellow]🔐 Настройка учетных данных администратора безопасности[/bold yellow]")
-    login = Prompt.ask("Введите логин админа", default="admin")
-    
-    # Ввод пароля со звездочками
-    print("Введите пароль админа: ", end="", flush=True)
-    password = ""
-    try:
-        import msvcrt
-        while True:
-            ch = msvcrt.getch()
-            if ch in (b'\r', b'\n'):
-                sys.stdout.write('\n')
-                sys.stdout.flush()
-                break
-            if ch in (b'\x08', b'\x7f'): # backspace variants
-                if len(password) > 0:
-                    password = password[:-1]
-                    sys.stdout.write('\b \b')
-                    sys.stdout.flush()
-            else:
-                try:
-                    char = ch.decode('utf-8')
-                    if char.isprintable():
-                        password += char
-                        sys.stdout.write('*')
-                        sys.stdout.flush()
-                except: pass
-    except (ImportError, Exception):
-        # Fallback если msvcrt недоступен (например на Linux)
-        password = Prompt.ask("", password=True)
+def _setup_credentials(base_dir, login=None, password=None):
+    """Запрашивает логин/пароль и создает AEngineApps/sec_config.py (Кроссплатформенно)"""
+    if not login or not password:
+        print("\n[bold yellow]🔐 Настройка учетных данных администратора безопасности[/bold yellow]")
+        login = Prompt.ask("Введите логин админа", default="admin")
+        
+        # Кроссплатформенный ввод пароля без эха (рекомендуется rich.prompt или getpass)
+        password = Prompt.ask("Введите пароль админа", password=True)
     
     if not password:
         password = "admin"
     
     config_content = f"""# Автоматически сгенерированный конфиг безопасности sec
+# Этот файл защищен подписью и атрибутом Read-Only
 ADMIN_LOGIN = "{login}"
 ADMIN_PASS = "{password}"
 """
     config_path = os.path.join(base_dir, "AEngineApps", "sec_config.py")
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    
+    # Снимаем защиту если файл существует (атрибут +R)
+    if os.path.exists(config_path):
+        auth.unlock_file(config_path)
+
     with open(config_path, "w", encoding="utf-8") as f:
         f.write(config_content)
     print(f"  [green]✓[/green] Конфигурация сохранена в {config_path}")
@@ -156,8 +147,16 @@ def _copy_templates(base_dir):
     for item in os.listdir(src_templates):
         s = os.path.join(src_templates, item)
         d = os.path.join(target_templates, item)
-        shutil.copy2(s, d)
-        print(f"  [green]✓[/green] Шаблон {item} -> {d}")
+        if os.path.isfile(s):
+            shutil.copy2(s, d)
+            print(f"  [green]✓[/green] Шаблон {item} -> {d}")
+        elif os.path.isdir(s) and item != "sec":
+            # Если есть вложенные папки (кроме самой 'sec'), копируем их рекурсивно
+            if not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            for subitem in os.listdir(s):
+                shutil.copy2(os.path.join(s, subitem), os.path.join(d, subitem))
+            print(f"  [green]✓[/green] Папка шаблонов {item} скопирована")
 
 
 def _install_module(base_dir, name: str) -> bool:
@@ -175,15 +174,22 @@ def _install_module(base_dir, name: str) -> bool:
     if not merged.strip():
         return False
 
+    # Снимаем защиту если файл существует и защищен (Read-Only)
+    if os.path.exists(target_path):
+        auth.unlock_file(target_path)
+
     with open(target_path, "w", encoding="utf-8") as f:
         f.write(merged)
 
-    # Копируем дополнительные файлы (e.g. signatures_db.json)
+    # Копируем дополнительные файлы
     for extra in info.get("extra_files", []):
         src_path = os.path.join(base, extra["src"])
         dst_path = os.path.join(base_dir, extra["dst"])
         if os.path.exists(src_path):
             os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            # Снимаем защиту и здесь
+            if os.path.exists(dst_path):
+                auth.unlock_file(dst_path)
             shutil.copy2(src_path, dst_path)
 
     print(f"  [green]✓[/green] [bold]{name}[/bold] -> {info['target']}")
@@ -201,15 +207,28 @@ def run(*args, **kwargs):
     elif not base_dir or not os.path.exists(os.path.join(base_dir, "AEngineApps")):
         base_dir = cwd
 
-    if "--help" in arg or "-h" in arg:
-        _print_help()
-        return
-
-    print(f"\n[bold cyan]🛡️  Инициализация модулей безопасности sec (в {base_dir})[/bold cyan]\n")
+    # 1. Проверка/Создание администратора безопасности
+    admin_file = auth.get_sec_admin_file(base_dir)
+    admin_creds = None
+    
+    if os.path.exists(admin_file):
+        print("[bold cyan][*] Для изменения конфигурации требуется авторизация администратора.[/bold cyan]")
+        if not auth.verify_admin(base_dir):
+            print("[bold red]Ошибка: Авторизация не удалась. Прерывание.[/bold red]")
+            return
+    else:
+        print("[bold yellow][*] Администратор безопасности не найден. Пожалуйста, настройте новый аккаунт.[/bold yellow]")
+        admin_creds = auth.create_admin(base_dir)
+        if not admin_creds:
+            return
 
     # Настройка общих параметров (всегда при полной установке или если выбран dashboard)
     if "--modules" not in arg or "dashboard" in arg:
-        _setup_credentials(base_dir)
+        if admin_creds:
+             print("[bold green][*] Автоматическое применение учетных данных администратора для панели Dashboard.[/bold green]")
+             _setup_credentials(base_dir, login=admin_creds[0], password=admin_creds[1])
+        else:
+             _setup_credentials(base_dir)
         _copy_templates(base_dir)
 
     target_modules = ALL_MODULES
@@ -237,7 +256,12 @@ def _print_help():
   apm sec init                                  Установить все модули
   apm sec init --modules intrusion logs         Установить только указанные
   apm sec init --list                           Показать список доступных модулей
+  apm sec add_admin                             Добавить администратора безопасности
+  apm sec sign                                  Подписать проект
+  apm sec unsign                                Снять подпись
 
 [bold]Доступные модули:[/bold]""")
     for name, info in MODULE_MAP.items():
-        print(f"  [green]{name:15s}[/green] {info['description']}")
+        # Используем os.path.basename для корректного отображения
+        target_name = os.path.basename(info['target'])
+        print(f"  [green]{name:15s}[/green] {info['description']} (-> {target_name})")
