@@ -1,0 +1,552 @@
+{
+    "version": "1.0",
+    "description": "Open Signature Database for AEngine IPS — на основе публичных баз: OWASP CRS, Emerging Threats, Snort Community",
+    "signatures": [
+        {
+            "name": "Log4Shell (CVE-2021-44228)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$\\{jndi:(ldap|rmi|ldaps|dns):",
+            "flags": "i"
+        },
+        {
+            "name": "Log4Shell bypass via lower/upper",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$\\{(lower|upper|env|sys|java|date):",
+            "flags": "i"
+        },
+        {
+            "name": "Spring4Shell (CVE-2022-22965)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "class\\.module\\.classLoader\\.(resources|URLs)",
+            "flags": "i"
+        },
+        {
+            "name": "SpringCloud RCE (CVE-2022-22963)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "spring\\.cloud\\.function\\.routing-expression",
+            "flags": "i"
+        },
+        {
+            "name": "Shellshock (CVE-2014-6271)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\(\\)\\s*\\{\\s*[:;]\\s*\\}\\s*;",
+            "flags": "i"
+        },
+        {
+            "name": "Struts2 OGNL RCE (S2-045/S2-046)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "%\\{\\(#[^}]+\\)\\.?(getValue|exec|getRuntime|ProcessBuilder)",
+            "flags": "i"
+        },
+        {
+            "name": "Struts2 OGNL multipart RCE",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "#_memberAccess|#container|#context\\[",
+            "flags": "i"
+        },
+        {
+            "name": "Apache Druid RCE (CVE-2021-25646)",
+            "category": "RCE",
+            "severity": "high",
+            "pattern": "\"type\"\\s*:\\s*\"javascript\".*\"function\"",
+            "flags": "is"
+        },
+        {
+            "name": "Confluence OGNL Injection (CVE-2022-26134)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$\\{[^}]*(getRuntime|exec|ProcessBuilder|ScriptEngine)",
+            "flags": "i"
+        },
+        {
+            "name": "VMware vCenter RCE (CVE-2021-21972)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "/ui/vropspluginui/rest/services/(uploadova|downloadFile)",
+            "flags": "i"
+        },
+        {
+            "name": "PHP Code Injection via eval",
+            "category": "RCE",
+            "severity": "high",
+            "pattern": "(passthru|shell_exec|system|phpinfo|base64_decode|assert|preg_replace.*/e)\\s*\\(",
+            "flags": "i"
+        },
+        {
+            "name": "PHP Object Injection",
+            "category": "RCE",
+            "severity": "high",
+            "pattern": "O:\\d+:\"[^\"]+\":\\d+:\\{",
+            "flags": "i"
+        },
+        {
+            "name": "Python Code Injection",
+            "category": "RCE",
+            "severity": "high",
+            "pattern": "(os\\.system|os\\.popen|subprocess\\.(call|Popen|run)|__import__)\\s*\\(",
+            "flags": "i"
+        },
+        {
+            "name": "Python pickle deserialization",
+            "category": "RCE",
+            "severity": "high",
+            "pattern": "(pickle\\.(loads|load)|cPickle|yaml\\.unsafe_load)\\s*\\(",
+            "flags": "i"
+        },
+        {
+            "name": "Node.js Code Injection",
+            "category": "RCE",
+            "severity": "high",
+            "pattern": "(child_process|require\\s*\\(\\s*['\"]child_process|spawn|execSync)\\s*\\(",
+            "flags": "i"
+        },
+        {
+            "name": "Server-Side Template Injection (Jinja2)",
+            "category": "SSTI",
+            "severity": "high",
+            "pattern": "\\{\\{.*(__class__|__mro__|__subclasses__|__builtins__|__globals__).*\\}\\}",
+            "flags": "i"
+        },
+        {
+            "name": "SSTI (Twig/Smarty)",
+            "category": "SSTI",
+            "severity": "high",
+            "pattern": "\\{(\\{|%).*?(system|exec|passthru|popen).*?(\\}|%)\\}",
+            "flags": "i"
+        },
+        {
+            "name": "SSTI (Freemarker)",
+            "category": "SSTI",
+            "severity": "high",
+            "pattern": "<#assign\\s+.*=.*\"freemarker\\.template\\.utility\\.(Execute|ObjectConstructor)\"",
+            "flags": "i"
+        },
+        {
+            "name": "Expression Language Injection (EL)",
+            "category": "SSTI",
+            "severity": "high",
+            "pattern": "\\$\\{[^}]*(Runtime|ProcessBuilder|getClass|forName)\\s*\\(",
+            "flags": "i"
+        },
+        {
+            "name": "XXE: External Entity Declaration",
+            "category": "XXE",
+            "severity": "critical",
+            "pattern": "<!ENTITY\\s+\\S+\\s+SYSTEM\\s+[\"']",
+            "flags": "i"
+        },
+        {
+            "name": "XXE: Parameter Entity",
+            "category": "XXE",
+            "severity": "critical",
+            "pattern": "<!ENTITY\\s+%\\s+\\S+\\s+(SYSTEM|PUBLIC)\\s+[\"']",
+            "flags": "i"
+        },
+        {
+            "name": "XXE: DOCTYPE with external DTD",
+            "category": "XXE",
+            "severity": "high",
+            "pattern": "<!DOCTYPE\\s+[^>]+SYSTEM\\s+[\"'](https?|ftp|file|gopher|expect|php):",
+            "flags": "i"
+        },
+        {
+            "name": "SSRF: AWS Metadata Endpoint",
+            "category": "SSRF",
+            "severity": "critical",
+            "pattern": "169\\.254\\.169\\.254(/latest/(meta-data|user-data|api/token))?",
+            "flags": "i"
+        },
+        {
+            "name": "SSRF: GCP Metadata",
+            "category": "SSRF",
+            "severity": "critical",
+            "pattern": "metadata\\.google\\.internal",
+            "flags": "i"
+        },
+        {
+            "name": "SSRF: Azure Metadata",
+            "category": "SSRF",
+            "severity": "critical",
+            "pattern": "169\\.254\\.169\\.254/metadata/",
+            "flags": "i"
+        },
+        {
+            "name": "SSRF: Docker API",
+            "category": "SSRF",
+            "severity": "high",
+            "pattern": "(/var/run/docker\\.sock|http://[^/]*:2375/|http://[^/]*:2376/)",
+            "flags": "i"
+        },
+        {
+            "name": "SSRF: Internal network scan",
+            "category": "SSRF",
+            "severity": "medium",
+            "pattern": "https?://(127\\.|10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)[^/]*/(admin|manager|console)",
+            "flags": "i"
+        },
+        {
+            "name": "SSRF: Cloud metadata via redirect",
+            "category": "SSRF",
+            "severity": "high",
+            "pattern": "@169\\.254\\.169\\.254|0x7f000001|2130706433|017700000001",
+            "flags": "i"
+        },
+        {
+            "name": "Java Deserialization (Commons Collections)",
+            "category": "Deserialization",
+            "severity": "critical",
+            "pattern": "(aced0005|rO0AB|org\\.apache\\.commons\\.collections\\.functors)",
+            "flags": "i"
+        },
+        {
+            "name": "Java Deserialization (ysoserial)",
+            "category": "Deserialization",
+            "severity": "critical",
+            "pattern": "(CommonsCollections|BeanShell|Groovy|Spring|JRMPClient|Jdk7u21)\\d*",
+            "flags": "i"
+        },
+        {
+            "name": ".NET Deserialization (ysoserial.net)",
+            "category": "Deserialization",
+            "severity": "critical",
+            "pattern": "(ObjectDataProvider|ObjectStateFormatter|LosFormatter|ActivitySurrogate)",
+            "flags": "i"
+        },
+        {
+            "name": "Ruby Deserialization (Marshal)",
+            "category": "Deserialization",
+            "severity": "high",
+            "pattern": "\\x04\\x08|Marshal\\.load",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: Time-Based Blind (MySQL)",
+            "category": "SQLi",
+            "severity": "high",
+            "pattern": "(SLEEP\\s*\\(|BENCHMARK\\s*\\(\\d+,|WAITFOR\\s+DELAY|pg_sleep\\s*\\()",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: Error-Based (MySQL)",
+            "category": "SQLi",
+            "severity": "high",
+            "pattern": "(extractvalue|updatexml|floor\\(rand\\(|exp\\(~|geometrycollection\\()",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: UNION-Based",
+            "category": "SQLi",
+            "severity": "high",
+            "pattern": "UNION\\s+(ALL\\s+)?SELECT\\s+",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: Stacked Queries",
+            "category": "SQLi",
+            "severity": "high",
+            "pattern": ";\\s*(DROP|ALTER|CREATE|TRUNCATE|INSERT INTO|UPDATE\\s+\\S+\\s+SET|DELETE\\s+FROM)\\s+",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: Information Schema Access",
+            "category": "SQLi",
+            "severity": "medium",
+            "pattern": "(information_schema|pg_catalog|sys\\.objects|sysobjects|msysaccessobjects)",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: INTO OUTFILE/DUMPFILE",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "INTO\\s+(OUT|DUMP)FILE\\s+['\"]",
+            "flags": "i"
+        },
+        {
+            "name": "SQLi: LOAD_FILE",
+            "category": "SQLi",
+            "severity": "high",
+            "pattern": "LOAD_FILE\\s*\\(",
+            "flags": "i"
+        },
+        {
+            "name": "NoSQLi: MongoDB Operator Injection",
+            "category": "SQLi",
+            "severity": "high",
+            "pattern": "(\\$gt|\\$lt|\\$ne|\\$gte|\\$lte|\\$regex|\\$where|\\$exists)\\s*:",
+            "flags": "i"
+        },
+        {
+            "name": "LFI: PHP Wrappers",
+            "category": "LFI",
+            "severity": "high",
+            "pattern": "(php|data|expect|input|zip|phar|zlib)://",
+            "flags": "i"
+        },
+        {
+            "name": "LFI: Null Byte Injection",
+            "category": "LFI",
+            "severity": "high",
+            "pattern": "%00(\\.|/|\\\\)",
+            "flags": "i"
+        },
+        {
+            "name": "LFI: /proc/self access",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "/proc/self/(environ|cmdline|fd|maps|status|cwd)",
+            "flags": "i"
+        },
+        {
+            "name": "LFI: Windows system files",
+            "category": "LFI",
+            "severity": "high",
+            "pattern": "(boot\\.ini|win\\.ini|system\\.ini|SAM|SYSTEM|autoexec\\.bat)",
+            "flags": "i"
+        },
+        {
+            "name": "LFI: Linux sensitive files",
+            "category": "LFI",
+            "severity": "high",
+            "pattern": "/(etc/(passwd|shadow|hosts|issue|group|motd)|var/log/(auth|syslog|apache))",
+            "flags": "i"
+        },
+        {
+            "name": "RFI: Remote PHP Include",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "=(https?|ftp)://.*\\.(php|txt|asp|jsp)\\??",
+            "flags": "i"
+        },
+        {
+            "name": "Web Shell: China Chopper",
+            "category": "WebShell",
+            "severity": "critical",
+            "pattern": "eval\\s*\\(\\s*(\\$_(POST|GET|REQUEST|COOKIE)\\[|base64_decode\\(|gzinflate\\(|gzuncompress\\(|str_rot13\\()",
+            "flags": "i"
+        },
+        {
+            "name": "Web Shell: WSO/FilesMan",
+            "category": "WebShell",
+            "severity": "critical",
+            "pattern": "(FilesMan|WSO\\s+\\d|c99shell|r57shell|b374k|weevely)",
+            "flags": "i"
+        },
+        {
+            "name": "Web Shell: Backdoor patterns",
+            "category": "WebShell",
+            "severity": "high",
+            "pattern": "(\\$_FILES\\[.*\\]\\[.tmp_name.\\]|move_uploaded_file.*\\$_(GET|POST|REQUEST))",
+            "flags": "i"
+        },
+        {
+            "name": "Web Shell: ASPX/JSP Shell",
+            "category": "WebShell",
+            "severity": "critical",
+            "pattern": "(Runtime\\.getRuntime\\(\\)\\.exec|Process\\s+p\\s*=|cmd\\.exe|/bin/(ba)?sh)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: SQLMap",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(sqlmap/|sqlmap\\.py)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: Nikto",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(Nikto|nikto-)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: Nmap HTTP Scripts",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(Nmap\\s+Scripting\\s+Engine|nmap\\.org)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: DirBuster/Gobuster",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(DirBuster|gobuster|dirsearch|ffuf/)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: Burp Suite",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(Burp(Suite)?|burpcollaborator\\.net|oastify\\.com)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: Nuclei",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(Nuclei|nuclei\\.projectdiscovery|interactsh)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: Acunetix",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(Acunetix|acunetix-wvs|1\\.2\\.3\\.4\\.5\\.6\\.7\\.acunetix)",
+            "flags": "i"
+        },
+        {
+            "name": "Scanner: WPScan",
+            "category": "Scanner",
+            "severity": "medium",
+            "pattern": "(WPScan|wpscan\\.com|wpscan\\.org)",
+            "flags": "i"
+        },
+        {
+            "name": "CRLF Injection",
+            "category": "Injection",
+            "severity": "medium",
+            "pattern": "(%0[dD]%0[aA]|\\\\r\\\\n)(Set-Cookie|Location|Content-Type):",
+            "flags": "i"
+        },
+        {
+            "name": "HTTP Response Splitting",
+            "category": "Injection",
+            "severity": "medium",
+            "pattern": "%0[dD]%0[aA]%0[dD]%0[aA]",
+            "flags": "i"
+        },
+        {
+            "name": "LDAP Injection",
+            "category": "Injection",
+            "severity": "high",
+            "pattern": "[)(|*\\\\].*?(objectClass|objectCategory|memberOf|userPassword|cn=|dc=|ou=)",
+            "flags": "i"
+        },
+        {
+            "name": "XPath Injection",
+            "category": "Injection",
+            "severity": "high",
+            "pattern": "(string\\(|substring\\(|contains\\(|count\\(|concat\\().*(/|\\[|@)",
+            "flags": "i"
+        },
+        {
+            "name": "JWT: None Algorithm Attack",
+            "category": "Auth",
+            "severity": "critical",
+            "pattern": "eyJ[A-Za-z0-9_-]*\\.eyJ[A-Za-z0-9_-]*\\.$",
+            "flags": ""
+        },
+        {
+            "name": "JWT: Algorithm Confusion",
+            "category": "Auth",
+            "severity": "high",
+            "pattern": "\"alg\"\\s*:\\s*\"(none|HS256|HS384|HS512)\".*\"typ\"\\s*:\\s*\"JWT\"",
+            "flags": "i"
+        },
+        {
+            "name": "Path Traversal: Double Encoding",
+            "category": "LFI",
+            "severity": "high",
+            "pattern": "(%252e%252e|%252f|%255c|%25c0%25ae|%25c1%259c)",
+            "flags": "i"
+        },
+        {
+            "name": "Path Traversal: Unicode/UTF-8",
+            "category": "LFI",
+            "severity": "high",
+            "pattern": "(%c0%ae|%c1%9c|%e0%40%ae|\\.%00\\.)",
+            "flags": "i"
+        },
+        {
+            "name": "Open Redirect",
+            "category": "Injection",
+            "severity": "medium",
+            "pattern": "(redirect|url|next|rurl|dest|return_to|checkout_url|continue)=[/\\\\]{2}[^/]",
+            "flags": "i"
+        },
+        {
+            "name": "Prototype Pollution (JS)",
+            "category": "Injection",
+            "severity": "high",
+            "pattern": "(__proto__|constructor\\[.prototype.\\]|Object\\.assign\\(.*__proto__)",
+            "flags": "i"
+        },
+        {
+            "name": "GraphQL Introspection Probe",
+            "category": "Recon",
+            "severity": "low",
+            "pattern": "(__schema|__type|__typename)\\s*\\{",
+            "flags": "i"
+        },
+        {
+            "name": "Git/SVN Exposure",
+            "category": "Recon",
+            "severity": "medium",
+            "pattern": "/\\.(git|svn|hg|bzr)/(HEAD|config|entries|index)",
+            "flags": "i"
+        },
+        {
+            "name": "Environment File Access",
+            "category": "Recon",
+            "severity": "high",
+            "pattern": "/\\.(env|aws|docker|kube|npmrc|pypirc|netrc|htpasswd)",
+            "flags": "i"
+        },
+        {
+            "name": "Backup File Access",
+            "category": "Recon",
+            "severity": "medium",
+            "pattern": "\\.(bak|backup|old|orig|save|swp|tmp|temp|copy|dist)$",
+            "flags": "i"
+        },
+        {
+            "name": "Admin Panel Probe",
+            "category": "Recon",
+            "severity": "low",
+            "pattern": "/(phpmyadmin|adminer|dbadmin|myadmin|pma|sqlmanager|mysql-admin)",
+            "flags": "i"
+        },
+        {
+            "name": "WordPress xmlrpc Brute Force",
+            "category": "BruteForce",
+            "severity": "medium",
+            "pattern": "xmlrpc\\.php.*(wp\\.|system\\.multicall|wp\\.getUsersBlogs)",
+            "flags": "i"
+        },
+        {
+            "name": "Credential Stuffing Headers",
+            "category": "BruteForce",
+            "severity": "medium",
+            "pattern": "(X-Forwarded-For|X-Real-IP|X-Originating-IP):\\s*(127\\.0\\.0\\.1|::1|localhost)",
+            "flags": "i"
+        },
+        {
+            "name": "HTTP Request Smuggling",
+            "category": "Injection",
+            "severity": "critical",
+            "pattern": "(Transfer-Encoding\\s*:\\s*chunked.*Content-Length|Content-Length.*Transfer-Encoding\\s*:\\s*chunked)",
+            "flags": "is"
+        },
+        {
+            "name": "Server-Side Includes (SSI)",
+            "category": "Injection",
+            "severity": "high",
+            "pattern": "<!--\\s*#\\s*(exec|include|echo|config|fsize|flastmod)\\s+",
+            "flags": "i"
+        },
+        {
+            "name": "CORS Misconfiguration Probe",
+            "category": "Recon",
+            "severity": "low",
+            "pattern": "Origin:\\s*https?://(evil\\.com|attacker\\.com|null|localhost)",
+            "flags": "i"
+        }
+    ]
+}

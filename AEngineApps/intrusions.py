@@ -200,7 +200,7 @@ class XSSDetector(BaseDetector):
         
         if len(decoded) > 5:
             matches = sum(1 for ch in self.patterns if ch in decoded)
-            if matches >= 3:
+            if matches >= 1:
                 # Пытаемся вычленить что именно нашли (для лога)
                 found = [p for p in self.patterns if p in decoded]
                 self.log(f"DETECTED XSS: {request.method} {request.path} | patterns: {found}")
@@ -209,90 +209,16 @@ class XSSDetector(BaseDetector):
 
 
 class SignatureDetector(BaseDetector):
-    """Сигнатурный анализ: поиск известных CVE и паттернов атак.
+    """Сигнатурный анализ: поиск известных CVE и паттернов атак."""
     
-    Загружает сигнатуры из открытой базы signatures_db.json.
-    Если файл не найден — использует встроенный набор.
-    """
-    
-    # Встроенные сигнатуры (fallback)
-    _builtin_signatures = {
+    signatures = {
         "Log4Shell (CVE-2021-44228)": re.compile(r"\$\{jndi:(ldap|rmi|ldaps|dns):", re.I),
-        "Spring4Shell (CVE-2022-22965)": re.compile(r"class\.module\.classLoader\.(resources|URLs)", re.I),
+        "Spring4Shell (CVE-2022-22965)": re.compile(r"class\.module\.classLoader\.(resources|urls)", re.I),
         "Shellshock (CVE-2014-6271)": re.compile(r"\(\)\s*\{\s*[:;]\s*\}\s*;", re.I),
-        "Struts2 RCE (S2-045)": re.compile(r"%\{\(#[^}]+\)\.?(getValue|exec|getRuntime)", re.I),
+        "Struts2 RCE (S2-045)": re.compile(r"%\{\(#[^}]+\)\.?(stack\.findValue|java\.lang\.Runtime)", re.I),
         "PHP Serialization Exploit": re.compile(r"O:\d+:\"[^\"]+\":\d+:\{", re.I),
         "Generic Web Shell": re.compile(r"(passthru|shell_exec|system|phpinfo|base64_decode)\s*\(", re.I),
     }
-    
-    signatures = {}
-    _db_loaded = False
-
-    def __init__(self, app: Flask):
-        super().__init__(app)
-        if not SignatureDetector._db_loaded:
-            SignatureDetector._load_db()
-    
-    @classmethod
-    def _load_db(cls):
-        """Загружает сигнатуры из signatures_db.json рядом с этим файлом."""
-        import json
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "signatures_db.json")
-        
-        if os.path.exists(db_path):
-            try:
-                with open(db_path, "r", encoding="utf-8") as f:
-                    db = json.load(f)
-                
-                loaded = 0
-                for sig in db.get("signatures", []):
-                    name = sig.get("name", "Unknown")
-                    pattern = sig.get("pattern")
-                    flags_str = sig.get("flags", "")
-                    
-                    if not pattern:
-                        continue
-                    
-                    flags = 0
-                    if "i" in flags_str:
-                        flags |= re.IGNORECASE
-                    if "s" in flags_str:
-                        flags |= re.DOTALL
-                    if "m" in flags_str:
-                        flags |= re.MULTILINE
-                    
-                    try:
-                        cls.signatures[name] = re.compile(pattern, flags)
-                        loaded += 1
-                    except re.error:
-                        pass
-                
-                cls._db_loaded = True
-                print(f"[IPS] Загружено {loaded} сигнатур из открытой базы ({os.path.basename(db_path)})")
-                return
-            except (json.JSONDecodeError, IOError) as e:
-                print(f"[IPS] Ошибка загрузки базы сигнатур: {e}, используем встроенные")
-        
-        cls.signatures = dict(cls._builtin_signatures)
-        cls._db_loaded = True
-        print(f"[IPS] Используется встроенная база ({len(cls.signatures)} сигнатур)")
-    
-    @classmethod
-    def load_signatures(cls, path: str):
-        """Загрузить дополнительные сигнатуры из указанного JSON файла."""
-        import json
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                db = json.load(f)
-            for sig in db.get("signatures", []):
-                pattern = sig.get("pattern")
-                if pattern:
-                    flags = re.IGNORECASE if "i" in sig.get("flags", "") else 0
-                    if "s" in sig.get("flags", ""):
-                        flags |= re.DOTALL
-                    cls.signatures[sig.get("name", "Custom")] = re.compile(pattern, flags)
-        except Exception as e:
-            print(f"[IPS] Ошибка загрузки доп. сигнатур: {e}")
 
     def run(self) -> None:
         full_data = _get_request_full_data()

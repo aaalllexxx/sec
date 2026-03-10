@@ -9,7 +9,7 @@ import time
 import signal
 import logging
 import threading
-import subprocess
+import multiprocessing
 
 try:
     import psutil
@@ -60,14 +60,6 @@ class LocalCluster:
         Запускает кластер. Вызывается ВМЕСТО app.run().
         Первая нода = Master, остальные = Slave.
         """
-        cluster_port = os.environ.get("AENGINE_CLUSTER_PORT")
-        if cluster_port:
-            # We are inside a child worker process! Bypass normal cluster startup.
-            port = int(cluster_port)
-            role = os.environ.get("AENGINE_CLUSTER_ROLE", "slave")
-            self._node_worker(port, role)
-            return
-
         if len(self.ports) < 2:
             logger.warning("[Cluster] Менее 2 портов — кластеризация бессмысленна. Запускаем обычный сервер.")
             self.app.run(port=self.ports[0])
@@ -75,9 +67,9 @@ class LocalCluster:
 
         self._running = True
 
-        # Храним состояние локально (так как subprocess не имеет общего Manager)
-        # Heartbeat будет реализован через проверку процессов O.S. (или API, если нужно в будущем)
-        self._shared_state = {}
+        # Создаём Manager для межпроцессного обмена состоянием
+        self._manager = multiprocessing.Manager()
+        self._shared_state = self._manager.dict()
         self._shared_state["master_port"] = self.ports[0]
         self._shared_state["active_ports"] = list(self.ports)
 
@@ -105,13 +97,9 @@ class LocalCluster:
         self._running = False
         logger.info("[Cluster] Остановка всех нод...")
         for port, proc in list(self._processes.items()):
-            is_alive = proc.is_alive() if hasattr(proc, 'is_alive') else (proc.poll() is None)
-            if is_alive:
+            if proc.is_alive():
                 proc.terminate()
-                if hasattr(proc, 'join'):
-                    proc.join(timeout=2)
-                else:
-                    proc.wait(timeout=2)
+                proc.join(timeout=3)
                 logger.info("[Cluster] Нода :%d остановлена.", port)
         self._processes.clear()
 
@@ -120,9 +108,7 @@ class LocalCluster:
         nodes = []
         for port in self.ports:
             proc = self._processes.get(port)
-            alive = False
-            if proc:
-                alive = proc.is_alive() if hasattr(proc, 'is_alive') else (proc.poll() is None)
+            alive = proc.is_alive() if proc else False
             nodes.append({
                 "port": port,
                 "role": self._roles.get(port, "unknown"),
@@ -139,37 +125,29 @@ class LocalCluster:
     # ─────────── Внутренние методы ───────────
 
     def _start_node(self, port: int):
-        """Запускает одну ноду в отдельном процессе через subprocess."""
+        """Запускает одну ноду в отдельном процессе."""
         role = self._roles[port]
-        
-        env = os.environ.copy()
-        env["AENGINE_CLUSTER_PORT"] = str(port)
-        env["AENGINE_CLUSTER_ROLE"] = role
-        
-        proc = subprocess.Popen(
-            [sys.executable] + sys.argv,
-            env=env
+        proc = multiprocessing.Process(
+            target=self._node_worker,
+            args=(port, role),
+            daemon=True,
+            name=f"cluster-{role}-{port}",
         )
+        proc.start()
         self._processes[port] = proc
         logger.info("[Cluster] Нода :%d запущена (role=%s, pid=%d)", port, role, proc.pid)
 
     def _node_worker(self, port: int, role: str):
         """Рабочий процесс ноды. Запускает Flask на указанном порту."""
         try:
-            # Переопределяем порт в конфиге приложения для этой ноды
-            self.app.config["port"] = port
-            self.app.config["host"] = "0.0.0.0"
-            # Отключаем debug/reloader в кластере — reloader мешает watchdog
-            self.app.config["debug"] = False
-            os.environ["AENGINE_CLUSTER_ROLE"] = role
-
             if role == "master":
                 logger.info("[Node:%d] Запуск в режиме MASTER", port)
+                self.app.run(host="0.0.0.0", port=port)
             else:
                 logger.info("[Node:%d] Запуск в режиме SLAVE (standby)", port)
-
-            # App.run() читает host/port из self.config, аргументов не принимает
-            self.app.run()
+                # Slave тоже поднимает сервер, но он будет за балансировщиком
+                # или доступен напрямую как резервная точка
+                self.app.run(host="0.0.0.0", port=port)
         except Exception as e:
             logger.error("[Node:%d] Ошибка: %s", port, e)
 
@@ -181,8 +159,7 @@ class LocalCluster:
             current_master = self._shared_state.get("master_port")
 
             for port, proc in list(self._processes.items()):
-                is_alive = proc.poll() is None if hasattr(proc, 'poll') else proc.is_alive()
-                if not is_alive:
+                if not proc.is_alive():
                     role = self._roles.get(port, "?")
                     logger.warning("[Cluster] Нода :%d (%s) упала!", port, role)
 
@@ -202,10 +179,7 @@ class LocalCluster:
             if port == dead_master_port:
                 continue
             proc = self._processes.get(port)
-            is_alive = False
-            if proc:
-                is_alive = proc.poll() is None if hasattr(proc, 'poll') else proc.is_alive()
-            if is_alive:
+            if proc and proc.is_alive():
                 new_master = port
                 break
 

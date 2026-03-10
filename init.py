@@ -11,12 +11,20 @@ MODULE_MAP = {
     "intrusion": {
         "sources": ["intrusions.py"],
         "target": "AEngineApps/intrusions.py",
-        "description": "IDS/IPS и детекторы атак (SQLi, XSS, RCE, LFI, RateLimiter)",
+        "extra_files": [
+            {"src": "signatures_db.json", "dst": "AEngineApps/signatures_db.json"}
+        ],
+        "description": "IDS/IPS и детекторы атак (SQLi, XSS, RCE, LFI, RateLimiter, открытая база сигнатур)",
     },
     "logs": {
         "sources": ["logging.py"],
         "target": "AEngineApps/logging.py",
         "description": "Логирование запросов (Logger)",
+    },
+    "code_signer": {
+        "sources": ["code_signer.py"],
+        "target": "AEngineApps/code_signer.py",
+        "description": "Проверка целостности кода и защита от инъекций",
     },
     "os_protect": {
         "sources": ["os_protect.py"],
@@ -169,6 +177,14 @@ def _install_module(base_dir, name: str) -> bool:
 
     with open(target_path, "w", encoding="utf-8") as f:
         f.write(merged)
+
+    # Копируем дополнительные файлы (e.g. signatures_db.json)
+    for extra in info.get("extra_files", []):
+        src_path = os.path.join(base, extra["src"])
+        dst_path = os.path.join(base_dir, extra["dst"])
+        if os.path.exists(src_path):
+            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            shutil.copy2(src_path, dst_path)
 
     print(f"  [green]✓[/green] [bold]{name}[/bold] -> {info['target']}")
     return True
