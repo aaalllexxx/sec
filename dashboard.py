@@ -57,9 +57,38 @@ class SecDashboardService(Service):
                 login = self.request.form.get("login")
                 password = self.request.form.get("password")
                 
+                # ─── Продвинутая проверка через sec_admin.json ───
+                admin_file = os.path.join(self._app.project_root, ".apm", "sec", "sec_admin.json")
+                if os.path.exists(admin_file):
+                    import json
+                    import hashlib
+                    try:
+                        with open(admin_file, "r") as f:
+                            data = json.load(f)
+                        
+                        # Проверяем логин и хэш пароля
+                        stored_login = data.get("login", "admin")
+                        stored_hash = data.get("admin_hash")
+                        salt = data.get("salt")
+                        
+                        if login == stored_login and stored_hash and salt:
+                            key = hashlib.pbkdf2_hmac(
+                                'sha256', 
+                                password.encode('utf-8'), 
+                                salt.encode('utf-8'), 
+                                100000
+                            )
+                            if key.hex() == stored_hash:
+                                session["sec_admin_logged_in"] = True
+                                return redirect(url_for("sec_dashboard.sec_dashboard__dashboard"))
+                    except Exception as e:
+                        print(f"[!] Ошибка проверки sec_admin: {e}")
+
+                # Fallback на устаревший plaintext конфиг (для совместимости)
                 if login == self.service.admin_login and password == self.service.admin_pass:
                     session["sec_admin_logged_in"] = True
                     return redirect(url_for("sec_dashboard.sec_dashboard__dashboard"))
+                    
                 return render_template("sec/login.html", error="Неверный логин или пароль")
 
         class DashboardScreen(API):

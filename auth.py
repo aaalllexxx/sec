@@ -160,6 +160,7 @@ def create_admin(project_root, password=None):
     )
     
     data = {
+        "login": login,
         "admin_hash": key.hex(),
         "salt": salt
     }
@@ -174,8 +175,18 @@ def create_admin(project_root, password=None):
     # Сразу блокируем файл (Read-Only + Hidden + System)
     lock_file(admin_file, intense=True)
     
-    print(f"[green][+] Администратор безопасности успешно создан и защищен.[/green]")
+    print(f"[green][+] Администратор безопасности [bold]{login}[/bold] успешно создан и защищен.[/green]")
     return (login, password)
+
+def check_password(provided_password, stored_hash, salt):
+    """Низкоуровневая проверка пароля (без побочных эффектов)."""
+    key = hashlib.pbkdf2_hmac(
+        'sha256', 
+        provided_password.encode('utf-8'), 
+        salt.encode('utf-8'), 
+        100000
+    )
+    return key.hex() == stored_hash
 
 def get_or_create_sign_key(project_root):
     """Генерирует или считывает ключ подписи проекта."""
