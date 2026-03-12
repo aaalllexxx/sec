@@ -5,11 +5,6 @@ import hashlib
 import hmac
 import secrets
 try:
-    from rich import print
-except ImportError:
-    pass
-
-try:
     from . import auth
 except ImportError:
     import auth
@@ -53,14 +48,6 @@ def run(base_dir, gconf_path="", args=None):
     project_root = os.getcwd()
     print("=== AEngine: Подпись проекта (Code Signing) ===")
     
-    if not auth.is_admin():
-        print("[bold red][!] ОШИБКА: Для подписи проекта требуются права администратора.[/bold red]")
-        if os.name == 'nt':
-            print("[yellow][*] Запустите терминал от имени Администратора.[/yellow]")
-        else:
-            print("[yellow][*] Используйте: sudo apm sec sign[/yellow]")
-        sys.exit(1)
-        
     if not auth.verify_admin(project_root):
         sys.exit(1)
         
@@ -89,18 +76,17 @@ def run(base_dir, gconf_path="", args=None):
     }
     
     sig_path = os.path.join(project_root, "security.sig")
-    # Снимаем защиту если файл существует
+    # Снимаем защиту если файл заблокирован
     if os.path.exists(sig_path):
         auth.unlock_file(sig_path)
-        
+
     with open(sig_path, "w") as f:
         json.dump(final_sig, f, indent=4)
         
-    print(f"[+] Проект успешно подписан! Файл подписи создан: {sig_path}")
+    print(f"[green][+] Проект успешно подписан! Файл подписи обновлен: {sig_path}[/green]")
     
     # Автоматическая установка прав (Read-Only) для критичных файлов
     print("[*] Установка прав Read-Only на критичные файлы (Защита от перезаписи)...")
-    
     critical_files = [
         "sec_sign.key",
         "security.sig",
@@ -109,29 +95,16 @@ def run(base_dir, gconf_path="", args=None):
         os.path.join("AEngineApps", "code_signer.py")
     ]
     
-    # Защищаем сам модуль безопасности (папку sec)
-    sec_dir = os.path.dirname(os.path.abspath(__file__))
-    if os.path.exists(sec_dir):
-        for root, _, files in os.walk(sec_dir):
-            for file in files:
-                if file.endswith(".py"):
-                    full_path = os.path.join(root, file)
-                    # Добавляем в список для блокировки
-                    critical_files.append(full_path)
-
-    for relative_or_absolute_file in critical_files:
-        if os.path.isabs(relative_or_absolute_file):
-            filepath = relative_or_absolute_file
-            display_name = os.path.basename(filepath)
-        else:
-            filepath = os.path.join(project_root, relative_or_absolute_file)
-            display_name = relative_or_absolute_file
-            
+    import stat
+    import subprocess
+    
+    for relative_file in critical_files:
+        filepath = os.path.join(project_root, relative_file)
         if os.path.exists(filepath):
-            print(f"[*] Обработка {display_name}...")
+            print(f"[*] Обработка {relative_file}...")
             # Для критичных конфигов используем интенсивную блокировку (+R +H +S)
-            intense = "sec_admin.json" in filepath or "sec_sign.key" in filepath
+            intense = "sec_admin.json" in relative_file or "sec_sign.key" in relative_file
             auth.lock_file(filepath, intense=intense)
-            print(f"  [green]✓[/green] Файл {display_name} защищен.")
+            print(f"  [green]✓[/green] Файл {relative_file} защищен.")
                 
     print("[!!] ЗАЩИТА АКТИВИРОВАНА. Чтобы внести изменения в код, потребуется вернуть права на запись.")

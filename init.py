@@ -21,7 +21,7 @@ MODULE_MAP = {
         "description": "IDS/IPS и детекторы атак (SQLi, XSS, RCE, LFI, RateLimiter, открытая база сигнатур)",
     },
     "logs": {
-        "sources": ["logging.py"],
+        "sources": ["sec_logging.py"],
         "target": "AEngineApps/logging.py",
         "description": "Логирование запросов (Logger)",
     },
@@ -106,32 +106,25 @@ def _merge_sources(sources: list) -> str:
 
 
 def _setup_credentials(base_dir, login=None, password=None):
-    """Запрашивает логин/пароль и создает AEngineApps/sec_config.py (Кроссплатформенно)"""
-    if not login or not password:
-        print("\n[bold yellow]🔐 Настройка учетных данных администратора безопасности[/bold yellow]")
-        login = Prompt.ask("Введите логин админа", default="admin")
-        
-        # Кроссплатформенный ввод пароля без эха (рекомендуется rich.prompt или getpass)
-        password = Prompt.ask("Введите пароль админа", password=True)
-    
-    if not password:
-        password = "admin"
-    
-    config_content = f"""# Автоматически сгенерированный конфиг безопасности sec
-# Этот файл защищен подписью и атрибутом Read-Only
-ADMIN_LOGIN = "{login}"
-ADMIN_PASS = "{password}"
-"""
+    """Генерирует AEngineApps/sec_config.py (Без хранения паролей)"""
     config_path = os.path.join(base_dir, "AEngineApps", "sec_config.py")
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     
+    # Мы больше не запрашиваем пароль тут, так как используем sec_admin.json
+    # Сохраняем только логин для отображения в UI или если потребуется
+    admin_login = login or "admin"
+    
+    config_content = f"""# Автоматически сгенерированный конфиг безопасности sec
+# ПРИМЕЧАНИЕ: Мы используем защищенное хранилище .apm/sec/sec_admin.json для паролей.
+ADMIN_LOGIN = "{admin_login}"
+"""
     # Снимаем защиту если файл существует (атрибут +R)
     if os.path.exists(config_path):
         auth.unlock_file(config_path)
 
     with open(config_path, "w", encoding="utf-8") as f:
         f.write(config_content)
-    print(f"  [green]✓[/green] Конфигурация сохранена в {config_path}")
+    print(f"  [green]✓[/green] Конфигурация (без паролей) сохранена в {config_path}")
 
 
 def _copy_templates(base_dir):
