@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>AEngine Security Analytics Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --primary: #38bdf8; 
+            --critical: #ef4444; --warning: #f59e0b; --success: #10b981; 
+            --border: rgba(255,255,255,0.1); --recon: #64748b; --exploit: #c084fc; --actions: #f43f5e; 
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 320px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px; transition: all 0.3s ease; }
+        .main { flex: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at top right, #1e293b, #0f172a); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
+        .card:hover { transform: translateY(-2px); }
+        h1, h2, h3 { margin-top: 0; background: linear-gradient(90deg, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.9em; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: #94a3b8; font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-yellow { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-blue { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
+        .badge-gray { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.3); }
+        .badge-purple { background: rgba(192, 132, 252, 0.2); color: #e9d5ff; border: 1px solid rgba(192,132,252,0.3); }
+        code { font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+        .sidebar-item { padding: 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.05); }
+        .sidebar-item.active { background: rgba(56, 189, 248, 0.1); border-color: var(--primary); }
+        .ip-addr { font-weight: 600; display: block; margin-bottom: 4px; }
+        .ip-meta { font-size: 11px; color: #64748b; }
+        .mermaid { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid rgba(56, 189, 248, 0.1); overflow: hidden; }
+        .mermaid .node rect, .mermaid .node circle, .mermaid .node polygon { fill: #1e293b !important; stroke: #38bdf8 !important; stroke-width: 1px !important; }
+        .mermaid .node .label { color: #f8fafc !important; font-size: 13px !important; font-family: 'JetBrains Mono', monospace !important; }
+        .mermaid .node:hover rect, .mermaid .node:hover circle { fill: #334155 !important; stroke-width: 2px !important; cursor: pointer; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.4)); }
+        .mermaid .edgePath .path { stroke: #475569 !important; stroke-width: 1.5px !important; }
+        .mermaid .marker { fill: #475569 !important; }
+        .chart-container { height: 250px; margin-bottom: 30px; }
+        .highlight-row { background: rgba(56, 189, 248, 0.1) !important; transition: background 0.5s; }
+        .row-critical { background: rgba(239, 68, 68, 0.1) !important; border-left: 3px solid var(--critical) !important; }
+        .row-warning { background: rgba(245, 158, 11, 0.1) !important; border-left: 3px solid var(--warning) !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-item active" id="sidebar-home" onclick="showDashboard()">
+            <span class="ip-addr">🏠 Общий обзор</span>
+            <span class="ip-meta">Статистика и графики</span>
+        </div>
+        <div style="margin-top:20px; padding:0 12px; font-size: 0.7em; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Подозрительные IP</div>
+        <!-- SIDEBAR_ITEMS -->
+    </div>
+
+    <div class="main">
+        <div id="dashboard">
+            <h1>Обзор безопасности</h1>
+            <div style="display:flex; gap:20px;">
+                <div class="card" style="flex:1;"><h3>Источник логов</h3><code>{{LOG_PATH}}</code></div>
+                <div class="card" style="flex:1;"><h3>Дата отчета</h3><code>{{REPORT_DATE}}</code></div>
+            </div>
+            
+            <div style="display:flex; gap:20px; margin-top:20px;">
+                <div class="card" style="flex:2;">
+                    <h3>Ландшафт угроз</h3>
+                    <div class="chart-container"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="card" style="flex:1;">
+                    <h3>Распределение</h3>
+                    <div class="chart-container"><canvas id="pieChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="host-details" style="display:none;">
+            <!-- HOST_CONTENTS -->
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({startOnLoad:false, theme:'dark', securityLevel:'loose', flowchart:{curve:'basis', rankSpacing:50, nodeSpacing:50}});
+        
+        function highlightRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                row.classList.add('highlight-row');
+                setTimeout(() => row.classList.remove('highlight-row'), 2000);
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('host-details').style.display = 'none';
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('sidebar-home').classList.add('active');
+        }
+
+        function showIP(ip, el) {
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('host-details').style.display = 'block';
+            document.querySelectorAll('.host-content').forEach(c => c.style.display = 'none');
+            const content = document.getElementById('content-' + ip);
+            if (content) content.style.display = 'block';
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            
+            // Re-render mermaid for this container if needed
+            const mermaidDiv = content.querySelector('.mermaid');
+            if (mermaidDiv && !mermaidDiv.getAttribute('data-processed')) {
+                mermaid.run({ nodes: [mermaidDiv] });
+            }
+        }
+
+        // Charts Initialization
+        const chartLabels = {{CHART_LABELS}};
+        const chartScores = {{CHART_SCORES}};
+        const chartReqs = {{CHART_REQS}};
+
+        const ctxMain = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctxMain, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Уровень риска (%)',
+                    data: chartScores,
+                    backgroundColor: 'rgba(56, 189, 248, 0.4)',
+                    borderColor: '#38bdf8',
+                    borderWidth: 2,
+                    borderRadius: 5
+                }, {
+                    label: 'Всего запросов',
+                    data: chartReqs,
+                    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                    type: 'line',
+                    borderColor: '#94a3b8',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartScores,
+                    backgroundColor: [
+                        '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185',
+                        '#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#6ee7b7'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Click listeners for mermaid
+        document.addEventListener('click', (e) => {
+            const node = e.target.closest('.node');
+            if (node) {
+                const id = node.id;
+                if (id && id.startsWith('R')) {
+                    highlightRow('row-' + id.substring(1));
+                }
+            }
+        });
+    </script>
+</body>
+</html>
