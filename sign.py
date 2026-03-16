@@ -5,6 +5,11 @@ import hashlib
 import hmac
 import secrets
 try:
+    from rich import print
+except ImportError:
+    pass
+
+try:
     from . import auth
 except ImportError:
     import auth

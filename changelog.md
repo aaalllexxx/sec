@@ -1,5 +1,10 @@
 # Changelog (sec)
 
+## [2.6.1] - 2026-03-16
+### Changed
+- **Rich Output**: Реализован вывод через библиотеку `rich` в модулях `sign.py` и `unsign.py` для улучшения читаемости и поддержки цветов в терминале.
+- **Refactoring**: Удалены дублирующиеся копии `AEngineApps` внутри модуля `sec`, теперь используется общая библиотека из корня проекта.
+
 ## [2.6.0] - 2026-03-10
 ### Added
 - **Cross-Platform Protection**: Unified `auth.py` with `lock_file`/`unlock_file` supporting `attrib` (Windows) and `chmod` (POSIX).

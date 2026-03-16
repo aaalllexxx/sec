@@ -3,6 +3,11 @@ import sys
 import stat
 import subprocess
 try:
+    from rich import print
+except ImportError:
+    pass
+
+try:
     from . import auth
 except ImportError:
     import auth
@@ -33,7 +38,7 @@ def run(base_dir, gconf_path="", args=None):
             print(f"[*] Снятие защиты с {relative_file}...")
             auth.unlock_file(filepath)
             print(f"  [green]✓[/green] Файл {relative_file} доступен для записи.")
-
+ 
     # 2. Удаляем файл подписи
     sig_path = os.path.join(project_root, "security.sig")
     if os.path.exists(sig_path):
@@ -44,5 +49,5 @@ def run(base_dir, gconf_path="", args=None):
             print(f"[!] Не удалось удалить файл подписи: {e}")
     else:
         print("[*] Файл подписи не найден.")
-
+ 
     print("\n[SUCCESS] Проект успешно переведен в режим разработки. Подпись снята.")
