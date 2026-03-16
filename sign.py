@@ -81,6 +81,10 @@ def run(base_dir, gconf_path="", args=None):
     }
     
     sig_path = os.path.join(project_root, "security.sig")
+    # Снимаем защиту если файл существует
+    if os.path.exists(sig_path):
+        auth.unlock_file(sig_path)
+        
     with open(sig_path, "w") as f:
         json.dump(final_sig, f, indent=4)
         
