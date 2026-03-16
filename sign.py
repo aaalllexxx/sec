@@ -92,6 +92,7 @@ def run(base_dir, gconf_path="", args=None):
     
     # Автоматическая установка прав (Read-Only) для критичных файлов
     print("[*] Установка прав Read-Only на критичные файлы (Защита от перезаписи)...")
+    
     critical_files = [
         "sec_sign.key",
         "security.sig",
@@ -100,16 +101,29 @@ def run(base_dir, gconf_path="", args=None):
         os.path.join("AEngineApps", "code_signer.py")
     ]
     
-    import stat
-    import subprocess
-    
-    for relative_file in critical_files:
-        filepath = os.path.join(project_root, relative_file)
+    # Защищаем сам модуль безопасности (папку sec)
+    sec_dir = os.path.dirname(os.path.abspath(__file__))
+    if os.path.exists(sec_dir):
+        for root, _, files in os.walk(sec_dir):
+            for file in files:
+                if file.endswith(".py"):
+                    full_path = os.path.join(root, file)
+                    # Добавляем в список для блокировки
+                    critical_files.append(full_path)
+
+    for relative_or_absolute_file in critical_files:
+        if os.path.isabs(relative_or_absolute_file):
+            filepath = relative_or_absolute_file
+            display_name = os.path.basename(filepath)
+        else:
+            filepath = os.path.join(project_root, relative_or_absolute_file)
+            display_name = relative_or_absolute_file
+            
         if os.path.exists(filepath):
-            print(f"[*] Обработка {relative_file}...")
+            print(f"[*] Обработка {display_name}...")
             # Для критичных конфигов используем интенсивную блокировку (+R +H +S)
-            intense = "sec_admin.json" in relative_file or "sec_sign.key" in relative_file
+            intense = "sec_admin.json" in filepath or "sec_sign.key" in filepath
             auth.lock_file(filepath, intense=intense)
-            print(f"  [green]✓[/green] Файл {relative_file} защищен.")
+            print(f"  [green]✓[/green] Файл {display_name} защищен.")
                 
     print("[!!] ЗАЩИТА АКТИВИРОВАНА. Чтобы внести изменения в код, потребуется вернуть права на запись.")
