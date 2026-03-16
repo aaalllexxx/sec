@@ -26,41 +26,51 @@ except ImportError:
                 return getpass.getpass(f"{text}: ")
             return input(f"{text} [{default}]: ") or default
 
+def is_admin():
+    """Проверяет, запущен ли скрипт с правами администратора/root."""
+    try:
+        if os.name == 'nt':
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        else:
+            return os.getuid() == 0
+    except Exception:
+        return False
+
 def lock_file(filepath, intense=False):
     """
     Устанавливает расширенную защиту:
+    - Смена владельца на администратора (root/Admin)
     - Read-Only (Запрет изменения)
-    - Anti-Delete/Anti-Move (Запрет удаления и перемещения)
-    - Hidden/System (Для критичных файлов на Windows)
+    - Anti-Delete (Запрет удаления)
+    - Hidden/System (На Windows)
     """
     if not os.path.exists(filepath):
         return
     try:
-        # 1. POSIX (Linux/macOS)
-        if os.name != 'nt':
-            # Убираем права на запись (W) для всех
-            current_mode = os.stat(filepath).st_mode
-            os.chmod(filepath, current_mode & ~stat.S_IWUSR & ~stat.S_IWGRP & ~stat.S_IWOTH)
+        if os.name == 'nt':
+            # Windows: Смена владельца на Администраторов и настройка ACL
+            subprocess.run(f'icacls "{filepath}" /setowner "Administrators"', shell=True, capture_output=True)
+            subprocess.run(f'icacls "{filepath}" /inheritance:r /grant:r "Administrators":(F) /grant:r "SYSTEM":(F)', shell=True, capture_output=True)
             
-            # Попытка установить атрибут "immutable" (требует root, но стоит попробовать)
-            # Это предотвращает удаление и переименование
-            try:
-                subprocess.run(['chattr', '+i', filepath], capture_output=True)
-            except Exception:
-                pass
-        
-        # 2. Windows (NT)
-        else:
-            # Атрибуты: Только чтение (+R), Скрытый (+H), Системный (+S)
             flags = "+R"
             if intense:
                 flags += " +H +S"
             subprocess.run(f'attrib {flags} "{filepath}"', shell=True, capture_output=True)
-            
-            # Запрет удаления через ACL (icacls)
-            # D - Delete permission
             subprocess.run(f'icacls "{filepath}" /deny Everyone:(D)', shell=True, capture_output=True)
+        
+        else:
+            # Linux: Смена владельца на root и установка прав
+            if is_admin():
+                subprocess.run(['chown', 'root:root', filepath], capture_output=True)
             
+            os.chmod(filepath, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH) # 444
+            
+            try:
+                subprocess.run(['chattr', '+i', filepath], capture_output=True)
+            except Exception:
+                pass
+                
     except Exception as e:
         print(f"[yellow]![/yellow] Не удалось заблокировать {os.path.basename(filepath)}: {e}")
 
@@ -69,26 +79,23 @@ def unlock_file(filepath):
     if not os.path.exists(filepath):
         return
     try:
-        # 1. POSIX (Linux/macOS)
-        if os.name != 'nt':
-            # Снимаем атрибут "immutable"
+        if os.name == 'nt':
+            # Windows
+            subprocess.run(f'icacls "{filepath}" /remove:d Everyone', shell=True, capture_output=True)
+            subprocess.run(f'icacls "{filepath}" /grant:r Everyone:(M)', shell=True, capture_output=True)
+            subprocess.run(f'attrib -R -H -S "{filepath}"', shell=True, capture_output=True)
+        else:
+            # Linux
             try:
                 subprocess.run(['chattr', '-i', filepath], capture_output=True)
             except Exception:
                 pass
+            
+            if is_admin():
+                os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH) # 644
+            else:
+                subprocess.run(['chmod', '644', filepath], capture_output=True)
                 
-            # Добавляем права на запись владельцу
-            current_mode = os.stat(filepath).st_mode
-            os.chmod(filepath, current_mode | stat.S_IWUSR)
-            
-        # 2. Windows (NT)
-        else:
-            # Снимаем запрет на удаление в ACL
-            subprocess.run(f'icacls "{filepath}" /remove:d Everyone', shell=True, capture_output=True)
-            
-            # Снимаем атрибуты
-            subprocess.run(f'attrib -R -H -S "{filepath}"', shell=True, capture_output=True)
-            
     except Exception as e:
         print(f"[yellow]![/yellow] Не удалось разблокировать {os.path.basename(filepath)}: {e}")
 

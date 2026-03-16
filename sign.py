@@ -53,6 +53,14 @@ def run(base_dir, gconf_path="", args=None):
     project_root = os.getcwd()
     print("=== AEngine: Подпись проекта (Code Signing) ===")
     
+    if not auth.is_admin():
+        print("[bold red][!] ОШИБКА: Для подписи проекта требуются права администратора.[/bold red]")
+        if os.name == 'nt':
+            print("[yellow][*] Запустите терминал от имени Администратора.[/yellow]")
+        else:
+            print("[yellow][*] Используйте: sudo apm sec sign[/yellow]")
+        sys.exit(1)
+        
     if not auth.verify_admin(project_root):
         sys.exit(1)
         
