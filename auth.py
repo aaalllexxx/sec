@@ -7,7 +7,7 @@ import sys
 
 def get_sec_admin_file(project_root):
     """Возвращает путь к файлу данных администратора."""
-    sec_dir = os.path.join(project_root, ".apm", "sec")
+    sec_dir = os.path.join(os.path.abspath(project_root), ".apm", "sec")
     os.makedirs(sec_dir, exist_ok=True)
     return os.path.join(sec_dir, "sec_admin.json")
 
@@ -27,33 +27,68 @@ except ImportError:
             return input(f"{text} [{default}]: ") or default
 
 def lock_file(filepath, intense=False):
-    """Устанавливает атрибут Read-Only. Если intense=True, также делает файл скрытым и системным на Windows."""
+    """
+    Устанавливает расширенную защиту:
+    - Read-Only (Запрет изменения)
+    - Anti-Delete/Anti-Move (Запрет удаления и перемещения)
+    - Hidden/System (Для критичных файлов на Windows)
+    """
     if not os.path.exists(filepath):
         return
     try:
-        # Универсальный chmod для всех систем: убираем права на запись (W) для всех
-        current_mode = os.stat(filepath).st_mode
-        os.chmod(filepath, current_mode & ~stat.S_IWRITE & ~stat.S_IWGRP & ~stat.S_IWOTH)
+        # 1. POSIX (Linux/macOS)
+        if os.name != 'nt':
+            # Убираем права на запись (W) для всех
+            current_mode = os.stat(filepath).st_mode
+            os.chmod(filepath, current_mode & ~stat.S_IWUSR & ~stat.S_IWGRP & ~stat.S_IWOTH)
+            
+            # Попытка установить атрибут "immutable" (требует root, но стоит попробовать)
+            # Это предотвращает удаление и переименование
+            try:
+                subprocess.run(['chattr', '+i', filepath], capture_output=True)
+            except Exception:
+                pass
         
-        if os.name == 'nt':
+        # 2. Windows (NT)
+        else:
+            # Атрибуты: Только чтение (+R), Скрытый (+H), Системный (+S)
             flags = "+R"
             if intense:
                 flags += " +H +S"
             subprocess.run(f'attrib {flags} "{filepath}"', shell=True, capture_output=True)
+            
+            # Запрет удаления через ACL (icacls)
+            # D - Delete permission
+            subprocess.run(f'icacls "{filepath}" /deny Everyone:(D)', shell=True, capture_output=True)
+            
     except Exception as e:
         print(f"[yellow]![/yellow] Не удалось заблокировать {os.path.basename(filepath)}: {e}")
 
 def unlock_file(filepath):
-    """Снимает атрибуты Read-Only, Hidden, System."""
+    """Снимает расширенную защиту файла."""
     if not os.path.exists(filepath):
         return
     try:
-        if os.name == 'nt':
+        # 1. POSIX (Linux/macOS)
+        if os.name != 'nt':
+            # Снимаем атрибут "immutable"
+            try:
+                subprocess.run(['chattr', '-i', filepath], capture_output=True)
+            except Exception:
+                pass
+                
+            # Добавляем права на запись владельцу
+            current_mode = os.stat(filepath).st_mode
+            os.chmod(filepath, current_mode | stat.S_IWUSR)
+            
+        # 2. Windows (NT)
+        else:
+            # Снимаем запрет на удаление в ACL
+            subprocess.run(f'icacls "{filepath}" /remove:d Everyone', shell=True, capture_output=True)
+            
+            # Снимаем атрибуты
             subprocess.run(f'attrib -R -H -S "{filepath}"', shell=True, capture_output=True)
             
-        # POSIX: добавляем права на запись владельцу
-        current_mode = os.stat(filepath).st_mode
-        os.chmod(filepath, current_mode | stat.S_IWRITE)
     except Exception as e:
         print(f"[yellow]![/yellow] Не удалось разблокировать {os.path.basename(filepath)}: {e}")
 
