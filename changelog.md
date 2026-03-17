@@ -2,6 +2,21 @@
 
 All notable changes to the AEngine Security modules will be documented in this file.
 
+## [3.6.0] - 2026-03-17
+
+### Added
+- **Privilege Escalation**: `_run_as_admin()` — выполняет команды через `sudo` (Linux) / `powershell Start-Process -Verb RunAs` (Windows) при отсутствии прав администратора
+- **Full File Protection**: `lock_file()` теперь использует `takeown /a` + ACL deny `Everyone:(D,DC)` (Windows) / `chown root` + `chattr +i` (Linux) для полного запрета удаления
+- **Full Permission Restore**: `unlock_file()` полностью восстанавливает права: возвращает владельца текущему пользователю, снимает все deny-записи, восстанавливает наследование (Windows) / снимает immutable bit (Linux)
+
+### Fixed
+- **Base Path**: `init.py` — ненадёжный `os.sep.join(__file__.split(...))` заменён на `os.path.dirname(os.path.abspath(__file__))`
+- **Input Conflict**: `auth.py` — `input()` заменён на `Prompt.ask()` для совместимости с кастомным `input()` из APM `helpers.py`
+
+### Improved
+- **sign.py** / **unsign.py**: предупреждение + автозапрос UAC/sudo если нет прав администратора ОС
+- Улучшены сообщения о статусе защиты при sign/unsign
+
 ## [3.5.0] - 2026-03-12
 
 ### Added

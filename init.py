@@ -8,7 +8,7 @@ try:
 except ImportError:
     import auth
 
-base = os.sep.join(__file__.split(os.sep)[:-1])
+base = os.path.dirname(os.path.abspath(__file__))
 
 # ─── Маппинг: имя модуля -> список файлов для объединения в один целевой ───
 MODULE_MAP = {

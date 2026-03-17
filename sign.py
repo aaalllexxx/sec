@@ -14,24 +14,18 @@ except ImportError:
 def scan_files(directory):
     """Рекурсивно сканирует директорию на наличие python и html файлов, игнорируя служебные."""
     ignore_dirs = {'.git', '.apm', '__pycache__', 'venv', 'env', 'logs'}
-    # Защита от инъекций библиотек: мы сканируем AEngineApps, sec, и сам проект. 
-    # (venv/env игнорируются для скорости, но в идеале библиотеки тоже стоит подписывать)
-    
     valid_ext = {'.py', '.html', '.json', '.js', '.css'}
     result = {}
     
     for root, dirs, files in os.walk(directory):
-        # Удаляем игнорируемые директории из обхода
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
         
         for file in files:
             ext = os.path.splitext(file)[1].lower()
             if ext in valid_ext:
                 filepath = os.path.join(root, file)
-                # Вычисляем относительный путь для универсальности
                 rel_path = os.path.relpath(filepath, directory)
                 
-                # Не подписываем саму подпись и ключ!
                 if file in ("security.sig", "sec_sign.key", "sec_admin.json", "signatures_db.json"):
                     continue
                     
@@ -52,6 +46,14 @@ def run(base_dir, gconf_path="", args=None):
         sys.exit(1)
         
     print("[+] Авторизация успешна. Сканирование файлов проекта...")
+    
+    # Проверяем права администратора ОС и запрашиваем если нужно
+    if not auth.is_admin():
+        print("[yellow][!] Для полной защиты файлов требуются права администратора ОС.[/yellow]")
+        if os.name == 'nt':
+            print("[yellow][*] Команды защиты будут запрашивать повышение привилегий (UAC).[/yellow]")
+        else:
+            print("[yellow][*] Команды защиты будут выполняться через sudo.[/yellow]")
     
     file_hashes = scan_files(project_root)
     print(f"[*] Найдено файлов для подписи: {len(file_hashes)}")
@@ -83,10 +85,10 @@ def run(base_dir, gconf_path="", args=None):
     with open(sig_path, "w") as f:
         json.dump(final_sig, f, indent=4)
         
-    print(f"[green][+] Проект успешно подписан! Файл подписи обновлен: {sig_path}[/green]")
+    print(f"[green][+] Проект успешно подписан! Файл подписи: {sig_path}[/green]")
     
-    # Автоматическая установка прав (Read-Only) для критичных файлов
-    print("[*] Установка прав Read-Only на критичные файлы (Защита от перезаписи)...")
+    # Установка защиты на критичные файлы
+    print("[*] Установка защиты на критичные файлы...")
     critical_files = [
         "sec_sign.key",
         "security.sig",
@@ -95,16 +97,14 @@ def run(base_dir, gconf_path="", args=None):
         os.path.join("AEngineApps", "code_signer.py")
     ]
     
-    import stat
-    import subprocess
-    
     for relative_file in critical_files:
         filepath = os.path.join(project_root, relative_file)
         if os.path.exists(filepath):
-            print(f"[*] Обработка {relative_file}...")
-            # Для критичных конфигов используем интенсивную блокировку (+R +H +S)
+            # Для критичных конфигов используем интенсивную блокировку (+H +S на Windows)
             intense = "sec_admin.json" in relative_file or "sec_sign.key" in relative_file
             auth.lock_file(filepath, intense=intense)
-            print(f"  [green]✓[/green] Файл {relative_file} защищен.")
+            print(f"  [green]✓[/green] {relative_file} — защищён (владелец: администратор, запрет удаления)")
                 
-    print("[!!] ЗАЩИТА АКТИВИРОВАНА. Чтобы внести изменения в код, потребуется вернуть права на запись.")
+    print("\n[bold green]✓ ЗАЩИТА АКТИВИРОВАНА.[/bold green]")
+    print("[dim]  Файлы принадлежат администратору ОС и защищены от удаления.[/dim]")
+    print("[dim]  Для внесения изменений выполните: apm sec unsign[/dim]")

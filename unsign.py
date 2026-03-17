@@ -1,7 +1,6 @@
 import os
 import sys
-import stat
-import subprocess
+
 try:
     from rich import print
 except ImportError:
@@ -12,7 +11,6 @@ try:
 except ImportError:
     import auth
 
-# Helper functions moved to auth.py
 
 def run(base_dir, gconf_path="", args=None):
     project_root = os.getcwd()
@@ -23,6 +21,14 @@ def run(base_dir, gconf_path="", args=None):
         
     print("[+] Авторизация успешна. Снятие защиты с файлов...")
     
+    # Проверяем права администратора ОС
+    if not auth.is_admin():
+        print("[yellow][!] Для полного снятия защиты требуются права администратора ОС.[/yellow]")
+        if os.name == 'nt':
+            print("[yellow][*] Команды будут запрашивать повышение привилегий (UAC).[/yellow]")
+        else:
+            print("[yellow][*] Команды будут выполняться через sudo.[/yellow]")
+    
     critical_files = [
         "sec_sign.key",
         "security.sig",
@@ -31,23 +37,26 @@ def run(base_dir, gconf_path="", args=None):
         os.path.join("AEngineApps", "code_signer.py")
     ]
     
-    # 1. Снимаем атрибуты Read-Only
+    # 1. Снимаем всю защиту: ACL, атрибуты, immutable bit, владелец
     for relative_file in critical_files:
         filepath = os.path.join(project_root, relative_file)
         if os.path.exists(filepath):
             print(f"[*] Снятие защиты с {relative_file}...")
             auth.unlock_file(filepath)
-            print(f"  [green]✓[/green] Файл {relative_file} доступен для записи.")
+            print(f"  [green]✓[/green] {relative_file} — доступен для записи и удаления")
  
     # 2. Удаляем файл подписи
     sig_path = os.path.join(project_root, "security.sig")
     if os.path.exists(sig_path):
         try:
             os.remove(sig_path)
-            print(f"[+] Файл подписи {os.path.basename(sig_path)} удален.")
+            print(f"[+] Файл подписи {os.path.basename(sig_path)} удалён.")
         except Exception as e:
             print(f"[!] Не удалось удалить файл подписи: {e}")
     else:
         print("[*] Файл подписи не найден.")
  
-    print("\n[SUCCESS] Проект успешно переведен в режим разработки. Подпись снята.")
+    print("\n[bold green]✓ ЗАЩИТА СНЯТА.[/bold green]")
+    print("[dim]  Все файлы возвращены текущему пользователю.[/dim]")
+    print("[dim]  Файлы можно изменять и удалять.[/dim]")
+    print("[dim]  Для повторной защиты выполните: apm sec sign[/dim]")
