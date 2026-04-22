@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>AEngine Security Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --glass-bg: rgba(30, 41, 59, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #38bdf8;
+            --accent-rose: #f43f5e;
+            --accent-emerald: #10b981;
+            --accent-gold: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --bg-deep: #0b0f1a;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 0% 0%, #1e293b 0%, #0b0f1a 100%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            padding: 2.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .sidebar-brand svg {
+            width: 32px;
+            height: 32px;
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-brand h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        .sidebar-brand span {
+            color: var(--accent-cyan);
+        }
+
+        .nav-menu {
+            padding: 2rem 1rem;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border-color: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2.5rem;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .header-title p {
+            margin: 0.5rem 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Dashboard Components */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* Metrics */
+        .metric-card {
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-cyan);
+        }
+
+        .metric-card.rose::before {
+            background: var(--accent-rose);
+        }
+
+        .metric-card.emerald::before {
+            background: var(--accent-emerald);
+        }
+
+        .metric-card h4 {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card .value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin: 0.75rem 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .metric-card .trend {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        /* Health Gauge */
+        .health-gauge-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .gauge {
+            position: relative;
+            width: 140px;
+            height: 140px;
+        }
+
+        .gauge svg {
+            transform: rotate(-90deg);
+        }
+
+        .gauge circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+
+        .gauge .bg {
+            stroke: rgba(255, 255, 255, 0.05);
+        }
+
+        .gauge .progress {
+            stroke: var(--accent-emerald);
+            transition: stroke-dashoffset 1s ease;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+        }
+
+        .gauge .text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Status Pills */
+        .status-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bg-ok {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .bg-danger {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .bg-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* Activity Rows */
+        .activity-row {
+            padding: 1.25rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .activity-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--glass-border);
+        }
+
+        .activity-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+        }
+
+        /* Tabs */
+        .tab-content {
+            display: none;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom UI */
+        .btn {
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.rose {
+            background: var(--accent-rose);
+            color: white;
+        }
+
+        .select-input {
+            background: #1e293b;
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            padding: 0.6rem;
+            border-radius: 8px;
+            width: 100%;
+            outline: none;
+            transition: border 0.3s;
+            cursor: pointer;
+        }
+
+        .select-input option {
+            background: #1e293b;
+            color: var(--text-main);
+        }
+
+        .select-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        /* Tooltip simple */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            width: max-content;
+            max-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.2s;
+            z-index: 1000;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-tooltip]:hover:after {
+            opacity: 1;
+            visibility: visible;
+            bottom: calc(125% + 5px);
+        }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        td:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        td:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .live-pulse {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-emerald);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .live-pulse::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: inherit;
+            animation: pulse-ring 1.5s cubic-bezier(0.25, 0.1, 0.2, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(3.5);
+                opacity: 0;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <h1>SEC <span>ADMIN</span></h1>
+        </div>
+
+        <nav class="nav-menu">
+            <a onclick="showTab('overview')" class="nav-item active" id="btn-overview">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Обзор
+            </a>
+            <a onclick="showTab('logs')" class="nav-item" id="btn-logs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Инциденты
+            </a>
+            <a onclick="showTab('system')" class="nav-item" id="btn-system">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="22" y1="12" x2="18" y2="12"></line>
+                    <line x1="6" y1="12" x2="2" y2="12"></line>
+                    <line x1="12" y1="6" x2="12" y2="2"></line>
+                    <line x1="12" y1="22" x2="12" y2="18"></line>
+                </svg>
+                Система
+            </a>
+            <a onclick="showTab('network')" class="nav-item" id="btn-network">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                </svg>
+                Сеть
+            </a>
+            <a onclick="showTab('management')" class="nav-item" id="btn-management">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Безопасность
+            </a>
+            <a onclick="showTab('settings')" class="nav-item" id="btn-settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Настройки
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p
+                style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-weight: 700;">
+                Обновление</p>
+            <select id="refresh-rate" class="select-input" onchange="changeRefreshRate()">
+                <option value="2000">Быстро (2с)</option>
+                <option value="5000" selected>Нормально (5с)</option>
+                <option value="15000">Медленно (15с)</option>
+                <option value="0">Пауза</option>
+            </select>
+            <a href="{{ url_for('sec_dashboard.sec_dashboard__logout') }}"
+                style="margin-top: 1.5rem; display: flex; align-items:center; gap:0.5rem; text-decoration:none; color: var(--accent-rose); font-weight:700; font-size:0.9rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Выйти
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        <div class="header">
+            <div class="header-title">
+                <h2 id="tab-title">Обзор системы</h2>
+                <div style="display:flex; align-items:center; gap: 0.75rem;">
+                    <span class="live-pulse"></span>
+                    <p id="live-status">Подключение активно. Данные поступают в реальном времени.</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="text-align: right;">
+                    <p style="margin:0; font-weight:700;">Администратор</p>
+                    <p id="last-update-time" style="margin:0; font-size:0.75rem; color: var(--text-muted);">Обновлено
+                        только что</p>
+                </div>
+                <div
+                    style="width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-cyan), #6366f1); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:1.2rem;">
+                    A</div>
+            </div>
+        </div>
+
+        <!-- TAB: OVERVIEW -->
+        <div id="overview" class="tab-content active">
+            <div class="grid grid-3" style="margin-bottom: 2rem;">
+                <div class="glass-panel metric-card" data-tooltip="Общая загрузка всех ядер процессора">
+                    <h4>Процессор (CPU)</h4>
+                    <div class="value" id="val-cpu">0%</div>
+                    <div class="trend" id="trend-cpu" style="color: var(--accent-emerald);">–– Поток стабилен</div>
+                </div>
+                <div class="glass-panel metric-card" data-tooltip="Использование доступной оперативной памяти">
+                    <h4>Память (RAM)</h4>
+                    <div class="value" id="val-ram">0%</div>
+                    <div class="trend" id="trend-ram" style="color: var(--accent-emerald);">–– Оптимально</div>
+                </div>
+                <div class="glass-panel metric-card rose" data-tooltip="Привилегии процесса приложения">
+                    <h4>Безопасность</h4>
+                    <div class="value" id="val-priv" style="font-size: 1.5rem; margin-top: 1.2rem;">USER</div>
+                    <div class="trend" style="color: var(--text-muted);">Принцип Least Privilege</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="glass-panel" style="padding: 2rem;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                        <h3 style="margin:0; font-weight:700; font-size:1.1rem;">📈 Мониторинг</h3>
+                        <span class="status-badge bg-ok">REAL-TIME</span>
+                    </div>
+                    <div style="height: 280px;">
+                        <canvas id="sysChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel health-gauge-container">
+                    <h3 style="margin:0 0 1.5rem; font-weight:700; font-size:1.1rem; align-self:flex-start;">🛡️ Индекс
+                        защиты</h3>
+                    <div class="gauge">
+                        <svg width="140" height="140">
+                            <circle class="bg" cx="70" cy="70" r="64" />
+                            <circle id="gauge-progress" class="progress" cx="70" cy="70" r="64" />
+                        </svg>
+                        <div class="text" id="health-score">0%</div>
+                    </div>
+                    <div id="anomaly-summary" style="margin-top: 1.5rem; width: 100%;">
+                        <!-- Dynamic Status -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: LOGS -->
+        <div id="logs" class="tab-content">
+            <div class="glass-panel" style="padding: 2rem;">
+                <div class="table-wrap">
+                    <table id="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Уровень</th>
+                                <th>Сообщение инцидента</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-body">
+                            <tr>
+                                <td colspan="3" style="text-align:center; padding: 4rem; color: var(--text-muted);">
+                                    Загрузка журнала...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SYSTEM -->
+        <div id="system" class="tab-content">
+            <div style="display:flex; gap: 1.5rem; flex-direction: column;">
+                <div class="glass-panel"
+                    style="padding: 2rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3 style="margin:0;">Глубокий анализ среды</h3>
+                        <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Проверка запущенных процессов, активных
+                            сессий и конфигурации.</p>
+                    </div>
+                    <button class="btn rose" id="deepScanBtn" onclick="deepScan()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Запустить сканирование
+                    </button>
+                </div>
+                <div id="system-results-grid" class="grid grid-3">
+                    <div style="grid-column: 1/-1; text-align:center; padding: 5rem;" class="glass-panel">
+                        <p style="color: var(--text-muted);">Информация о безопасности процессов будет отображена здесь
+                            после сканирования.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: NETWORK -->
+        <div id="network" class="tab-content">
+            <div class="glass-panel" style="padding: 2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h3 style="margin:0;">🌐 Входящие соединения</h3>
+                    <div id="net-status-badge"></div>
+                </div>
+                <div class="table-wrap">
+                    <table id="net-table">
+                        <thead>
+                            <tr>
+                                <th>Удаленный IP</th>
+                                <th>Цепочка соединений</th>
+                                <th>Действие IDS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="net-body">
+                            <tr>
+                                <td colspan="3" style="text-align:center; padding: 4rem; color: var(--text-muted);">
+                                    Ожидание сетевой активности...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: MANAGEMENT -->
+        <div id="management" class="tab-content">
+            <div class="glass-panel" style="padding: 2rem;">
+                <h3 style="margin:0 0 1rem;">🛡️ Управление модулями</h3>
+                <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Включение и выключение отдельных систем защиты проекта.</p>
+                
+                <div id="modules-list" class="grid grid-2">
+                    <!-- Dynamic Module Cards -->
+                    <div style="grid-column: 1/-1; text-align:center; padding: 4rem; color: var(--text-muted);">
+                        Загрузка списка модулей...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SETTINGS -->
+        <div id="settings" class="tab-content">
+            <div class="glass-panel" style="padding: 2rem; max-width: 600px;">
+                <h3 style="margin:0 0 1.5rem;">👤 Учетные данные</h3>
+                <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">
+                    Здесь вы можете изменить логин и пароль администратора безопасности. 
+                    После сохранения потребуется повторная авторизация.
+                    <br><br>
+                    <span style="color: var(--accent-rose);">⚠️ Внимание: эти данные синхронизируются с файлом sec_admin.json в корне проекта.</span>
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Текущий пароль</label>
+                        <input type="password" id="old-password" class="select-input" style="cursor: text;" placeholder="Введите текущий пароль">
+                    </div>
+                    <div style="height: 1px; background: var(--glass-border); margin: 0.5rem 0;"></div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Новый логин</label>
+                        <input type="text" id="new-login" class="select-input" style="cursor: text;" placeholder="admin">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Новый пароль</label>
+                        <input type="password" id="new-password" class="select-input" style="cursor: text;" placeholder="Минимум 8 символов">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Подтвердите новый пароль</label>
+                        <input type="password" id="confirm-password" class="select-input" style="cursor: text;" placeholder="...">
+                    </div>
+                    
+                    <button class="btn" style="margin-top: 1rem; justify-content: center;" onclick="updateCredentials()">
+                        Сохранить изменения
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let intervals = [];
+        let currentInterval = 5000;
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+
+            const titles = { 
+                'overview': 'Обзор системы', 
+                'logs': 'Журнал инцидентов', 
+                'system': 'Системный защитник', 
+                'network': 'Сетевой анализатор',
+                'management': 'Управление модулями',
+                'settings': 'Настройки профиля'
+            };
+            document.getElementById('tab-title').innerText = titles[tabId];
+            
+            if (tabId === 'management') loadModules();
+        }
+
+        const ctx = document.getElementById('sysChart').getContext('2d');
+        const sysChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'CPU', borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', data: [], fill: true, tension: 0.4, pointRadius: 0 },
+                    { label: 'RAM', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', data: [], fill: true, tension: 0.4, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { ticks: { display: false }, grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        async function runScan() {
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_scan') }}");
+                const data = await res.json();
+
+                // Update Numeric Values
+                document.getElementById('val-cpu').innerText = data.os.resources.cpu_percent + '%';
+                document.getElementById('val-ram').innerText = data.os.resources.ram_percent + '%';
+                document.getElementById('val-priv').innerText = data.os.privileges.is_admin ? 'ADMIN (ROOT)' : 'STANDARD';
+                document.getElementById('val-priv').style.color = data.os.privileges.is_admin ? 'var(--accent-rose)' : 'var(--accent-cyan)';
+
+                // Chart
+                const now = new Date();
+                if (sysChart.data.labels.length > 20) {
+                    sysChart.data.labels.shift();
+                    sysChart.data.datasets.forEach(d => d.data.shift());
+                }
+                sysChart.data.labels.push("");
+                sysChart.data.datasets[0].data.push(data.os.resources.cpu_percent);
+                sysChart.data.datasets[1].data.push(data.os.resources.ram_percent);
+                sysChart.update('none');
+
+                updateHealthGauge(data);
+                renderAnomalies(data);
+                renderNetwork(data.network);
+
+                document.getElementById('last-update-time').innerText = 'Обновлено в ' + now.toLocaleTimeString();
+            } catch (e) { console.error('Data update error:', e); }
+        }
+
+        function updateHealthGauge(data) {
+            let score = 100;
+            if (data.os.status !== 'ok') score -= 30;
+            if (data.network.status !== 'ok') score -= 40;
+
+            const circle = document.getElementById('gauge-progress');
+            const circumference = 400; // Stroke dasharray
+            const offset = circumference - (score / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            document.getElementById('health-score').innerText = score + '%';
+            circle.style.stroke = score > 80 ? 'var(--accent-emerald)' : (score > 50 ? 'var(--accent-gold)' : 'var(--accent-rose)');
+        }
+
+        function renderAnomalies(data) {
+            const container = document.getElementById('anomaly-summary');
+            let items = [];
+
+            // Robust access to network components
+            const synFlood = data.network.syn_flood || { status: 'ok', syn_count: 0 };
+            const abnormalIps = data.network.abnormal_ips || { status: 'ok', abnormal_ips: {} };
+
+            // OS Status Row
+            items.push(createStatusRow("Host Resources", data.os.status, data.os.resources.warnings.length ? data.os.resources.warnings[0] : "Ресурсы в пределах нормы"));
+
+            // Network Status Row
+            const netIssue = (synFlood.status !== 'ok' ? synFlood.message : (abnormalIps.status !== 'ok' ? abnormalIps.message : "Трафик не вызывает подозрений"));
+            items.push(createStatusRow("Network IDS", data.network.status, netIssue));
+
+            container.innerHTML = items.join('');
+        }
+
+        function createStatusRow(title, status, desc) {
+            const badgeClass = status === 'ok' ? 'bg-ok' : (status === 'danger' ? 'bg-danger' : 'bg-warning');
+            return `
+                <div class="activity-row">
+                    <div class="activity-content">
+                        <div class="activity-icon">${title[0]}</div>
+                        <div>
+                            <div style="font-weight:700; font-size:0.9rem;">${title}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">${desc}</div>
+                        </div>
+                    </div>
+                    <span class="status-badge ${badgeClass}">${status}</span>
+                </div>
+            `;
+        }
+
+        function renderNetwork(netData) {
+            const tbody = document.getElementById('net-body');
+            const abnormalIps = netData.abnormal_ips ? netData.abnormal_ips.abnormal_ips : {};
+            const ips = Object.keys(abnormalIps);
+
+            const badgeWrap = document.getElementById('net-status-badge');
+            badgeWrap.innerHTML = `<span class="status-badge ${netData.status === 'ok' ? 'bg-ok' : 'bg-warning'}">${netData.status}</span>`;
+
+            if (ips.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:3rem; color:var(--text-muted);">Активных аномалий не зафиксировано</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = ips.map(ip => `
+                <tr>
+                    <td style="font-family: monospace; font-weight:600;">${ip}</td>
+                    <td>${abnormalIps[ip]} потоков (ESTABLISHED)</td>
+                    <td><span class="status-badge bg-danger">LIMIT_REACHED</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function loadLogs() {
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_logs') }}");
+                const data = await res.json();
+                const tbody = document.getElementById('logs-body');
+                if (!data.logs.length) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:4rem; color: var(--text-muted);">События отсутствуют</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.logs.map(log => {
+                    let badge = "bg-ok";
+                    if (log.level.includes("CRITICAL")) badge = "bg-danger";
+                    else if (log.level.includes("WARNING")) badge = "bg-warning";
+                    return `<tr><td>${log.timestamp}</td><td><span class="status-badge ${badge}">${log.level}</span></td><td style="font-family:monospace; font-size:0.85rem;">${escapeHtml(log.message)}</td></tr>`;
+                }).join('');
+            } catch (e) { }
+        }
+
+        async function deepScan() {
+            const btn = document.getElementById('deepScanBtn');
+            btn.innerHTML = '<svg style="animation: spin 1s linear infinite;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> Сканирование...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__api_sys_scan') }}");
+                const data = await res.json();
+                renderSystemReport(data);
+            } catch (e) { alert('Ошибка сканера: ' + e); }
+
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Запустить сканирование';
+            btn.disabled = false;
+        }
+
+        function renderSystemReport(data) {
+            const container = document.getElementById('system-results-grid');
+            container.innerHTML = '';
+
+            const users = data.users.users || [];
+            const processes = data.processes.details || [];
+            const configs = data.config.alerts || [];
+
+            container.innerHTML += createReportCard("👥 Пользователи", users.length ? users.map(u => u.name).join(', ') : 'Нет активных сессий', 'bg-ok');
+            container.innerHTML += createReportCard("⚙️ Процессы", processes.length ? processes.map(p => p.name).slice(0, 3).join(', ') : 'Подозрительных процессов нет', processes.length ? 'bg-danger' : 'bg-ok');
+            container.innerHTML += createReportCard("🛠️ Конфигурация", configs.length ? configs[0] : 'Уязвимостей не найдено', configs.length ? 'bg-warning' : 'bg-ok');
+        }
+
+        function createReportCard(title, content, badgeClass) {
+            return `
+                <div class="glass-panel" style="padding: 1.5rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                        <div style="font-weight:700; color:var(--accent-cyan);">${title}</div>
+                        <span class="status-badge ${badgeClass}">DONE</span>
+                    </div>
+                    <p style="font-size:0.85rem; line-height:1.5; color: #cbd5e1;">${content}</p>
+                </div>
+            `;
+        }
+
+        function startTimer() {
+            stopTimer();
+            if (currentInterval > 0) {
+                intervals.push(setInterval(runScan, currentInterval));
+                intervals.push(setInterval(loadLogs, currentInterval * 2));
+                document.querySelector('.live-pulse').style.display = 'block';
+                document.getElementById('live-status').innerText = `Поток активен. Обновление каждые ${currentInterval / 1000} сек.`;
+            } else {
+                document.querySelector('.live-pulse').style.display = 'none';
+                document.getElementById('live-status').innerText = 'Обновление приостановлено пользователем.';
+            }
+        }
+
+        function stopTimer() {
+            intervals.forEach(clearInterval);
+            intervals = [];
+        }
+
+        function changeRefreshRate() {
+            currentInterval = parseInt(document.getElementById('refresh-rate').value);
+            startTimer();
+        }
+
+        async function loadModules() {
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__modules_api') }}");
+                const data = await res.json();
+                const container = document.getElementById('modules-list');
+                const modules = data.modules;
+                
+                container.innerHTML = Object.keys(modules).map(name => `
+                    <div class="activity-row" style="padding: 1.5rem; background: rgba(255,255,255,0.03);">
+                        <div class="activity-content">
+                            <div class="activity-icon" style="background: ${modules[name] ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)'}; color: ${modules[name] ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">
+                                ${name[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight:700; text-transform: capitalize;">${name.replace('_', ' ')}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">${modules[name] ? 'Модуль активен' : 'Модуль отключен'}</div>
+                            </div>
+                        </div>
+                        <label class="switch-container">
+                            <input type="checkbox" ${modules[name] ? 'checked' : ''} onchange="toggleModule('${name}', this.checked)">
+                            <div class="switch"></div>
+                        </label>
+                    </div>
+                `).join('');
+            } catch (e) { console.error('Load modules error:', e); }
+        }
+
+        async function toggleModule(name, enabled) {
+            try {
+                await fetch("{{ url_for('sec_dashboard.sec_dashboard__toggle_module_api') }}", {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ module: name, enabled: enabled })
+                });
+                // Small toast/feedback could be added here
+                loadModules(); // Refresh UI
+            } catch (e) { alert('Ошибка переключения: ' + e); }
+        }
+
+        async function updateCredentials() {
+            const oldPwd = document.getElementById('old-password').value;
+            const newLogin = document.getElementById('new-login').value;
+            const newPwd = document.getElementById('new-password').value;
+            const confirmPwd = document.getElementById('confirm-password').value;
+
+            if (!oldPwd || !newLogin || !newPwd) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                alert('Новые пароли не совпадают');
+                return;
+            }
+
+            if (newPwd.length < 8) {
+                alert('Новый пароль должен быть не менее 8 символов');
+                return;
+            }
+
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__update_credentials_api') }}", {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        old_password: oldPwd,
+                        new_login: newLogin,
+                        new_password: newPwd
+                    })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    window.location.reload(); // Перенаправит на логин
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (e) { alert('Ошибка сети: ' + e); }
+        }
+
+        window.onload = () => {
+            runScan();
+            loadLogs();
+            startTimer();
+
+            // Add custom animation for spinner and switch styles
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes spin { to { transform: rotate(360deg); } }
+                .switch-container {
+                    position: relative;
+                    display: inline-block;
+                    width: 44px;
+                    height: 22px;
+                }
+                .switch-container input { opacity: 0; width: 0; height: 0; }
+                .switch {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background-color: rgba(255,255,255,0.1);
+                    transition: .4s;
+                    border-radius: 34px;
+                }
+                .switch:before {
+                    position: absolute;
+                    content: "";
+                    height: 16px; width: 16px;
+                    left: 3px; bottom: 3px;
+                    background-color: white;
+                    transition: .4s;
+                    border-radius: 50%;
+                }
+                input:checked + .switch { background-color: var(--accent-emerald); }
+                input:focus + .switch { box-shadow: 0 0 1px var(--accent-emerald); }
+                input:checked + .switch:before { transform: translateX(22px); }
+            `;
+            document.head.appendChild(style);
+        };
+    </script>
+</body>
+
+</html>
