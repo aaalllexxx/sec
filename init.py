@@ -3,6 +3,7 @@ __module_type__ = "ЛОКАЛЬНЫЕ ПЛАГИНЫ"
 
 from rich import print
 from rich.prompt import Prompt
+import json
 import os
 import shutil
 import sys
@@ -179,6 +180,70 @@ def _copy_templates(base_dir):
             print(f"  [green]✓[/green] Папка шаблонов {item} скопирована")
 
 
+def _load_project_config(config_path):
+    if not os.path.exists(config_path):
+        return {}
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"  [yellow]![/yellow] Не удалось прочитать config.json: {e}")
+        return {}
+
+
+def _save_project_config(config_path, config):
+    with open(config_path, "w", encoding="utf-8") as file:
+        json.dump(config, file, indent=4, ensure_ascii=False)
+        file.write("\n")
+
+
+def _setup_dashboard_autoload(base_dir):
+    config_path = os.path.join(base_dir, "config.json")
+    config = _load_project_config(config_path)
+
+    services_path = config.get("services_path") or "services"
+    services_dir = os.path.join(base_dir, services_path)
+    os.makedirs(services_dir, exist_ok=True)
+
+    init_file = os.path.join(services_dir, "__init__.py")
+    if not os.path.exists(init_file):
+        with open(init_file, "w", encoding="utf-8") as file:
+            file.write("")
+
+    service_file = os.path.join(services_dir, "sec_dashboard.py")
+    service_content = (
+        "from AEngineApps.dashboard import SecDashboardService\n\n"
+        "sec_dashboard = SecDashboardService()\n"
+    )
+
+    with open(service_file, "w", encoding="utf-8") as file:
+        file.write(service_content)
+
+    config_changed = False
+    if config.get("services_path") != services_path:
+        config["services_path"] = services_path
+        config_changed = True
+
+    services = config.get("services")
+    if not services:
+        config["services"] = "auto"
+        config_changed = True
+    elif isinstance(services, list) and "sec_dashboard" not in services:
+        services.append("sec_dashboard")
+        config_changed = True
+    elif isinstance(services, dict) and "sec_dashboard" not in services:
+        config["services"]["sec_dashboard"] = "sec_dashboard"
+        config_changed = True
+
+    if config_changed:
+        _save_project_config(config_path, config)
+        print(f"  [green]✓[/green] Автоподключение dashboard настроено в {config_path}")
+
+    print(f"  [green]✓[/green] Сервис dashboard подключен через {service_file}")
+
+
 def _install_module(base_dir, name: str) -> bool:
     if name not in MODULE_MAP:
         return False
@@ -257,6 +322,7 @@ def run(*args, **kwargs):
         else:
              _setup_credentials(base_dir)
         _copy_templates(base_dir)
+        _setup_dashboard_autoload(base_dir)
 
     target_modules = ALL_MODULES
     if "--modules" in arg:

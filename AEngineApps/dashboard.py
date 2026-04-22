@@ -40,7 +40,33 @@ class SecDashboardService(Service):
         # Приоритет: аргументы конструктора -> sec_config -> дефолт
         self.admin_login = admin_login or getattr(sec_config, "ADMIN_LOGIN", "admin")
         self.admin_pass = admin_pass or getattr(sec_config, "ADMIN_PASS", "admin")
+        self.blueprint.record_once(lambda state: self._bind_runtime_logging())
         self._setup_routes()
+
+    def _bind_runtime_logging(self):
+        if not self._screens:
+            return
+
+        app = getattr(self._screens[0], "_app", None)
+        if app is None or getattr(app, "_sec_dashboard_logging_patched", False):
+            return
+
+        original_run = app.run
+        dashboard_path = f"{self.prefix.rstrip('/')}/dashboard" if self.prefix else "/dashboard"
+
+        def run_with_dashboard_log(*args, **kwargs):
+            host = app.config.get("host") or "127.0.0.1"
+            port = app.config.get("port") or 5000
+
+            if host == "0.0.0.0":
+                print(f"[sec] Dashboard: http://127.0.0.1:{port}{dashboard_path}")
+            else:
+                print(f"[sec] Dashboard: http://{host}:{port}{dashboard_path}")
+
+            return original_run(*args, **kwargs)
+
+        app.run = run_with_dashboard_log
+        app._sec_dashboard_logging_patched = True
 
     def _setup_routes(self):
         # Передаем конфигурацию в классы экранов
