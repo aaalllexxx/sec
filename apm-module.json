@@ -1,0 +1,128 @@
+{
+  "name": "sec",
+  "format": 2,
+  "source": "apm build module",
+  "package": {
+    "root": ".",
+    "aengine_apps_dir": "AEngineApps",
+    "services_dir": "services",
+    "apm_modules_dir": "APM/modules",
+    "templates_dir": "templates",
+    "local_module_dir": "."
+  },
+  "contents": {
+    "aengine_apps": [
+      "auto_cluster.py",
+      "cluster.py",
+      "dashboard.py",
+      "intrusions.py",
+      "logging.py",
+      "net_analyzer.py",
+      "os_protect.py",
+      "sec_config.py",
+      "sys_protect.py"
+    ],
+    "services": [
+      "dashboard.py"
+    ],
+    "apm_modules": [],
+    "templates": [
+      "dashboard.html",
+      "login.html"
+    ],
+    "local_modules": [
+      "AEngineApps/auto_cluster.py",
+      "AEngineApps/cluster.py",
+      "AEngineApps/dashboard.py",
+      "AEngineApps/intrusions.py",
+      "AEngineApps/logging.py",
+      "AEngineApps/net_analyzer.py",
+      "AEngineApps/os_protect.py",
+      "AEngineApps/sec_config.py",
+      "AEngineApps/sys_protect.py",
+      "README.md",
+      "__RCE.list",
+      "__init__.py",
+      "add_admin.py",
+      "auth.py",
+      "auto_cluster.py",
+      "changelog.md",
+      "cluster.py",
+      "code_signer.py",
+      "dashboard.py",
+      "dlp.py",
+      "init.py",
+      "intrusion.py",
+      "intrusions.py",
+      "logging.py",
+      "logs.py",
+      "net_analyzer.py",
+      "os_protect.py",
+      "remove.py",
+      "report_template.html",
+      "sec_logging.py",
+      "services/dashboard.py",
+      "sign.py",
+      "signatures_db.json",
+      "sys_protect.py",
+      "templates/dashboard.html",
+      "templates/login.html",
+      "test_new_sec.py",
+      "unsign.py"
+    ]
+  },
+  "commands": [
+    "add_admin",
+    "init",
+    "intrusion",
+    "logs",
+    "remove",
+    "sec_logging",
+    "sign",
+    "unsign"
+  ],
+  "aliases": [
+    {
+      "name": "sign",
+      "module": "sec",
+      "subcommand": "sign",
+      "help": "Alias для `apm sec sign`"
+    },
+    {
+      "name": "unsign",
+      "module": "sec",
+      "subcommand": "unsign",
+      "help": "Alias для `apm sec unsign`"
+    },
+    {
+      "name": "admin",
+      "module": "sec",
+      "subcommand": "add_admin",
+      "help": "Alias для `apm sec add_admin`"
+    }
+  ],
+  "dependencies": {
+    "python": [
+      "flask",
+      "psutil",
+      "rich"
+    ],
+    "system": [
+      "python",
+      "wget google.com"
+    ],
+    "local_modules": []
+  },
+  "install_commands": [],
+  "notes": [],
+  "install": {
+    "copy_to_project": true,
+    "create_missing_dirs": [
+      "AEngineApps",
+      "services",
+      ".apm",
+      ".apm/installed",
+      ".apm/modules"
+    ]
+  }
+}

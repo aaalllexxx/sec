@@ -1,0 +1,3230 @@
+{
+    "version": "2.0-aengine-targeted",
+    "description": "AEngine IPS signature database adapted from OWASP Core Rule Set. Rules keep CRS targets so AEngine scans only the relevant request parts.",
+    "source": "OWASP Core Rule Set",
+    "source_version": "OWASP_CRS/4.27.0-dev",
+    "license_note": "OWASP CRS is distributed under Apache License 2.0. This file contains adapted regex rules for educational use in the AEngine intrusions module.",
+    "selection_policy": "Request-side CRS @rx rules only; response/protocol/anomaly/scanner/chain, Python-incompatible, and broad high-false-positive CRS rules are excluded.",
+    "signatures_count": 109,
+    "categories_count": {
+        "LFI": 6,
+        "RCE": 55,
+        "Generic": 5,
+        "XXE": 1,
+        "XSS": 8,
+        "SQLi": 34
+    },
+    "signatures": [
+        {
+            "name": "XML External Entity Attack: DOCTYPE with external entity",
+            "category": "XXE",
+            "severity": "critical",
+            "pattern": "<!DOCTYPE[\\s\\S]+<!ENTITY[\\s\\S]+(?:SYSTEM|PUBLIC)[\\s\\S]+(?:file|https?|ftp)://",
+            "flags": "i",
+            "targets": [
+                "REQUEST_BODY",
+                "XML:/*"
+            ],
+            "source": "AEngine local lab",
+            "source_rule_id": "AENGINE-XXE-001",
+            "source_rule_file": "AEngineApps/signatures_db.json",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_BODY|XML:/*",
+            "source_tags": [
+                "application-xml",
+                "attack-xxe",
+                "OWASP_AEngine_Lab"
+            ]
+        },
+        {
+            "name": "Path Traversal Attack (/../) or (/.../)",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "(?:[/\\x5c]|%(?:2(?:f|5(?:2f|5c|c(?:1%259c|0%25af))|%46)|5c|c(?:0%(?:[2aq]f|5c|9v)|1%(?:[19p]c|8s|af))|(?:bg%q|(?:e|f(?:8%8)?0%8)0%80%a)f|u(?:221[56]|EFC8|F025|002f)|%3(?:2(?:%(?:%6|4)6|F)|5%%63)|1u)|0x(?:2f|5c))(?:\\.(?:%0[01]|\\?)?|\\?\\.?|%(?:2(?:(?:5(?:2|c0%25a))?e|%45)|c0(?:\\.|%[256aef]e)|u(?:(?:ff0|002)e|2024)|%32(?:%(?:%6|4)5|E)|(?:e|f(?:(?:8|c%80)%8)?0%8)0%80%ae)|0x2e){2,3}(?:[/\\x5c]|%(?:2(?:f|5(?:2f|5c|c(?:1%259c|0%25af))|%46)|5c|c(?:0%(?:[2aq]f|5c|9v)|1%(?:[19p]c|8s|af))|(?:bg%q|(?:e|f(?:8%8)?0%8)0%80%a)f|u(?:221[56]|EFC8|F025|002f)|%3(?:2(?:%(?:%6|4)6|F)|5%%63)|1u)|0x(?:2f|5c))",
+            "flags": "i",
+            "targets": [
+                "REQUEST_URI_RAW",
+                "ARGS",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Referer",
+                "FILES",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "930100",
+            "source_rule_file": "REQUEST-930-APPLICATION-ATTACK-LFI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_URI_RAW|ARGS|REQUEST_HEADERS|!REQUEST_HEADERS:Referer|FILES|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-lfi",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-LFI",
+                "capec/1000/255/153/126"
+            ]
+        },
+        {
+            "name": "Path Traversal Attack (/../) or (/.../)",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "(?:^|[/;\\x5c])\\.{2,3}[/;\\x5c]",
+            "flags": "",
+            "targets": [
+                "REQUEST_URI_RAW",
+                "ARGS",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Referer",
+                "FILES",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "930110",
+            "source_rule_file": "REQUEST-930-APPLICATION-ATTACK-LFI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_URI_RAW|ARGS|REQUEST_HEADERS|!REQUEST_HEADERS:Referer|FILES|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-lfi",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-LFI",
+                "capec/1000/255/153/126"
+            ]
+        },
+        {
+            "name": "Possible Remote File Inclusion (RFI) Attack: URL Parameter using IP Address",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "^(f(?:ile|tps?)|https?|ssh)://(?:\\[?[0-9a-f]+:[0-:a-f]+\\]?|[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})",
+            "flags": "i",
+            "targets": [
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "931100",
+            "source_rule_file": "REQUEST-931-APPLICATION-ATTACK-RFI.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-rfi",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RFI",
+                "capec/1000/152/175/253"
+            ]
+        },
+        {
+            "name": "Possible Remote File Inclusion (RFI) Attack: Common RFI Vulnerable Parameter Name used w/URL Payload",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "(?:\\binclude[\\s\\x0b]*\\([^\\)]*|mosConfig_absolute_path|(?:_(?:CONF\\[path|SERVER\\[DOCUMENT_ROOT)|path\\[docroot|config\\[root_dir)\\]|GALLERY_BASEDIR|appserv_root)=(?:f(?:ile|tps?)|https?)://",
+            "flags": "i",
+            "targets": [
+                "QUERY_STRING",
+                "REQUEST_BODY"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "931110",
+            "source_rule_file": "REQUEST-931-APPLICATION-ATTACK-RFI.conf",
+            "source_operator": "rx",
+            "source_targets": "QUERY_STRING|REQUEST_BODY",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-rfi",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RFI",
+                "capec/1000/152/175/253"
+            ]
+        },
+        {
+            "name": "Possible Remote File Inclusion (RFI) Attack: URL Payload Used w/Trailing Question Mark Character (?)",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "^(?i:file|ftps?|https?).*?\\?+$",
+            "flags": "",
+            "targets": [
+                "ARGS"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "931120",
+            "source_rule_file": "REQUEST-931-APPLICATION-ATTACK-RFI.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-rfi",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RFI",
+                "capec/1000/152/175/253"
+            ]
+        },
+        {
+            "name": "Possible Remote File Inclusion (RFI) Attack",
+            "category": "LFI",
+            "severity": "critical",
+            "pattern": "(?:(?:url|jar):)?(?:a(?:cap|f[ps]|ttachment)|b(?:eshare|itcoin|lob)|c(?:a(?:llto|p)|id|vs|ompress.(?:zlib|bzip2))|d(?:a(?:v|ta)|ict|n(?:s|tp))|e(?:d2k|xpect)|f(?:(?:ee)?d|i(?:le|nger|sh)|tps?)|g(?:it|o(?:pher)?|lob)|h(?:323|ttps?)|i(?:ax|cap|(?:ma|p)ps?|rc[6s]?)|ja(?:bbe)?r|l(?:dap[is]?|ocal_file)|m(?:a(?:ilto|ven)|ms|umble)|n(?:e(?:tdoc|ws)|fs|ntps?)|ogg|p(?:aparazzi|h(?:ar|p)|op(?:2|3s?)|r(?:es|oxy)|syc)|r(?:mi|sync|tm(?:f?p)?|ar)|s(?:3|ftp|ips?|m(?:[bs]|tps?)|n(?:ews|mp)|sh(?:2(?:.(?:s(?:hell|(?:ft|c)p)|exec|tunnel))?)?|vn(?:\\+ssh)?)|t(?:e(?:amspeak|lnet)|ftp|urns?)|u(?:dp|nreal|t2004)|v(?:entrilo|iew-source|nc)|w(?:ebcal|ss?)|x(?:mpp|ri)|zip)://(?:[^@]+@)?([^/]*)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_FILENAME"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "931131",
+            "source_rule_file": "REQUEST-931-APPLICATION-ATTACK-RFI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-rfi",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RFI",
+                "capec/1000/152/175/253"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Windows Powershell Alias Command Injection",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:[\\n\\r;`\\{]|\\|\\|?|&&?)[\\s\\x0b]*[\\s\\x0b\"'\\(,@]*(?:[\"'\\.-9A-Z_a-z]+/|(?:[\"'\\x5c\\^]*[0-9A-Z_a-z][\"'\\x5c\\^]*:.*|[ \"'\\.-9A-Z\\x5c\\^_a-z]*)\\x5c)?[\"\\^]*(?:(?:a[\"\\^]*(?:c|s[\"\\^]*n[\"\\^]*p)|e[\"\\^]*(?:b[\"\\^]*p|p[\"\\^]*(?:a[\"\\^]*l|c[\"\\^]*s[\"\\^]*v|s[\"\\^]*n)|[tx][\"\\^]*s[\"\\^]*n)|f[\"\\^]*(?:[cltw]|o[\"\\^]*r[\"\\^]*e[\"\\^]*a[\"\\^]*c[\"\\^]*h)|i[\"\\^]*(?:[cr][\"\\^]*m|e[\"\\^]*x|h[\"\\^]*y|i|p[\"\\^]*(?:a[\"\\^]*l|c[\"\\^]*s[\"\\^]*v|m[\"\\^]*o|s[\"\\^]*n)|s[\"\\^]*e|w[\"\\^]*(?:m[\"\\^]*i|r))|m[\"\\^]*(?:[dpv]|o[\"\\^]*u[\"\\^]*n[\"\\^]*t)|o[\"\\^]*g[\"\\^]*v|p[\"\\^]*(?:o[\"\\^]*p|u[\"\\^]*s[\"\\^]*h)[\"\\^]*d|t[\"\\^]*r[\"\\^]*c[\"\\^]*m|w[\"\\^]*j[\"\\^]*b)[\"\\^]*[\\s\\x0b,\\./;<>].*|c[\"\\^]*(?:(?:(?:d|h[\"\\^]*d[\"\\^]*i[\"\\^]*r|v[\"\\^]*p[\"\\^]*a)[\"\\^]*|p[\"\\^]*(?:[ip][\"\\^]*)?)[\\s\\x0b,\\./;<>].*|l[\"\\^]*(?:(?:[cipv]|h[\"\\^]*y)[\"\\^]*[\\s\\x0b,\\./;<>].*|s)|n[\"\\^]*s[\"\\^]*n)|d[\"\\^]*(?:(?:b[\"\\^]*p|e[\"\\^]*l|i[\"\\^]*(?:f[\"\\^]*f|r))[\"\\^]*[\\s\\x0b,\\./;<>].*|n[\"\\^]*s[\"\\^]*n)|g[\"\\^]*(?:(?:(?:(?:a[\"\\^]*)?l|b[\"\\^]*p|d[\"\\^]*r|h[\"\\^]*y|(?:w[\"\\^]*m[\"\\^]*)?i|j[\"\\^]*b|[uv])[\"\\^]*|c[\"\\^]*(?:[ims][\"\\^]*)?|m[\"\\^]*(?:o[\"\\^]*)?|s[\"\\^]*(?:n[\"\\^]*(?:p[\"\\^]*)?|v[\"\\^]*))[\\s\\x0b,\\./;<>].*|e[\"\\^]*r[\"\\^]*r|p[\"\\^]*(?:(?:s[\"\\^]*)?[\\s\\x0b,\\./;<>].*|v))|l[\"\\^]*s|n[\"\\^]*(?:(?:a[\"\\^]*l|d[\"\\^]*r|[iv]|m[\"\\^]*o|s[\"\\^]*n)[\"\\^]*[\\s\\x0b,\\./;<>].*|p[\"\\^]*s[\"\\^]*s[\"\\^]*c)|r[\"\\^]*(?:(?:(?:(?:b[\"\\^]*)?p|e[\"\\^]*n|(?:w[\"\\^]*m[\"\\^]*)?i|j[\"\\^]*b|n[\"\\^]*[ip])[\"\\^]*|d[\"\\^]*(?:r[\"\\^]*)?|m[\"\\^]*(?:(?:d[\"\\^]*i[\"\\^]*r|o)[\"\\^]*)?|s[\"\\^]*n[\"\\^]*(?:p[\"\\^]*)?|v[\"\\^]*(?:p[\"\\^]*a[\"\\^]*)?)[\\s\\x0b,\\./;<>].*|c[\"\\^]*(?:j[\"\\^]*b[\"\\^]*[\\s\\x0b,\\./;<>].*|s[\"\\^]*n)|u[\"\\^]*j[\"\\^]*b)|s[\"\\^]*(?:(?:(?:a[\"\\^]*(?:j[\"\\^]*b|l|p[\"\\^]*s|s[\"\\^]*v)|b[\"\\^]*p|[cv]|w[\"\\^]*m[\"\\^]*i)[\"\\^]*|l[\"\\^]*(?:s[\"\\^]*)?|p[\"\\^]*(?:(?:j[\"\\^]*b|p[\"\\^]*s|s[\"\\^]*v)[\"\\^]*)?)[\\s\\x0b,\\./;<>].*|h[\"\\^]*c[\"\\^]*m|u[\"\\^]*j[\"\\^]*b))(?:\\.[\"\\^]*[0-9A-Z_a-z]+)?\\b",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932125",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-windows",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix Shell Expression Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$(?:\\((?:[^\\)]+|\\([^\\)]+\\))\\)|\\{[^\\}]+\\}|\\[[^\\]]*\\])|[<>]\\([^\\)]+\\)|/[0-9A-Z_a-z]*\\[[^\\]]+\\]",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932130",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix Shell Expression Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$(?:\\((?:[^\\)]+|\\([^\\)]+\\))\\)|\\{[^\\}]+\\}|\\[[^\\]]*\\])|[<>]\\([^\\)]+\\)|/[0-9A-Z_a-z]*\\[[^\\]]+\\]",
+            "flags": "",
+            "targets": [
+                "REQUEST_HEADERS:User-Agent",
+                "REQUEST_HEADERS:Referer"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932131",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_HEADERS:User-Agent|REQUEST_HEADERS:Referer",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Windows FOR/IF Command Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b(?:for(?:/[dflr].*)? %+[^ ]+ in\\(.*\\)[\\s\\x0b]?do|if(?:/i)?(?: not)?(?: (?:e(?:xist|rrorlevel)|defined|cmdextversion)\\b|[ \\(].*(?:\\b(?:g(?:eq|tr)|equ|neq|l(?:eq|ss))\\b|==)))",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932140",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-windows",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Shellshock (CVE-2014-6271)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "^\\(\\s*\\)\\s+\\{",
+            "flags": "",
+            "targets": [
+                "REQUEST_HEADERS",
+                "REQUEST_LINE"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932170",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_HEADERS|REQUEST_LINE",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Shellshock (CVE-2014-6271)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "^\\(\\s*\\)\\s+\\{",
+            "flags": "",
+            "targets": [
+                "ARGS_NAMES",
+                "ARGS",
+                "FILES_NAMES"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932171",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS_NAMES|ARGS|FILES_NAMES",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix shell alias invocation",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\ba[\"'\\)\\[\\x5c]*(?:(?:(?:\\|\\||&&)[\\s\\x0b]*)?\\$[!#\\(\\*\\-0-9\\?@_a-\\{]*)?\\x5c?l[\"'\\)\\[\\x5c]*(?:(?:(?:\\|\\||&&)[\\s\\x0b]*)?\\$[!#\\(\\*\\-0-9\\?@_a-\\{]*)?\\x5c?i[\"'\\)\\[\\x5c]*(?:(?:(?:\\|\\||&&)[\\s\\x0b]*)?\\$[!#\\(\\*\\-0-9\\?@_a-\\{]*)?\\x5c?a[\"'\\)\\[\\x5c]*(?:(?:(?:\\|\\||&&)[\\s\\x0b]*)?\\$[!#\\(\\*\\-0-9\\?@_a-\\{]*)?\\x5c?s\\b[\\s\\x0b]+(?:[\\+\\-][a-z]+\\+?[\\s\\x0b]+)?[!\"%',-\\.0-9@-Z_a-z]+=[^\\s\\x0b]",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932175",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: SQLite System Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": ";[\\s\\x0b]*\\.[\\s\\x0b]*[\"']?(?:a(?:rchive|uth)|b(?:a(?:ckup|il)|inary)|c(?:d|h(?:anges|eck)|lone|onnection)|d(?:atabases|b(?:config|info)|ump)|e(?:cho|qp|x(?:cel|it|p(?:ert|lain)))|f(?:ilectrl|ullschema)|he(?:aders|lp)|i(?:mpo(?:rt|ster)|ndexes|otrace)|l(?:i(?:mi|n)t|o(?:ad|g))|(?:mod|n(?:onc|ullvalu)|unmodul)e|o(?:nce|pen|utput)|p(?:arameter|r(?:int|o(?:gress|mpt)))|quit|re(?:ad|cover|store)|s(?:ave|c(?:anstats|hema)|e(?:lftest|parator|ssion)|h(?:a3sum|ell|ow)?|tats|ystem)|t(?:ables|estc(?:ase|trl)|ime(?:out|r)|race)|vfs(?:info|list|name)|width)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932210",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix Shell Expression Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "~[\\+\\-](?:$|[0-9]+)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932270",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix Shell Expression Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "~[0-9]+",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932271",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Brace Expansion Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\{[0-9A-Z_a-z]*,[,\\-0-9A-Z_a-z]*\\}",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932280",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Brace Expansion Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\{[^\\s\\x0b,:\\}]*,[^\\s\\x0b]*\\}",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932281",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: SMTP Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\r\\n.*?\\b(?:E(?:HLO[\\s\\x0b][\\-\\.a-z]{1,255}|XPN[\\s\\x0b].{1,64})|HELO[\\s\\x0b][\\-\\.a-z]{1,255}|MAIL[\\s\\x0b]FROM:<.{1,64}@.{1,255}>|R(?:CPT[\\s\\x0b]TO:(?:<.{1,64}@.{1,255}>| )?<.{1,64}>|SET\\b)|VRFY[\\s\\x0b].{1,64}(?:[\\s\\x0b]<.{1,64}@.{1,255}>|@.{1,255})|AUTH[\\s\\x0b][\\-0-9_a-z]{1,20}[\\s\\x0b](?:(?:[\\+/-9A-Z_a-z]{4})*(?:[\\+/-9A-Z_a-z]{2}=|[\\+/-9A-Z_a-z]{3}))?=|STARTTLS\\b|NOOP\\b(?:[\\s\\x0b].{1,255})?)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932300",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/137/134"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: SMTP Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\r\\n.*?\\b(?:DATA|QUIT|HELP(?: .{1,255})?)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932301",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/137/134"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: IMAP Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?is)\\r\\n[0-9A-Z_a-z]{1,50}\\b (?:A(?:PPEND (?:[\"#%&\\*\\--9A-Z\\x5c_a-z]+)?(?: \\([ \\x5ca-z]+\\))?(?: \"?[0-9]{1,2}-[0-9A-Z_a-z]{3}-[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} [\\+\\-][0-9]{4}\"?)? \\{[0-9]{1,20}\\+?\\}|UTHENTICATE [\\-0-9_a-z]{1,20}\\r\\n)|L(?:SUB (?:[\"#\\*\\.-9A-Z_a-z~]+)? (?:[\"%&\\*\\.-9A-Z\\x5c_a-z]+)?|ISTRIGHTS (?:[\"%&\\*\\--9A-Z\\x5c_a-z]+)?)|S(?:TATUS (?:[\"%&\\*\\--9A-Z\\x5c_a-z]+)? \\((?:U(?:NSEEN|IDNEXT)|MESSAGES|UIDVALIDITY|RECENT| )+\\)|ETACL (?:[\"%&\\*\\--9A-Z\\x5c_a-z]+)? [\\+\\-][ac-eiklpr-twx]+?)|UID (?:COPY|FETCH|STORE) (?:[\\*,0-:]+)?|(?:(?:DELETE|GET)ACL|MYRIGHTS) (?:[\"%&\\*\\--9A-Z\\x5c_a-z]+)?)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932310",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/137/134"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: IMAP Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?is)\\r\\n[0-9A-Z_a-z]{1,50}\\b (?:C(?:(?:REATE|OPY [\\*,0-:]+) [\"#%&\\*\\--9A-Z\\x5c_a-z]+|APABILITY|HECK|LOSE)|DELETE [\"#%&\\*\\-\\.0-9A-Z\\x5c_a-z]+|EX(?:AMINE [\"#%&\\*\\-\\.0-9A-Z\\x5c_a-z]+|PUNGE)|FETCH [\\*,0-:]+|L(?:IST [\"#\\*\\--9A-Z\\x5c_a-z~]+? [\"#%&\\*\\--9A-Z\\x5c_a-z]+|OG(?:IN [\\-\\.0-9@_a-z]{1,40} .*?|OUT))|RENAME [\"#%&\\*\\--9A-Z\\x5c_a-z]+? [\"#%&\\*\\--9A-Z\\x5c_a-z]+|S(?:E(?:LECT [\"#%&\\*\\--9A-Z\\x5c_a-z]+|ARCH(?: CHARSET [\\-\\.0-9A-Z_a-z]{1,40})? (?:(KEYWORD \\x5c)?(?:A(?:LL|NSWERED)|BCC|D(?:ELETED|RAFT)|(?:FLAGGE|OL)D|RECENT|SEEN|UN(?:(?:ANSWER|FLAGG)ED|D(?:ELETED|RAFT)|SEEN)|NEW)|(?:BODY|CC|FROM|HEADER .{1,100}|NOT|OR .{1,255}|T(?:EXT|O)) .{1,255}|LARGER [0-9]{1,20}|[\\*,0-:]+|(?:BEFORE|ON|S(?:ENT(?:(?:BEFOR|SINC)E|ON)|INCE)) \"?[0-9]{1,2}-[0-9A-Z_a-z]{3}-[0-9]{4}\"?|S(?:MALLER [0-9]{1,20}|UBJECT .{1,255})|U(?:ID [\\*,0-:]+?|NKEYWORD \\x5c(Seen|(?:Answer|Flagg)ed|D(?:eleted|raft)|Recent))))|T(?:ORE [\\*,0-:]+? [\\+\\-]?FLAGS(?:\\.SILENT)? (?:\\(\\x5c[a-z]{1,20}\\))?|ARTTLS)|UBSCRIBE [\"#%&\\*\\--9A-Z\\x5c_a-z]+)|UN(?:SUBSCRIBE [\"#%&\\*\\--9A-Z\\x5c_a-z]+|AUTHENTICATE)|NOOP)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932311",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/137/134"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: POP3 Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?is)\\r\\n.*?\\b(?:(?:LIST|TOP [0-9]+)(?: [0-9]+)?|U(?:SER .+?|IDL(?: [0-9]+)?)|PASS .+?|(?:RETR|DELE) [0-9]+?|A(?:POP [0-9A-Z_a-z]+ [0-9a-f]{32}|UTH [\\-0-9_a-z]{1,20} (?:(?:[\\+/-9A-Z_a-z]{4})*(?:[\\+/-9A-Z_a-z]{2}=|[\\+/-9A-Z_a-z]{3}))?=))",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932320",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/137/134"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: POP3 Command Execution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\r\\n.*?\\b(?:(?:QUI|STA|RSE)T|NOOP|CAPA)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932321",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/137/134"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix shell history invocation",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "!-\\d",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932330",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Unix shell history invocation",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "!(?:\\d|!)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932331",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Shell Fork Bomb",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "[\\.0-:A-Z_a-z]+[\\s\\x0b]*\\([\\s\\x0b]*\\)[\\s\\x0b]*\\{[^\\}]+[&\\|][^\\}]+\\}",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "932390",
+            "source_rule_file": "REQUEST-932-APPLICATION-ATTACK-RCE.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-shell",
+                "platform-unix",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-RCE",
+                "capec/1000/152/248/88"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: PHP Open Tag Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "<\\?(?:php[\\s\\x0b]|[\\s\\x0b=]|xml(?:[\\s\\x0b]+[^a-z]|:)|$)|\\[[/\\x5c]?php\\]|\\{/?php\\}",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933100",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: PHP Script File Upload Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": ".*\\.ph(?:p\\d*|tml|ar|ps|t|pt)\\.*$",
+            "flags": "",
+            "targets": [
+                "FILES",
+                "REQUEST_HEADERS:X-Filename",
+                "REQUEST_HEADERS:X_Filename",
+                "REQUEST_HEADERS:X.Filename",
+                "REQUEST_HEADERS:X-File-Name"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933110",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "FILES|REQUEST_HEADERS:X-Filename|REQUEST_HEADERS:X_Filename|REQUEST_HEADERS:X.Filename|REQUEST_HEADERS:X-File-Name",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: PHP Script File Upload Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": ".*\\.ph(?:p\\d*|tml|ar|ps|t|pt)\\..*$",
+            "flags": "",
+            "targets": [
+                "FILES",
+                "REQUEST_HEADERS:X-Filename",
+                "REQUEST_HEADERS:X_Filename",
+                "REQUEST_HEADERS:X.Filename",
+                "REQUEST_HEADERS:X-File-Name"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933111",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "FILES|REQUEST_HEADERS:X-Filename|REQUEST_HEADERS:X_Filename|REQUEST_HEADERS:X.Filename|REQUEST_HEADERS:X-File-Name",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Configuration Directive Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b(?:a(?:llow_url_(?:fopen|include)|pc.(?:coredump_unmap|en(?:able(?:_cli|d)|tries_hint)|(?:gc_)?ttl|mmap_file_mask|preload_path|s(?:erializer|hm_s(?:egments|ize)|lam_defense)|use_request_time)|rg_separator.(?:in|out)put|ssert.(?:active|(?:bai|quiet_eva)l|callback|exception|warning)|uto_(?:(?:ap|pre)pend_file|detect_line_endings|globals_jit))|b(?:cmath.scale|rowscap)|c(?:gi.(?:check_shebang_line|(?:discard_pat|np)h|f(?:ix_pathinfo|orce_redirect)|r(?:edirect_status_env|fc2616_headers))|hild_terminate|li(?:_server.color|.p(?:ager|rompt))|om.(?:a(?:llow_dcom|utoregister_(?:(?:casesensitiv|verbos)e|typelib))|(?:code_pag|typelib_fil)e|dotnet_version)|url.cainfo)|d(?:ate.(?:(?:default_l(?:at|ong)itud|timezon)e|sun(?:rise|set)_zenith)|ba.default_handler|efault_(?:(?:charse|socket_timeou)t|mimetype)|is(?:able_(?:classe|function)|play_(?:startup_)?error)s|oc(?:_roo|ref_(?:ex|roo))t)|e(?:n(?:able_(?:dl|post_data_reading)|gine)|rror_(?:(?:(?:ap|pre)pend_str|report)in|lo)g|x(?:i(?:f.(?:decode_(?:jis|unicode)_(?:intel|motorola)|encode_(?:jis|unicode))|t_on_timeout)|tension(?:_dir)?|p(?:ect.(?:log(?:file|user)|match_max|timeout)|ose_php)))|f(?:astcgi.(?:impersonate|logging)|fi.(?:enable|preload)|il(?:e_uploads|ter.default(?:_flags)?))|g(?:d.jpeg_ignore_warning|eoip.custom_directory)|h(?:ard_timeout|ighlight.(?:(?:commen|defaul)t|html|keyword|string)|tml_errors)|i(?:b(?:ase.(?:(?:allow_persisten|time(?:stamp)?forma)t|d(?:ateformat|efault_(?:charset|db|password|user))|max_(?:links|persistent))|m_db2.(?:binmode|i(?:5_(?:all(?:_pconnec|ow_commi)t|dbcs_alloc|ignore_userid)|nstance_name)))|conv.(?:in(?:put|ternal)|output)_encoding|g(?:binary.compact_strings|nore_(?:repeated_(?:errors|source)|user_abort))|m(?:a(?:gick.(?:locale_fix|progress_monitor|skip_version_check)|p.enable_insecure_rsh)|plicit_flush)|n(?:clude_path|put_encoding|t(?:ernal_encoding|l.(?:default_locale|error_level|use_exceptions))))|l(?:dap.max_links|og_errors(?:_max_len)?)|m(?:a(?:gic_quotes_(?:gpc|runtime)|il(?:.(?:add_x_header|force_extra_parameters|log)|parse.def_charset)|x_(?:execution_time|file_uploads|input_(?:nesting_level|time|vars)))|bstring.(?:detect_order|encoding_translation|func_overload|http_(?:input|output(?:_conv_mimetypes)?)|internal_encoding|language|regex_(?:retry|stack)_limit|s(?:trict_detection|ubstitute_character))|crypt.(?:algorithm|mode)s_dir|em(?:cache(?:.(?:allow_failover|c(?:hunk_size|ompress_threshold)|(?:default_por|lock_timeou)t|hash_(?:function|strategy)|max_failover_attempts|protocol|(?:session_)?redundancy)|d.(?:compression_(?:factor|t(?:hreshold|ype))|default_(?:binary_protocol|con(?:nect_timeout|sistent_hash))|s(?:e(?:rializer|ss_(?:binary(?:_protocol)?|con(?:nect_timeout|sistent_hash(?:_type)?)|lock(?:_(?:expire|retries|wait(?:_m(?:ax|in))?)|ing)|number_of_replicas|p(?:ersistent|refix)|r(?:andomize_replica_read|emove_failed(?:_servers)?)|s(?:asl_(?:password|username)|erver_failure_limit)))|tore_retry_count)|use_sasl))|ory_limit)|ysql(?:.(?:allow_(?:local_infile|persistent)|connect_timeout|default_(?:(?:hos|socke)t|p(?:assword|ort)|user)|max_(?:links|persistent)|trace_mode)|i.(?:allow_(?:local_infile|persistent)|default_(?:(?:hos|socke)t|p(?:ort|w)|user)|local_infile_directory|max_(?:links|persistent)|r(?:econnect|ollback_on_cached_plink))|nd.(?:collect_(?:memory_)?statistics|debug|(?:fetch_data_cop|sha256_server_public_ke)y|log_mask|mempool_default_size|net_(?:cmd_buffer_size|read_(?:buffer_size|timeout))|trace_alloc)))|o(?:ci8.(?:(?:connection_clas|event|old_oci_close_semantic)s|default_prefetch|max_persistent|p(?:ersistent_timeout|ing_interval|r(?:efetch_lob_size|ivileged_connect))|statement_cache_size)|dbc.(?:(?:allow|check)_persistent|default(?:_(?:cursortype|db|pw|user)|binmode|lrl)|max_(?:links|persistent))|p(?:cache.(?:blacklist_filename|c(?:ache_id|onsistency_checks)|dups_fix|e(?:nable(?:_(?:cli|file_override))?|rror_log)|f(?:ast_shutdown|ile_(?:cache(?:_(?:consistency_checks|fallback|only))?|update_protection)|orce_restart_timeout)|(?:huge_code_page|save_comment)s|in(?:herited_hack|terned_strings_buffer)|jit(?:_(?:b(?:isect_limit|(?:lacklist_(?:root|side)_trac|uffer_siz)e)|debug|hot_(?:func|loop|return|side_exit)|max_(?:exit_counter|(?:loop_unro|polymorphic_ca)ll|r(?:ecursive_(?:call|return)|oot_trace)|side_trace)s|prof_threshold))?|lo(?:ckfile_path|g_verbosity_level)|m(?:ax_(?:accelerated_files|(?:file_siz|wasted_percentag)e)|emory_consumption|map_base)|opt(?:_debug|imization)_level|pr(?:e(?:ferred_memory_model|load(?:_user)?)|otect_memory)|re(?:cord_warnings|strict_api|validate_(?:freq|path))|use_cwd|validate_(?:permission|root|timestamps))|en(?:_basedir|ssl.ca(?:file|path)))|utput_(?:(?:buffer|encod)ing|handler))|p(?:cre.(?:(?:backtrack|recursion)_lim|j)it|do(?:_odbc.(?:connection_pooling|db2_instance_name)|.dsn)|gsql.(?:a(?:llow|uto_reset)_persistent|(?:ignore|log)_notice|max_(?:links|persistent))|h(?:ar.(?:cache_list|re(?:adonly|quire_hash))|pdbg.(?:eol|path))|recision|ost_max_size)|r(?:e(?:alpath_cache_(?:size|ttl)|gister_argc_argv|port_(?:memleaks|zend_debug)|quest_order)|unkit.(?:internal_override|superglobal))|s(?:e(?:aslog.(?:appender(?:_retry)?|buffer_(?:disabled_in_cli|size)|d(?:efault_(?:basepath|datetime_format|logger|template)|isting_(?:(?:by_hou|folde)r|type))|ignore_warning|level|re(?:call_depth|mote_(?:hos|por|timeou)t)|t(?:hrow_exception|r(?:ace_(?:e(?:rror|xception)|notice|warning)|im_wrap))|use_buffer)|ndmail_(?:from|path)|rialize_precision|ssion.(?:auto_start|c(?:ache_(?:expire|limiter)|ookie_(?:domain|httponly|(?:lifetim|s(?:amesit|ecur))e|path))|entropy_(?:file|length)|gc_(?:divisor|maxlifetime|probability)|hash_(?:bits_per_character|function)|(?:lazy_writ|nam)e|referer_check|s(?:ave_(?:handler|path)|erialize_handler|id_(?:bits_per_character|length))|trans_sid_(?:host|tag)s|u(?:pload_progress.(?:cleanup|enabled|(?:min_)?freq|name|prefix)|se_(?:(?:only_)?cookies|strict_mode|trans_sid))))|hort_open_tag|mtp(?:_port)?|oap.wsdl_cache(?:_(?:dir|enabled|limit|ttl))?|ql(?:.safe_mode|ite3.(?:defensive|extension_dir))|tomp.default_(?:broker|(?:connection|read)_timeout_u?sec)|woole.(?:aio_thread_num|display_errors|enable_(?:coroutine|library|preemptive_scheduler)|(?:fast_serializ|u(?:nixsock_buffer_siz|se_(?:namespac|shortnam)))e)|ys(?:_temp_dir|log.(?:f(?:acility|ilter)|ident)|vshm.init_mem))|t(?:aint.e(?:nable|rror_level)|idy.(?:clean_output|default_config)|ra(?:ck_errors|der.real_(?:precision|round_mode)))|u(?:nserialize_(?:callback_func|max_depth)|opz.(?:disable|exit|overloads)|pload(?:_(?:max_filesize|tmp_dir)|progress.file.filename_template)|rl_rewriter.(?:host|tag)s|ser_(?:agent|dir|ini.(?:cache_ttl|filename)))|v(?:8js.(?:flag|max_disposed_context)s|ariables_order|ld.(?:(?:activ|execut)e|skip_(?:ap|pre)pend))|w(?:in(?:cache.(?:chkinterval|enablecli|f(?:c(?:achesize|enabled(?:filter)?|ndetect)|ile(?:count|mapdir))|(?:ignorelis|namesal)t|maxfilesize|oc(?:achesize|enabled(?:filter)?)|reroute(?:_enabled|ini)|s(?:cachesize|rwlocks)|ttlmax|uc(?:achesize|enabled))|dows.show_crt_warning)|khtmltox.graphics)|x(?:bithack|hprof.output_dir|mlrpc_error(?:_number|s))|ya(?:c(?:.(?:compress_threshold|debug|enable(?:_cli)?|(?:key|value)s_memory_size|serializer)|onf.(?:check_dela|director)y)|f.(?:action_prefer|cache_config|environ|forward_limit|l(?:ibrary|owcase_path)|name_s(?:eparator|uffix)|use_(?:namespace|spl_autoload))|ml.(?:decode_(?:binary|(?:ph|timestam)p)|output_(?:canonical|indent|width))|r.(?:(?:connect_)?timeout|debug|expose_info|packager)|z.(?:keepalive|log_mask))|z(?:end(?:_extension|.(?:assertions|(?:detect_unicod|multibyt)e|e(?:nable_gc|xception_(?:ignore_args|string_param_max_len))|s(?:cript_encoding|ignal_check)))|lib.output_(?:compression(?:_level)?|handler)|ookeeper.(?:recv_timeout|sess(?:_lock_wait|ion_lock))))[\\s\\x0b]*=[^=]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933120",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Variables Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "AUTH_TYPE|HTTP_(?:ACCEPT(?:_(?:CHARSET|ENCODING|LANGUAGE))?|CONNECTION|(?:HOS|USER_AGEN)T|KEEP_ALIVE|(?:REFERE|X_FORWARDED_FO)R)|ORIG_PATH_INFO|PATH_(?:INFO|TRANSLATED)|QUERY_STRING|REQUEST_URI",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933131",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Variable Access Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$\\s*\\{\\s*\\S[^\\{\\}]*\\}",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933135",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: I/O Stream Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "php://(?:std(?:in|out|err)|(?:in|out)put|f(?:d|ilter)|memory|temp)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933140",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Medium-Risk PHP Function Name Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b(?:a(?:c(?:cel_chdir|osh?)|ddc?slashes|pache_(?:child_terminate|get(?:_(?:modules|version)|env)|lookup_uri|note |re(?:quest|sponse)_headers|setenv)|r(?:ray_(?:c(?:h(?:ange_key_case|unk)|o(?:lumn|mbine|unt_values))|diff(?:_(?:assoc|key|u(?:assoc|key)))?|f(?:ill(?:_keys)?|lip)|i(?:ntersect(?:_(?:assoc|key|u(?:assoc|key)))?|s_list)|key(?:_(?:fir|la)st|s)|m(?:ap|erge(?:_recursive)?|ultisort)|p(?:ad|op|roduct)|r(?:and|e(?:(?:duc|vers)e|place(?:_recursive)?))|s(?:earch|p?lice|um)|u(?:(?:diff|intersect)(?:_u?assoc)?|n(?:ique|shift))|walk(?:_recursive)?)|sort)|s(?:inh|ort|sert_options)|tan[2h]?)|b(?:ase(?:64_(?:de|en)code|_convert)|c(?:add|comp|div|m(?:od|ul)|pow(?:mod)?|s(?:cale|qrt|ub))|in(?:2hex|d(?:_textdomain_codeset|ec|textdomain))|oolval|z(?:(?:de)?compress|err(?:no|(?:o|st)r)|open|read))|c(?:al(?:_(?:days_in_month|(?:from|to)_jd|info)|l_user_func_array)|eil|h(?:(?:di)?r|grp|mod|own|unk_split)|l(?:ass_(?:alia|(?:implem|par)ent|use)s|earstatcache|ose(?:dir|log))|o(?:llator_(?:asort|c(?:ompar|reat)e|get_(?:(?:attribut|error_(?:cod|messag)|local)e|s(?:ort_key|trength))|s(?:et_(?:attribute|strength)|ort(?:_with_sort_keys)?))|m_(?:create_guid|event_sink|get_active_object|load_typelib|message_pump|print_typeinfo)|n(?:fig_get_hash|nection_(?:aborted|status)|vert_uu(?:de|en)code)|unt_chars)|rc32|type_(?:al(?:num|pha)|cntrl|(?:x?digi|p(?:rin|unc))t|graph|(?:low|upp)er|space)|url_(?:(?:c(?:los|opy_handl)|file_creat|paus)e|e(?:rr(?:no|or)|scape|xec)|getinfo|(?:ini|rese)t|multi_(?:(?:(?:add|remove)_handl|clos)e|e(?:rrno|xec)|getcontent|in(?:fo_read|it)|s(?:e(?:lec|top)t|trerror))|s(?:etopt(?:_array)?|hare_(?:close|errno|init|s(?:etopt|trerror))|trerror)|u(?:nescape|pkeep)|version))|d(?:ate(?:_(?:add|create(?:_(?:from_format|immutable(?:_from_format)?))?|d(?:(?:ate_s|efault_timezone_[gs])et|iff)|(?:forma|(?:offset_g|time(?:_s|(?:stamp|zone)_[gs]))e)t|get_last_errors|i(?:nterval_(?:create_from_date_string|format)|sodate_set)|modify|parse(?:_from_format)?|su(?:b|n(?:_info|rise|set)))|fmt_(?:(?:creat|localtim|pars)e|format(?:_object)?|get_(?:calendar(?:_object)?|(?:datetyp|error_(?:cod|messag)|local)e|pattern|time(?:type|zone(?:_id)?))|is_lenient|set_(?:calendar|lenient|pattern|timezone)))|ba_(?:(?:clos|delet|replac)e|(?:exist|handler)s|f(?:etch|irstkey)|(?:inser|key_spli|lis)t|nextkey|op(?:en|timize)|popen|sync)|(?:cn?)?gettext|e(?:bug_(?:(?:print_)?backtrace|zval_dump)|c(?:bin|hex)|flate_(?:add|init)|g2rad)|isk_(?:free|total)_space|l_test_test[12]|n(?:gettext|s_(?:check_record|get_(?:mx|record)))|om_import_simplexml)|e(?:aster_da(?:te|ys)|n(?:chant_(?:broker_(?:d(?:escribe|ict_exists)|free(?:_dict)?|get_(?:dict_path|error)|(?:ini|request_(?:pwl_)?dic)t|list_dicts|set_(?:dict_path|ordering))|dict_(?:add(?:_to_session)?|(?:quick_)?check|describe|get_error|is_added|s(?:tore_replacemen|ugges)t))|um_exists)|rror_(?:(?:clear|get)_last|(?:lo|reportin)g)|scapeshell(?:arg|cmd)|x(?:if_(?:imagetype|read_data|t(?:agname|humbnail))|pm1|tension_loaded))|f(?:astcgi_finish_request|d(?:atasync|iv)|eof|f(?:i_trampoline|lush)|get(?:c(?:sv)?|s)|i(?:l(?:e_put_contents|ter_(?:has_var|i(?:d|nput(?:_array)?)|list|var(?:_array)?))|nfo_(?:buffer|(?:clos|fil)e|open|set_flags))|loatval|(?:mo|re(?:a|nchtoj))d|nmatch|orward_static_call(?:_array)?|p(?:assthru|m_get_status|rintf|utcsv)|s(?:canf|eek|ockopen|tat|ync)|t(?:ell|ok|p_(?:a(?:lloc|ppend)|c(?:dup|h(?:dir|mod)|lose|onnect)|delete|exec|f(?:ge|pu)t|get(?:_option)?|login|m(?:dtm|kdir|lsd)|n(?:b_(?:continue|(?:f(?:ge|pu)|ge|pu)t)|list)|p(?:asv|ut|wd)|r(?:aw(?:list)?|ename|mdir)|s(?:et_option|(?:i[tz]|ystyp)e|sl_connect))|runcate)|unc_(?:get_args?|num_args)|write)|g(?:c_(?:(?:(?:collect_cycl|mem_cach)e|statu)s|disable|enabled?)|d_info|et(?:_(?:browser|c(?:(?:alled_clas|lass_(?:method|var))s|(?:fg_va|urrent_use)r)|de(?:bug_type|(?:clared_(?:(?:class|interfac)e|trait)|fined_(?:constant|function|var))s)|(?:extension_func|loaded_extension|m(?:angled_object_var|eta_tag)|parent_clas)s|h(?:eaders|tml_translation_table)|include(?:_path|d_files)|o(?:bject_vars|pen_basedir)|resource(?:_(?:id|type)|s))|(?:cw|lastmo)d|(?:dat|rusag)e|env|host(?:by(?:addr|namel?)|name)|imagesize(?:fromstring)?|my(?:[gpu]id|inode)|opt|protobyn(?:ame|umber)|servby(?:name|port)|t(?:ext|imeofday|ype))|m(?:(?:dat|(?:mk|strf)tim)e|p_(?:a(?:bs|[dn]d)|binomial|c(?:lrbit|mp|om)|div(?:_(?:qr?|r)|exact)|(?:expor|fac|hamdis|testbi)t|gcd(?:ext)?|i(?:mport|n(?:(?:i|ver)t|tval))|jacobi|(?:kronecke|x?o)r|l(?:cm|egendre)|m(?:od|ul)|ne(?:g|xtprime)|p(?:erfect_(?:power|square)|o(?:pcount|wm?)|rob_prime)|r(?:andom_(?:bits|range|seed)|oot(?:rem)?)|s(?:can[01]|etbit|ign|qrt(?:rem)?|trval|ub)))|r(?:apheme_(?:extract|s(?:tr(?:i(?:pos|str)|len|(?:ri?)?pos|str)|ubstr))|egoriantojd)|z(?:(?:un)?compress|(?:de(?:cod|flat)|encod|fil|inflat)e|open))|h(?:ash_(?:(?:algo|equal)s|copy|fi(?:le|nal)|h(?:kdf|mac(?:_(?:algos|file))?)|init|pbkdf2|update(?:_(?:file|stream))?)|e(?:ader(?:_re(?:gister_callback|move)|s_(?:lis|sen)t)|brev|x(?:2bin|dec))|ighlight_(?:file|string)|rtime|t(?:ml(?:(?:_entity|specialchars)_decode|entities)|tp_(?:build_query|response_code))|ypot)|i(?:conv(?:_(?:get_encoding|mime_(?:decode(?:_headers)?|encode)|s(?:et_encoding|tr(?:len|r?pos)|ubstr)))?|dn_to_(?:ascii|utf8)|gnore_user_abort|ma(?:ge(?:_type_to_(?:extension|mime_type)|a(?:ffine(?:matrix(?:conca|ge)t)?|lphablending|ntialias|rc|vif)|(?:bm|w(?:bm|eb))p|c(?:har(?:up)?|o(?:lor(?:a(?:llocate(?:alpha)?|t)|closest(?:alpha|hwb)?|deallocate|(?:exact|resolve)(?:alpha)?|match|s(?:et|forindex|total)|transparent)|nvolution|py(?:merge(?:gray)?|res(?:ampl|iz)ed)?)|r(?:eate(?:from(?:avif|(?:bm|w(?:bm|eb))p|g(?:d(?:2(?:part)?)?|if)|(?:jpe|(?:p|stri)n)g|tga|x[bp]m)|truecolor)?|op(?:auto)?))|d(?:ashedline|estroy)|ellipse|f(?:il(?:l(?:ed(?:arc|(?:ellips|rectangl)e|polygon)|toborder)?|ter)|lip|ont(?:height|width)|t(?:bbox|text))|g(?:ammacorrect|d2?|et(?:clip|interpolation)|if|rab(?:screen|window))|i(?:nterlace|struecolor)|jpeg|l(?:(?:ayereffec|oadfon)t|ine)|openpolygon|p(?:alette(?:copy|totruecolor)|ng|olygon)|r(?:e(?:ctangle|solution)|otate)|s(?:avealpha|cale|et(?:brush|clip|interpolation|pixel|style|t(?:hickness|ile))|tring(?:up)?|[xy])|t(?:ruecolortopalette|ypes)|xbm)|p_(?:(?:8bi|qprin)t|a(?:lerts|ppend)|b(?:ase64|inary|ody(?:struct)?)|c(?:heck|l(?:earflag_full|ose)|reatemailbox)|delete(?:mailbox)?|e(?:rrors|xpunge)|fetch(?:_overview|body|header|(?:mim|structur)e)|g(?:c|et(?:_quota(?:root)?|acl|mailboxes|subscribed))|header(?:info|s)|(?:is_)?open|l(?:ast_error|ist(?:scan)?|sub)|m(?:ail(?:_(?:co(?:mpose|py)|move)|boxmsginfo)?|ime_header_decode|sgno|utf7_to_utf8)|num_(?:msg|recent)|ping|r(?:e(?:namemailbox|open)|fc822_(?:parse_(?:adrlist|headers)|write_address))|s(?:avebody|e(?:arch|t(?:_quota|(?:ac|flag_ful)l))|ort|tatus|ubscribe)|t(?:hread|imeout)|u(?:id|n(?:delet|subscrib)e|tf(?:7_(?:de|en)code|8(?:_to_mutf7)?))))|n(?:_array|et_(?:ntop|pton)|flate_(?:add|get_(?:read_len|status)|init)|i_(?:get(?:_all)?|parse_quantity|restore|set)|t(?:div|erface_exists|l(?:_(?:error_nam|get_error_(?:cod|messag)|is_failur)e|cal_(?:a(?:dd|fter)|(?:befor|f(?:ield_differenc|rom_date_tim)|to_date_tim)e|c(?:lear|reate_instance)|equals|get(?:_(?:a(?:ctual_m(?:ax|in)imum|vailable_locales)|(?:day_of_week_typ|error_(?:cod|messag)|keyword_values_for_local)e|first_day_of_week|greatest_minimum|l(?:east_maximum|ocale)|m(?:aximum|inim(?:al_days_in_first_week|um))|now|(?:(?:repeat|skipp)ed_wall_time_op|weekend_transi)tion|t(?:ime(?:_zone)?|ype)))?|i(?:n_daylight_time|s_(?:equivalent_to|(?:lenien|se)t|weekend))|roll|set(?:_(?:(?:first_day_of|minimal_days_in_first)_week|lenient|(?:repeat|skipp)ed_wall_time_option|time(?:_zone)?))?)|gregcal_(?:(?:create_instanc|[gs]et_gregorian_chang)e|is_leap_year)|tz_(?:c(?:ount_equivalent_ids|reate_(?:default|enumeration|time_zone(?:_id_enumeration)?))|(?:(?:from|to)_date_time_zon|use_daylight_tim)e|get_(?:(?:canonical|windows)_id|d(?:isplay_name|st_savings)|e(?:quivalent_id|rror_(?:cod|messag)e)|(?:gm|offse)t|id(?:_for_windows_id)?|r(?:aw_offset|egion)|(?:tz_data_versio|unknow)n)|has_same_rules))))|p(?:2long|tc(?:embed|parse))|s_(?:bool|(?:(?:(?:c(?:all|ount)|(?:execu|wri)t)ab|uploaded_fi)l|i(?:nfinit|terabl)|re(?:adabl|sourc))e|f(?:i(?:l|nit)e|loat)|link|nan|s(?:calar|oap_fault|tring|ubclass_of))|terator_(?:(?:appl|to_arra)y|count))|j(?:d(?:dayofweek|monthname|to(?:french|gregorian|j(?:ewish|ulian)|unix))|(?:ewish|ulian)tojd|son_(?:last_error(?:_msg)?|validate)))[\\s\\x0b]*\\(",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933151",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Medium-Risk PHP Function Name Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b(?:kr?sort|l(?:c(?:first|g_value|h(?:grp|own))|dap_(?:8859_to_t61|(?:ad|bin)d(?:_ext)?|co(?:mpare|nnect(?:_wallet)?|unt_(?:entri|referenc)es)|d(?:elete(?:_ext)?|n2ufn)|e(?:rr(?:(?:2st|o)r|no)|scape|x(?:op(?:_(?:passwd|refresh|sync|whoami))?|plode_dn))|f(?:irst_(?:(?:attribut|referenc)e|entry)|ree_result)|get_(?:(?:attribut|entri)es|(?:d|optio|values_le)n)|list|mod(?:_(?:add|del|replace)(?:_ext)?|ify_batch)|next_(?:(?:attribut|referenc)e|entry)|parse_(?:exop|re(?:ference|sult))|re(?:ad|name(?:_ext)?)|s(?:asl_bind|e(?:arch|t_(?:option|rebind_proc))|tart_tls)|t61_to_8859|unbind)|evenshtein|i(?:bxml_(?:(?:clear|use_internal)_errors|disable_entity_loader|get_(?:e(?:rrors|xternal_entity_loader)|last_error)|set_(?:external_entity_loader|streams_context))|nkinfo|tespeed_(?:finish_request|re(?:quest|sponse)_headers))|o(?:cal(?:e(?:_(?:(?:accept_from_htt|looku)p|(?:c(?:anonicaliz|ompos)|pars)e|filter_matches|get_(?:(?:all_variant|keyword)s|d(?:efault|isplay_(?:(?:languag|nam)e|region|(?:scrip|varian)t))|primary_language|region|script)|set_default)|conv)|time)|g1[0p]|ng2ip)|stat|trim)|m(?:b_(?:c(?:h(?:eck_encoding|r)|onvert_(?:case|encoding|kana|variables))|de(?:code_(?:mimeheader|numericentity)|tect_(?:encoding|order))|e(?:ncod(?:e_(?:mimeheader|numericentity)|ing_aliases)|reg(?:_(?:match|replace(?:_callback)?|search(?:_(?:(?:get(?:po|reg)|(?:set)?po|reg)s|init))?)|i(?:_replace)?)?)|get_info|http_(?:in|out)put|internal_encoding|l(?:anguage|ist_encodings)|o(?:rd|utput_handler)|p(?:arse_str|referred_mime_name)|regex_(?:encoding|set_options)|s(?:crub|end_mail|plit|tr(?:_(?:pad|split)|cut|i(?:mwidth|pos|str)|len|pos|r(?:chr|i(?:chr|pos)|pos)|(?:st|to(?:low|upp)e)r|width)|ubst(?:itute_character|r(?:_count)?)))|(?:(?:d5|ove_uploaded)_fil|e(?:mory_(?:get_(?:peak_)?|reset_peak_)usag|taphon)|i(?:crotim|me_content_typ))e|hash(?:_(?:count|get_(?:block_siz|hash_nam)e|keygen_s2k))?|k(?:dir|time)|sg(?:_(?:(?:get_queu|re(?:ceiv|move_queu))e|queue_exists|s(?:e(?:nd|t_queue)|tat_queue))|fmt_(?:create|(?:format|parse)(?:_message)?|get_(?:(?:error_(?:cod|messag)|local)e|pattern)|set_pattern))|t_(?:getrandmax|s?rand)|ysqli_(?:a(?:ffected_rows|utocommit)|begin_transaction|c(?:ha(?:nge_user|racter_set_name)|lose|o(?:mmit|nnect(?:_err(?:no|or))?))|d(?:ata_seek|ebug|ump_debug_info)|e(?:rr(?:no|or(?:_list)?)|xecute_query)|f(?:etch_(?:a(?:ll|rray|ssoc)|column|field(?:_direct|s)?|lengths|object|row)|ield_(?:count|seek|tell)|ree_result)|get_(?:c(?:harset|lient_(?:info|stats|version)|onnection_stats)|(?:host|proto)_info|(?:links_stat|warning)s|server_(?:info|version))|in(?:fo|it|sert_id)|kill|m(?:ore_results|ulti_query)|n(?:ext_result|um_(?:field|row)s)|options|p(?:ing|oll|repare)|query|r(?:e(?:a(?:l_(?:connect|escape_string|query)|p_async_query)|fresh|(?:lease_savepoin|por)t)|ollback)|s(?:(?:avepoin|sl_se)t|e(?:lect_db|t_charset)|qlstate|t(?:(?:a|ore_resul)t|mt_(?:a(?:ffected_rows|ttr_[gs]et)|bind_(?:param|result)|close|data_seek|e(?:rr(?:no|or(?:_list)?)|xecute)|f(?:etch|(?:ield_coun|ree_resul)t)|get_(?:result|warnings)|in(?:it|sert_id)|more_results|n(?:ext_result|um_rows)|p(?:aram_count|repare)|res(?:et|ult_metadata)|s(?:end_long_data|qlstate|tore_result))))|thread_(?:id|safe)|(?:use_resul|warning_coun)t))|n(?:(?:at(?:case)?sor|gettex)t|et_get_interfaces|l(?:2br|_langinfo)|ormalizer_(?:get_raw_decomposition|is_normalized|normalize)|umfmt_(?:create|(?:format|parse)(?:_currency)?|get_(?:(?:(?:text_)?attribut|error_(?:cod|messag)|local)e|pattern|symbol)|set_(?:(?:text_)?attribute|pattern|symbol)))|o(?:b_(?:clean|end_(?:clean|flush)|(?:implicit_)?flush|g(?:et_(?:c(?:lean|ontents)|flush|le(?:ngth|vel)|status)|zhandler)|list_handlers)|c(?:i(?:_(?:(?:bind_(?:array_)?|define_)by_name|c(?:ancel|l(?:ient_version|ose)|o(?:llection_(?:a(?:ppend|ssign)|element_(?:assign|get)|max|size|trim)|(?:mmi|nnec)t))|e(?:rror|xecute)|f(?:etch(?:_(?:a(?:ll|rray|ssoc)|object|row))?|ield_(?:is_null|(?:nam|s(?:cal|iz))e|precision|type(?:_raw)?)|ree_(?:collection|descriptor|statement))|get_implicit_resultset|lob_(?:(?:appen|loa|re(?:a|win))d|copy|e(?:of|rase|xport)|flush|i(?:mport|s_equal)|s(?:(?:av|iz)e|eek)|t(?:ell|runcate)|write)|n(?:ew_(?:c(?:o(?:llection|nnect)|ursor)|descriptor)|um_(?:field|row)s)|p(?:a(?:rs|ssword_chang)e|connect)|r(?:e(?:gister_taf_callback|sult)|ollback)|s(?:e(?:rver_version|t_(?:(?:ac|db_opera|edi)tion|c(?:all_timeout|lient_i(?:dentifier|nfo))|module_name|prefetch(?:_lob)?))|tatement_type)|unregister_taf_callback)|fetchinto|[gs]etbufferinglob)|tdec)|dbc_(?:autocommit|(?:binmod|data_sourc)e|c(?:lose(?:_all)?|o(?:lumn(?:privilege)?s|mmit|nnect(?:ion_string_(?:is_quoted|(?:should_)?quote))?)|ursor)|e(?:rror(?:msg)?|xec(?:ute)?)|f(?:etch_(?:array|into|object|row)|ield_(?:len|n(?:ame|um)|(?:scal|typ)e)|oreignkeys|ree_result)|gettypeinfo|longreadlen|n(?:ext_result|um_(?:field|row)s)|p(?:connect|r(?:epare|(?:imarykey|ocedure(?:column)?)s))|r(?:esult(?:_all)?|ollback)|s(?:etoption|(?:pecialcolumn|tatistic)s)|table(?:privilege)?s)|p(?:cache_(?:compile_file|get_(?:configuration|status)|i(?:nvalidate|s_script_cached)|reset)|en(?:dir|log|ssl_(?:c(?:ipher_(?:iv|key)_length|ms_(?:(?:de|en)crypt|read|sign|verify)|sr_(?:export(?:_to_file)?|get_(?:public_key|subject)|new|sign))|d(?:(?:ecryp|iges)t|h_compute_key)|e(?:ncrypt|rror_string)|(?:get_(?:c(?:ert_location|ipher_method|urve_name)|md_method)|random_pseudo_byte)s|open|p(?:bkdf2|k(?:cs(?:12_(?:export(?:_to_file)?|read)|7_(?:(?:de|en)crypt|read|sign|verify))|ey_(?:(?:deriv|fre)e|export(?:_to_file)?|get_(?:details|p(?:rivate|ublic))|new))|(?:rivate|ublic)_(?:de|en)crypt)|s(?:eal|ign|pki_(?:export(?:_challenge)?|new|verify))|verify|x509_(?:check(?:_private_key|purpose)|export(?:_to_file)?|f(?:ingerprint|ree)|parse|read|verify))))|utput_(?:add_rewrite_var|reset_rewrite_vars))|p(?:a(?:rse_(?:ini_(?:file|string)|str)|ss(?:thru|word_(?:algos|get_info|(?:needs_re)?hash|verify))|thinfo)|c(?:lose|ntl_(?:a(?:larm|sync_signals)|exec|forkx?|get(?:_last_error|priority)|rfork|s(?:etpriority|ig(?:nal(?:_(?:dispatch|get_handler))?|procmask|timedwait|waitinfo)|trerror)|unshare|w(?:ait(?:pid)?|exitstatus|if(?:continu|exit|s(?:ignal|topp))ed|(?:stop|term)sig)))|do_drivers|fsockopen|g_(?:(?:affected_row|num_(?:field|row)|option)s|c(?:ancel_query|l(?:ient_encoding|ose)|o(?:n(?:nect(?:_poll|ion_(?:busy|reset|status))?|(?:sume_inpu|ver)t)|py_(?:from|to)))|d(?:bnam|elet)e|e(?:n(?:d_copy|ter_pipeline_mode)|scape_(?:bytea|identifier|literal|string)|x(?:ecut|it_pipeline_mod)e)|f(?:etch_(?:a(?:ll(?:_columns)?|rray|ssoc)|object|r(?:esult|ow))|ield(?:_(?:is_null|n(?:ame|um)|prtlen|size|t(?:able|ype(?:_oid)?))|isnull|prtlen)|lush|ree_result)|get_(?:notify|pid|result)|(?:hos|inser)t|l(?:ast_(?:error|notice|oid)|o_(?:(?:c(?:los|reat)|writ)e|(?:ex|im)port|open|read(?:_all)?|(?:see|unlin)k|t(?:ell|runcate)))|meta_data|p(?:arameter_status|(?:connec|or)t|i(?:ng|peline_s(?:tatus|ync))|(?:repar|ut_lin)e)|query(?:_params)?|result_(?:error(?:_field)?|s(?:eek|tatus))|s(?:e(?:lect|nd_(?:(?:execut|prepar)e|query(?:_params)?)|t_(?:client_encoding|error_(?:context_visibil|verbos)ity))|ocket)|t(?:ra(?:ce|nsaction_status)|ty)|u(?:n(?:escape_bytea|trace)|pdate)|version)|hp(?:_(?:ini_(?:loaded_file|scanned_files)|(?:s(?:api_nam|trip_whitespac)|unam)e)|credits|dbg_(?:break_(?:f(?:ile|unction)|method|next)|c(?:lea|olo)r|e(?:nd_oplog|xec)|get_executable|prompt|start_oplog)|info|version)|osix_(?:e?access|ctermid|f?pathconf|get(?:_last_error|(?:cw|(?:e[gu]|[su])i)d|g(?:id|r(?:gid|nam|oups))|login|p(?:g(?:id|rp)|p?id|w(?:nam|uid))|rlimit)|i(?:nitgroups|satty)|kill|mk(?:fifo|nod)|s(?:et(?:(?:e[gu]|p?g|[su])id|rlimit)|trerror|ysconf)|t(?:imes|tyname)|uname)|r(?:eg_(?:filter|grep|last_error(?:_msg)?|match_all|quote|replace_callback(?:_array)?|split)|o(?:c_(?:(?:clos|nic|terminat)e|get_status|open)|perty_exists))|spell_(?:add_to_(?:personal|session)|c(?:heck|lear_session|onfig_(?:(?:creat|ignor|mod)e|d(?:ata|ict)_dir|(?:persona|save_rep)l|r(?:epl|untogether)))|new(?:_(?:config|personal))?|s(?:(?:ave_wordli|ugge)s|tore_replacemen)t)|utenv)|quote(?:d_printable_(?:de|en)code|meta))[\\s\\x0b]*\\(",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933152",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Medium-Risk PHP Function Name Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b(?:r(?:a(?:d2deg|ndom_(?:bytes|int)|wurl(?:de|en)code)|e(?:a(?:d(?:dir|(?:gz)?file|lin(?:e(?:_(?:(?:(?:add|list|write)_histor|re(?:ad_histor|displa))y|c(?:allback_(?:handler_(?:install|remove)|read_char)|lear_history|ompletion_function)|info|on_new_line))?|k))|lpath(?:_cache_(?:get|size))?)|gister_(?:shutdown|tick)_function|s(?:ourcebundle_(?:c(?:ount|reate)|get(?:_error_(?:cod|messag)e)?|locales)|tore_e(?:rror|xception)_handler)|wind(?:dir)?)|mdir|sort)|s(?:api_windows_(?:cp_(?:conv|[gs]et|is_utf8)|(?:generate_ctrl_even|vt100_suppor)t|set_ctrl_handler)|candir|e(?:m_(?:(?:acquir|re(?:leas|mov))e|get)|ssion_(?:(?:abor|unse)t|c(?:ache_(?:expire|limiter)|reate_id)|de(?:code|stroy)|(?:encod|(?:module_)?nam|write_clos)e|g(?:c|et_cookie_params)|id|re(?:g(?:enerate_id|ister_shutdown)|set)|s(?:ave_path|et_(?:cookie_params|save_handler)|ta(?:rt|tus)))|t(?:_(?:e(?:rror|xception)_handler|include_path|time_limit)|(?:(?:raw)?cooki|local)e))|h(?:a1(?:_file)?|ell_exec|m(?:_(?:(?:at|de)tach|(?:(?:ge|pu)t|has)_var|remove(?:_var)?)|op_(?:(?:clos|(?:dele|wri)t|siz)e|open|read)))|i(?:m(?:ilar_text|plexml_(?:import_dom|load_(?:file|string)))|nh)|nmp(?:[23]_(?:get(?:next)?|(?:real_)?walk|set)|_(?:get_(?:quick_print|valueretrieval)|read_mib|set_(?:(?:(?:enum|quick)_prin|oid_output_forma)t|valueretrieval))|get(?:next)?|(?:real)?walk|set)|o(?:cket_(?:a(?:ccept|ddrinfo_(?:bind|connect|explain|lookup)|tmark)|bind|c(?:l(?:ear_error|ose)|msg_space|onnect|reate(?:_(?:listen|pair))?)|(?:ex|im)port_stream|get(?:_option|(?:peer|sock)name)|l(?:ast_error|isten)|re(?:ad|cv(?:from|msg)?)|s(?:e(?:lect|nd(?:msg|to)?|t_(?:(?:non)?block|option))|hutdown|trerror)|w(?:rite|saprotocol_info_(?:(?:ex|im)port|release)))|dium_(?:(?:ad|(?:un)?pa)d|b(?:ase642bin|in2(?:base64|hex))|c(?:ompare|rypto_(?:a(?:ead_(?:aes256gcm_(?:(?:de|en)crypt|is_available|keygen)|chacha20poly1305_(?:(?:de|en)crypt|ietf_(?:(?:de|en)crypt|keygen)|keygen)|xchacha20poly1305_ietf_(?:(?:de|en)crypt|keygen))|uth(?:_(?:keygen|verify))?)|box(?:_(?:keypair(?:_from_secretkey_and_publickey)?|open|publickey(?:_from_secretkey)?|se(?:al(?:_open)?|cretkey|ed_keypair)))?|core_ristretto255_(?:add|from_hash|is_valid_point|random|s(?:calar_(?:add|(?:complemen|inver)t|mul|negate|r(?:andom|educe)|sub)|ub))|generichash(?:_(?:final|init|keygen|update))?|k(?:df_(?:derive_from_key|keygen)|x_(?:client_session_keys|keypair|publickey|se(?:cretkey|ed_keypair|rver_session_keys)))|pwhash(?:_s(?:cryptsalsa208sha256(?:_str(?:_verify)?)?|tr(?:_(?:needs_rehash|verify))?))?|s(?:calarmult(?:_ristretto255(?:_base)?)?|ecret(?:box(?:_(?:keyg|op)en)?|stream_xchacha20poly1305_(?:(?:init_)?pu(?:ll|sh)|keygen|rekey))|horthash(?:_keygen)?|ign(?:_(?:(?:verify_)?detached|ed25519_[ps]k_to_curve25519|keypair(?:_from_secretkey_and_publickey)?|open|publickey(?:_from_secretkey)?|se(?:cretkey|ed_keypair)))?|tream(?:_(?:keygen|x(?:chacha20(?:_(?:keygen|xor(?:_ic)?))?|or)))?)))|hex2bin|increment|mem(?:cmp|zero))|undex)|p(?:l_(?:autoload(?:_(?:call|(?:extens|funct)ions|(?:un)?register))?|classes|object_(?:hash|id))|rintf)|qrt|scanf|tr(?:_(?:contains|(?:decreme|word_cou)nt|ends_with|getcsv|i(?:ncrement|replace)|pad|r(?:epeat|ot13)|s(?:huffle|plit|tarts_with))|c(?:(?:asec)?mp|oll|spn)|eam_(?:bucket_(?:(?:ap|pre)pend|make_writeable|new)|co(?:ntext_(?:create|get_(?:default|(?:option|param)s)|set_(?:default|options?|params))|py_to_stream)|filter_(?:(?:ap|pre)pend|re(?:gister|move))|get_(?:(?:(?:conten|transpor)t|(?:filt|wrapp)er)s|line|meta_data)|is(?:_local|atty)|resolve_include_path|s(?:e(?:lect|t_(?:blocking|chunk_size|(?:read|write)_buffer|timeout))|ocket_(?:(?:accep|clien)t|enable_crypto|get_name|pair|recvfrom|s(?:e(?:ndto|rver)|hutdown))|upports_lock)|wrapper_(?:re(?:gister|store)|unregister))|ftime|i(?:p(?:c?slashe|o)s|str)|n(?:at)?c(?:asec)?mp|p(?:brk|time)|r(?:chr|ev|i?pos)|s(?:pn|tr)|t(?:ok|r)|val)|ubstr_(?:co(?:mpare|unt)|replace)|ys_get(?:_temp_dir|loadavg))|t(?:anh|e(?:mpnam|st[12]|xtdomain)|i(?:dy_(?:(?:access|error|warning)_count|c(?:lean_repair|onfig_count)|diagnose|get(?:_(?:body|config|error_buffer|h(?:ead|tml(?:_ver)?)|o(?:pt_doc|utput)|r(?:elease|oot)|status)|opt)|is_x(?:ht)?ml|(?:parse|repair)_(?:file|string))|me(?:_(?:nanosleep|sleep_until)|zone_(?:(?:(?:abbreviation|identifier)s_lis|(?:(?:locat|vers)ion|transitions)_ge)t|name_(?:from_abbr|get)|o(?:ffset_get|pen))))|mpfile|oken_(?:get_all|name)|r(?:a(?:it_exists|nsliterator_(?:create(?:_(?:from_rules|inverse))?|(?:get_error_(?:cod|messag)|transliterat)e|list_ids))|igger_error))|u(?:[ak]sort|cwords|mask|n(?:i(?:qi|xtoj)d|register_tick_function)|(?:rlde|tf8_(?:de|en))code|s(?:e_soap_error_handler|leep|ort))|v(?:ar(?:_(?:dump|export)|iant_(?:a(?:bs|[dn]d)|c(?:as?t|mp)|d(?:ate_(?:from|to)_timestamp|iv)|eqv|fix|get_type|i(?:div|mp|nt)|m(?:od|ul)|n(?:eg|ot)|x?or|pow|round|s(?:et(?:_type)?|ub)))|ersion_compare|[fs]?printf)|wordwrap|xml(?:_(?:error_string|get_(?:current_(?:byte_index|(?:column|line)_number)|error_code)|parse(?:_into_struct|r_(?:create(?:_ns)?|free|[gs]et_option))?|set_(?:(?:character_data|default|e(?:lement|nd_namespace_decl|xternal_entity_ref)|(?:notation|start_namespace|unparsed_entity)_decl|processing_instruction)_handler|object))|writer_(?:end_(?:attribute|c(?:data|omment)|d(?:ocument|td(?:_(?:attlist|e(?:lement|ntity)))?)|element|pi)|f(?:lush|ull_end_element)|o(?:pen_(?:memory|uri)|utput_memory)|s(?:et_indent(?:_string)?|tart_(?:(?:attribute|element)(?:_ns)?|c(?:data|omment)|d(?:ocument|td(?:_(?:attlist|e(?:lement|ntity)))?)|pi))|text|write_(?:(?:attribute|element)(?:_ns)?|c(?:data|omment)|dtd(?:_(?:attlist|e(?:lement|ntity)))?|pi|raw)))|z(?:end_(?:c(?:all_method|reate_unterminated_string)|get_(?:current_func_name|map_ptr_last|unit_enum)|iterable(?:_legacy)?|leak_(?:bytes|variable)|(?:number_or_string|string_or_(?:object|stdclass))(?:_or_null)?|t(?:e(?:rminate_string|st_(?:(?:(?:nullable_)?array|void)_return|c(?:ompile_string|r(?:ash|eate_throwing_resource))|deprecated|f(?:ill_packed_array|unc)|is_string_marked_as_valid_utf8|(?:override_libxml_global_sta|parameter_with_attribu)te|zend_(?:call_stack_(?:get|use_all)|ini_(?:parse_u?quantity|str))))|hread_id)|version|weakmap_(?:attach|dump|remove))|ip_(?:close|entry_(?:c(?:lose|ompress(?:edsize|ionmethod))|(?:filesiz|nam)e|open|read)|open|read)|lib_(?:(?:de|en)cod|get_coding_typ)e)|ZendTestNS2_(?:ZendSubNS_)?namespaced_(?:deprecated_)?func)[\\s\\x0b]*\\(",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933153",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: High-Risk PHP Function Call Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b\\(?[\"']*(?:assert(?:_options)?|c(?:hr|reate_function)|e(?:val|x(?:ec|p))|f(?:ile(?:group)?|open|puts)|glob|i(?:mage(?:gif|(?:jpe|pn)g|wbmp|xbm)|s_a|ntval)|m(?:d5|kdir)|o(?:pendir|rd)|p(?:assthru|hpinfo|open|r(?:intf|ev))|r(?:eadfile|trim)|s(?:t(?:rip_tags|at)|ubstr|ystem)|tmpfile|u(?:n(?:(?:pac|lin)k|serialize)|sort))(?:/(?:\\*.*?\\*/|/[^\\n\\r]*)|#[^\\n\\r]*|[\\s\\x0b\"])*[\"']*\\)?[\\s\\x0b]*\\([^\\)]*\\)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933160",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Low-Value PHP Function Call Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\b(?:a(?:bs|s(?:in|sert(?:_options)?))|basename|c(?:h(?:eckdate|r(?:oot)?)|o(?:(?:mpac|(?:nsta|u)n)t|py|sh?)|r(?:eate_function|ypt)|urrent)|d(?:ate|e(?:coct|fined?)|ir)|e(?:nd|val|x(?:ec|p(?:lode)?|tract))|f(?:ile(?:(?:[acm]tim|inod|siz|typ)e|group|owner|perms)?|l(?:o(?:ck|or)|ush))|glob|h(?:ash|eader)|i(?:date|m(?:age(?:gif|(?:jpe|pn)g|wbmp|xbm)|plode)|s_a)|key|l(?:ink|og)|m(?:a(?:il|x)|d5|in)|n(?:ame|ext)|o(?:pendir|rd)|p(?:a(?:ck|ss(?:thru)?)|i|o(?:pen|w)|rev)|r(?:an(?:d|ge)|e(?:(?:adfil|nam)e|set)|ound)|s(?:(?:erializ|huffl)e|in|leep|(?:or|ta)t|ubstr|y(?:mlink|s(?:log|tem)))|t(?:an|(?:im|mpfil)e|ouch|rim)|u(?:cfirst|n(?:lin|pac)k)|virtual)(?:[\\s\\x0b]|/\\*.*\\*/|(?:#|//).*)*\\(.*\\)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933161",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Serialized Object Injection",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "[oOcC]:\\d+:\".+?\":\\d+:\\{.*}",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933170",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Variable Function Call Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\$+(?:[A-Z_a-z\\x7f-\u00ff][0-9A-Z_a-z\\x7f-\u00ff]*|[\\s\\x0b]*\\{.+\\})(?:[\\s\\x0b]|\\[.+\\]|\\{.+\\}|/(?:\\*.*\\*/|/.*)|#.*)*\\(.*\\)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933180",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Wrapper scheme detected",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:bzip2|expect|glob|ogg|(?:ph|r)ar|ssh2(?:.(?:s(?:hell|(?:ft|c)p)|exec|tunnel))?|z(?:ip|lib))://",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933200",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Variable Function Call Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:\\((?:.+\\)(?:[\"'][\\-0-9A-Z_a-z]+[\"'])?\\(.+|[^\\)]*string[^\\)]*\\)[\\s\\x0b\"'\\-\\.0-9A-\\[\\]_a-\\{\\}]+\\([^\\)]*)|(?:\\[[0-9]+\\]|\\{[0-9]+\\}|\\$[^\\(\\),\\./;\\x5c]+|[\"'][\\-0-9A-Z\\x5c_a-z]+[\"'])\\(.+)\\);",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933210",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: Variable Function Call Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:\\((?:.+\\)(?:[\"'][\\-0-9A-Z_a-z]+[\"'])?\\(.+|[^\\)]*string[^\\)]*\\)[\\s\\x0b\"'\\-\\.0-9A-\\[\\]_a-\\{\\}]+\\([^\\)]*)|(?:\\[[0-9]+\\]|\\{[0-9]+\\}|\\$[^\\(\\),\\./;\\x5c]+|[\"'][\\-0-9A-Z\\x5c_a-z]+[\"'])\\(.+)\\)(?:;|$)?",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933211",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP Injection Attack: PHP Session File Upload Attempt",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:^|[/\\x5c])sess_[,\\-0-9a-z]{20,256}$",
+            "flags": "",
+            "targets": [
+                "FILES",
+                "FILES_NAMES",
+                "REQUEST_HEADERS:X-Filename",
+                "REQUEST_HEADERS:X_Filename",
+                "REQUEST_HEADERS:X.Filename",
+                "REQUEST_HEADERS:X-File-Name"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "933220",
+            "source_rule_file": "REQUEST-933-APPLICATION-ATTACK-PHP.conf",
+            "source_operator": "rx",
+            "source_targets": "FILES|FILES_NAMES|REQUEST_HEADERS:X-Filename|REQUEST_HEADERS:X_Filename|REQUEST_HEADERS:X.Filename|REQUEST_HEADERS:X-File-Name",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-injection-php",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-PHP",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Node.js Injection Attack 1/2",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "_(?:\\$\\$ND_FUNC\\$\\$_|_js_function)|(?:\\beval|new[\\s\\x0b]+Function[\\s\\x0b]*)\\(|(?:String\\.fromCharCod|Module:prototyp)e|function\\(\\)\\{|this\\.constructor|module\\.exports=|\\([\\s\\x0b]*[^0-9A-Z_a-z]child_process[^0-9A-Z_a-z][\\s\\x0b]*\\)|cons(?:tructor:constructor|ole(?:\\.(?:(?:debu|lo)g|error|info|trace|warn)(?:\\.call)?\\(|\\[[\"'`](?:(?:debu|lo)g|error|info|trace|warn)[\"'`]\\]))|process(?:\\.(?:(?:a(?:ccess|ppendfile|rgv|vailability)|c(?:aveats|h(?:mod|own)|(?:los|opyfil)e|p|reate(?:read|write)stream)|ex(?:ec(?:file)?|ists)|f(?:ch(?:mod|own)|data(?:sync)?|s(?:tat|ync)|utimes)|inodes|l(?:chmod|ink|stat|utimes)|mkd(?:ir|temp)|open(?:dir)?|r(?:e(?:ad(?:dir|file|link|v)?|name)|m)|s(?:pawn(?:file)?|tat|ymlink)|truncate|u(?:n(?:link|watchfile)|times)|w(?:atchfile|rite(?:file|v)?))(?:sync)?(?:\\.call)?\\(|binding|constructor|env|global|main(?:Module)?|process|require)|\\[[\"'`](?:(?:a(?:ccess|ppendfile|rgv|vailability)|c(?:aveats|h(?:mod|own)|(?:los|opyfil)e|p|reate(?:read|write)stream)|ex(?:ec(?:file)?|ists)|f(?:ch(?:mod|own)|data(?:sync)?|s(?:tat|ync)|utimes)|inodes|l(?:chmod|ink|stat|utimes)|mkd(?:ir|temp)|open(?:dir)?|r(?:e(?:ad(?:dir|file|link|v)?|name)|m)|s(?:pawn(?:file)?|tat|ymlink)|truncate|u(?:n(?:link|watchfile)|times)|w(?:atchfile|rite(?:file|v)?))(?:sync)?|binding|constructor|env|global|main(?:Module)?|process|require)[\"'`]\\])|(?:binding|constructor|env|global|main(?:Module)?|process|require)\\[|require(?:\\.(?:resolve(?:\\.call)?\\(|main|extensions|cache)|\\[[\"'`](?:(?:resolv|cach)e|main|extensions)[\"'`]\\])",
+            "flags": "",
+            "targets": [
+                "REQUEST_FILENAME",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934100",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-javascript",
+                "platform-multi",
+                "platform-nodejs",
+                "attack-rce",
+                "attack-injection-generic",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Node.js Injection Attack 2/2",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:close|exists|fork|(?:ope|spaw)n|re(?:ad|quire)|w(?:atch|rite))[\\s\\x0b]*\\(",
+            "flags": "",
+            "targets": [
+                "REQUEST_FILENAME",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934101",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-javascript",
+                "platform-nodejs",
+                "attack-rce",
+                "attack-injection-generic",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Possible Server Side Request Forgery (SSRF) Attack: URL Parameter using IP Address",
+            "category": "Generic",
+            "severity": "critical",
+            "pattern": "(?:a(?:cap|f[ps]|ttachment)|b(?:eshare|itcoin|lob)|c(?:a(?:llto|p)|id|vs|ompress.(?:zlib|bzip2))|d(?:a(?:v|ta)|ict|n(?:s|tp))|e(?:d2k|xpect)|f(?:(?:ee)?d|i(?:le|nger|sh)|tps?)|g(?:it|o(?:pher)?|lob)|h(?:323|ttps?)|i(?:ax|cap|(?:ma|p)ps?|rc[6s]?)|ja(?:bbe)?r|l(?:dap[is]?|ocal_file)|m(?:a(?:ilto|ven)|ms|umble)|n(?:e(?:tdoc|ws)|fs|ntps?)|ogg|p(?:aparazzi|h(?:ar|p)|op(?:2|3s?)|r(?:es|oxy)|syc)|r(?:mi|sync|tm(?:f?p)?|ar)|s(?:3|ftp|ips?|m(?:[bs]|tps?)|n(?:ews|mp)|sh(?:2(?:.(?:s(?:hell|(?:ft|c)p)|exec|tunnel))?)?|vn(?:\\+ssh)?)|t(?:e(?:amspeak|lnet)|ftp|urns?)|u(?:dp|nreal|t2004)|v(?:entrilo|iew-source|nc)|w(?:ebcal|ss?)|x(?:mpp|ri)|zip):/?/?(?:[0-9]{7,10}|(?:0x[0-9a-f]{2}\\.){3}0x[0-9a-f]{2}|0x(?:[0-9a-f]{8}|[0-9a-f]{16})|(?:0{1,4}[0-9]{1,3}\\.){3}0{1,4}[0-9]{1,3}|[0-9]{1,3}\\.(?:[0-9]{1,3}\\.[0-9]{5}|[0-9]{8})|(?:\\x5c\\x5c[\\-0-9a-z]\\.?_?)+|\\[[0-:a-f]+(?:[\\.0-9]+|%[0-9A-Z_a-z]+)?\\]|[a-z][\\-\\.0-9A-Z_a-z]{1,255}:[0-9]{1,5}(?:#?[\\s\\x0b]*&?@(?:(?:[0-9]{1,3}\\.){3}[0-9]{1,3}|[a-z][\\-\\.0-9A-Z_a-z]{1,255}):[0-9]{1,5}/?)+|[\\.0-9]{0,11}(?:\u00e2(?:\\x91[\\xa0-\u00bf]|\\x92[\\x80-\u00bf]|\\x93[\\x80-\u00a9\u00ab-\u00bf])|\u00e3\\x80\\x82)+)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934120",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-ssrf",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/225/664"
+            ]
+        },
+        {
+            "name": "JavaScript Prototype Pollution",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "__proto__|constructor[\\s\\x0b]*(?:\\.|\\]?\\[)[\\s\\x0b]*prototype",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934130",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-javascript",
+                "platform-multi",
+                "attack-rce",
+                "attack-injection-generic",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1/180/77"
+            ]
+        },
+        {
+            "name": "Perl Injection Attack",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "@+\\{[\\s\\x0b]*\\[",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934140",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-perl",
+                "platform-multi",
+                "attack-rce",
+                "attack-injection-generic",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Ruby Injection Attack",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "Process[\\s\\x0b]*\\.[\\s\\x0b]*spawn[\\s\\x0b]*\\(",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934150",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-ruby",
+                "platform-multi",
+                "attack-rce",
+                "attack-injection-generic",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Node.js DoS attack",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "while[\\s\\x0b]*\\([\\s\\x0b\\(]*(?:!+(?:false|null|undefined|NaN|[\\+\\-]?0|\"{2}|'{2}|`{2})|(?:!!)*(?:(?:t(?:rue|his)|[\\+\\-]?(?:Infinity|[1-9][0-9]*)|new [A-Za-z][0-9A-Z_a-z]*|window|String|(?:Boolea|Functio)n|Object|Array)\\b|\\{[^\\}]*\\}|\\[[^\\]]*\\]|\"[^\"]+\"|'[^']+'|`[^`]+`)).*\\)",
+            "flags": "",
+            "targets": [
+                "REQUEST_FILENAME",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934160",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-javascript",
+                "platform-nodejs",
+                "attack-rce",
+                "attack-injection-generic",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "PHP data scheme attack",
+            "category": "Generic",
+            "severity": "critical",
+            "pattern": "^data:(?:(?:\\*|[^!\"\\(\\),/:-\\?\\[-\\]\\{\\}]+)/(?:\\*|[^!\"\\(\\),/:-\\?\\[-\\]\\{\\}]+)|\\*)(?:[\\s\\x0b]*;[\\s\\x0b]*(?:charset[\\s\\x0b]*=[\\s\\x0b]*\"?(?:iso-8859-15?|utf-8|windows-1252)\\b\"?|(?:[^\\s\\x0b-\"\\(\\),/:-\\?\\[-\\]c\\{\\}]|c(?:[^!\"\\(\\),/:-\\?\\[-\\]h\\{\\}]|h(?:[^!\"\\(\\),/:-\\?\\[-\\]a\\{\\}]|a(?:[^!\"\\(\\),/:-\\?\\[-\\]r\\{\\}]|r(?:[^!\"\\(\\),/:-\\?\\[-\\]s\\{\\}]|s(?:[^!\"\\(\\),/:-\\?\\[-\\]e\\{\\}]|e[^!\"\\(\\),/:-\\?\\[-\\]t\\{\\}]))))))[^!\"\\(\\),/:-\\?\\[-\\]\\{\\}]*[\\s\\x0b]*=[\\s\\x0b]*[^!\\(\\),/:-\\?\\[-\\]\\{\\}]+);?)*(?:[\\s\\x0b]*,[\\s\\x0b]*(?:(?:\\*|[^!\"\\(\\),/:-\\?\\[-\\]\\{\\}]+)/(?:\\*|[^!\"\\(\\),/:-\\?\\[-\\]\\{\\}]+)|\\*)(?:[\\s\\x0b]*;[\\s\\x0b]*(?:charset[\\s\\x0b]*=[\\s\\x0b]*\"?(?:iso-8859-15?|utf-8|windows-1252)\\b\"?|(?:[^\\s\\x0b-\"\\(\\),/:-\\?\\[-\\]c\\{\\}]|c(?:[^!\"\\(\\),/:-\\?\\[-\\]h\\{\\}]|h(?:[^!\"\\(\\),/:-\\?\\[-\\]a\\{\\}]|a(?:[^!\"\\(\\),/:-\\?\\[-\\]r\\{\\}]|r(?:[^!\"\\(\\),/:-\\?\\[-\\]s\\{\\}]|s(?:[^!\"\\(\\),/:-\\?\\[-\\]e\\{\\}]|e[^!\"\\(\\),/:-\\?\\[-\\]t\\{\\}]))))))[^!\"\\(\\),/:-\\?\\[-\\]\\{\\}]*[\\s\\x0b]*=[\\s\\x0b]*[^!\\(\\),/:-\\?\\[-\\]\\{\\}]+);?)*)*",
+            "flags": "",
+            "targets": [
+                "REQUEST_FILENAME",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934170",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-php",
+                "platform-multi",
+                "attack-ssrf",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "SSTI Attack",
+            "category": "Generic",
+            "severity": "critical",
+            "pattern": "(?:\\{%[^%}]*%}|<%=?[^%>]*%>)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934180",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-ssti",
+                "attack-injection-generic",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Server-Side Template Injection (SSTI) Attack",
+            "category": "Generic",
+            "severity": "critical",
+            "pattern": "(?:\\{\\{[^\\}]*?(?:[\\(\\*]|__)[^\\}]*?\\}|#\\{[^\\}]*?(?:[\\(\\*]|__)[^\\}]*?)\\}|<%=?[\\s\\x0b]*[^%]*?(?:[\\(\\*]|__)[^%]*?%>",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "934200",
+            "source_rule_file": "REQUEST-934-APPLICATION-ATTACK-GENERIC.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "platform-multi",
+                "attack-ssti",
+                "attack-injection-generic",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-GENERIC",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "XSS Filter - Category 1: Script Tag Vector",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "<script[^>]*>[\\s\\S]*?",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_FILENAME",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941110",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_FILENAME|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "XSS Filter - Category 2: Event Handler Vector",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "[\\t-\\r \"'\\(,/-9;=`]on[a-z]{3,50}[\\t-\\r \\(,;]*?=[^=]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "ARGS_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941120",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|ARGS_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "XSS Filter - Category 4: Javascript URI Vector",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "[a-z]+=(?:[^:=]+:.+;)*?[^:=]+:url\\(javascript",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS:User-Agent",
+                "REQUEST_HEADERS:Referer",
+                "ARGS_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941140",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS:User-Agent|REQUEST_HEADERS:Referer|ARGS_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "UTF-7 Encoding IE XSS - Attack Detected",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "\\+ADw-.*(?:\\+AD4-|>)|<.*\\+AD4-",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941350",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-internet-explorer",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "JSFuck / Hieroglyphy obfuscation detected",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "![!+ ]\\[\\]",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941360",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242/63"
+            ]
+        },
+        {
+            "name": "JavaScript global variable found",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "(?:self|document|t(?:his|op)|window)[\\s\\x0b]*(?:/\\*|[\\)\\[]).+?(?:\\]|\\*/)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941370",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242/63"
+            ]
+        },
+        {
+            "name": "Javascript method detected",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "\\b(?:eval|set(?:timeout|interval)|new[\\s\\x0b]+Function|a(?:lert|tob)|btoa|(?:promp|impor)t|con(?:firm|sole\\.(?:log|dir))|fetch)[\\s\\x0b]*[\\(\\{]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941390",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-nodejs",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "XSS JavaScript function without parentheses",
+            "category": "XSS",
+            "severity": "critical",
+            "pattern": "((?:\\[[^\\]]*\\]|Reflect)[^\\.]*\\.).*(?:map|sort|apply)[^\\.]*\\..*call[^`]*`.*`",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "REQUEST_FILENAME",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "941400",
+            "source_rule_file": "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|REQUEST_FILENAME|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "attack-xss",
+                "xss-perf-disable",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-XSS",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack: Common DB Names Detected",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b(?:d(?:atabas|b_nam)e[^0-9A-Z_a-z]*\\(|(?:information_schema|m(?:aster\\.\\.sysdatabases|s(?:db|ys(?:ac(?:cess(?:objects|storage|xml)|es)|modules2?|(?:object|querie|relationship)s))|ysql\\.db)|northwind|pg_(?:catalog|toast)|tempdb)\\b|s(?:chema(?:_name\\b|[^0-9A-Z_a-z]*\\()|(?:qlite_(?:temp_)?master|ys(?:aux|\\.database_name))\\b))",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942140",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects blind sqli tests using sleep() or benchmark()",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "(?i:sleep\\s*?\\(.*?\\)|benchmark\\s*?\\(.*?\\,.*?\\))",
+            "flags": "",
+            "targets": [
+                "REQUEST_FILENAME",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942160",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects SQL benchmark and sleep injection attempts including conditional queries",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "(?:select|;)[\\s\\x0b]+(?:benchmark|if|sleep)[\\s\\x0b]*?\\([\\s\\x0b]*?\\(?[\\s\\x0b]*?[0-9A-Z_a-z]+",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942170",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MSSQL code execution and information gathering attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "[\"'`](?:[\\s\\x0b]*![\\s\\x0b]*[\"'0-9A-Z_-z]|;?[\\s\\x0b]*(?:having|select|union\\b[\\s\\x0b]*(?:all|(?:distin|sele)ct))\\b[\\s\\x0b]*[^\\s\\x0b])|\\b(?:(?:(?:c(?:onnection_id|urrent_user)|database|schema|user)[\\s\\x0b]*?|select.*?[0-9A-Z_a-z]?user)\\(|exec(?:ute)?[\\s\\x0b]+master\\.|from[^0-9A-Z_a-z]+information_schema[^0-9A-Z_a-z]|into[\\s\\x0b\\+]+(?:dump|out)file[\\s\\x0b]*?[\"'`]|union(?:[\\s\\x0b]select[\\s\\x0b]@|[\\s\\x0b\\(0-9A-Z_a-z]*?select))|[\\s\\x0b]*?exec(?:ute)?.*?[^0-9A-Z_a-z]xp_cmdshell|[^0-9A-Z_a-z]iif[\\s\\x0b]*?\\(",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942190",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects chained SQL injection attempts 1/2",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "(?:&&|\\|\\||and|between|div|like|n(?:and|ot)|(?:xx?)?or)[\\s\\x0b\\(]+[0-9A-Z_a-z]+[\\s\\x0b\\)]*?[!\\+=]+[\\s\\x0b0-9]*?[\"'-\\)=`]|[0-9](?:[\\s\\x0b]*?(?:and|between|div|like|x?or)[\\s\\x0b]*?[0-9]+[\\s\\x0b]*?[\\+\\-]|[\\s\\x0b]+group[\\s\\x0b]+by.+\\()|/[0-9A-Z_a-z]+;?[\\s\\x0b]+(?:and|between|div|having|like|x?or|select)[^0-9A-Z_a-z]|(?:[#;]|--)[\\s\\x0b]*?(?:alter|drop|(?:insert|update)[\\s\\x0b]*?[0-9A-Z_a-z]{2,})|@.+=[\\s\\x0b]*?\\([\\s\\x0b]*?select|[^0-9A-Z_a-z]SET[\\s\\x0b]*?@[0-9A-Z_a-z]+",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942210",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Looking for integer overflow attacks, these are taken from skipfish, except 2.2.2250738585072011e-308 is the \\\"magic number\\\" crash",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "^(?:429496729[56]|2(?:14748364[78]|.22507385850720(?:07|11)e-308)|-(?:214748364[89]|0000023456)|00000(?:12345|23456)|1e309)$",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942220",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects conditional SQL injection attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "[\\s\\x0b\\(\\)]case[\\s\\x0b]+when.*?then|\\)[\\s\\x0b]*?like[\\s\\x0b]*?\\(|select.*?having[\\s\\x0b]*?[^\\s\\x0b]+[\\s\\x0b]*?[^\\s\\x0b0-9A-Z_a-z]|if[\\s\\x0b]?\\([0-9A-Z_a-z]+[\\s\\x0b]*?[<->~]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942230",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MySQL charset switch and MSSQL DoS attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "alter[\\s\\x0b]*?[0-9A-Z_a-z]+.*?char(?:acter)?[\\s\\x0b]+set[\\s\\x0b]+[0-9A-Z_a-z]+|[\"'`](?:;*?[\\s\\x0b]*?waitfor[\\s\\x0b]+(?:time|delay)[\\s\\x0b]+[\"'`]|;.*?:[\\s\\x0b]*?goto)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942240",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MATCH AGAINST, MERGE and EXECUTE IMMEDIATE injections",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "m(?:erge.*?using|atch[\\s\\x0b]*?[\\(\\)\\+-\\-0-9A-Z_a-z]+[\\s\\x0b]*?against)[\\s\\x0b]*?\\(|execute[\\s\\x0b]*?immediate[\\s\\x0b]*?[\"'`]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942250",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects HAVING injections",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\W+\\d*?\\s*?\\bhaving\\b\\s*?[^\\s\\-]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942251",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Looking for basic sql injection. Common attack string for mysql, oracle and others",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "union.*?select.*?from",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942270",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects Postgres pg_sleep injection, waitfor delay attacks and database shutdown attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "select[\\s\\x0b]*?pg_sleep|waitfor[\\s\\x0b]*?delay[\\s\\x0b]?[\"'`]+[\\s\\x0b]?[0-9]|;[\\s\\x0b]*?shutdown[\\s\\x0b]*?(?:[#;\\{]|/\\*|--)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS:User-Agent",
+                "REQUEST_HEADERS:Referer",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942280",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS:User-Agent|REQUEST_HEADERS:Referer|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Finds basic MongoDB SQL injection attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\[?\\$(?:a(?:bs|c(?:cumulator|osh?)|dd(?:ToSet)?|ll(?:ElementsTrue)?|n(?:d|yElementTrue)|rray(?:ElemA|ToObjec)t|sinh?|tan[2h]?|vg)|b(?:etween|i(?:narySize|t(?:And|Not|(?:O|Xo)r)?)|ottomN?|sonSize|ucket(?:Auto)?)|c(?:eil|mp|o(?:n(?:cat(?:Arrays)?|d|vert)|sh?|unt|variance(?:Po|Sam)p)|urrentDate)|d(?:a(?:te(?:Add|Diff|From(?:Parts|String)|Subtract|T(?:o(?:Parts|String)|runc))|yOf(?:Month|Week|Year))|e(?:greesToRadians|nseRank|rivative)|iv(?:ide)?|ocumentNumber)|e(?:(?:a|lemMat)ch|q|x(?:ists|p(?:MovingAvg|r)?))|f(?:i(?:lter|rstN?)|loor|unction)|g(?:etField|roup|te?)|(?:hou|xo|yea)r|i(?:fNull|n(?:c|dexOf(?:Array|Bytes|CP)|tegral)?|s(?:Array|Number|o(?:DayOfWeek|Week(?:Year)?)))|jsonSchema|l(?:astN?|et|i(?:ke|(?:nearFil|tera)l)|n|o(?:cf|g(?:10)?)|t(?:e|rim)?)|m(?:a(?:p|xN?)|e(?:dian|rgeObjects|ta)|i(?:llisecond|n(?:N|ute)?)|o(?:d|nth)|ul(?:tiply)?)|n(?:atural|e|in|o[rt])|o(?:bjectToArray|r)|p(?:ercentile|o(?:[pw]|sition)|roject|u(?:ll(?:All)?|sh))|r(?:a(?:diansToDegrees|n(?:[dk]|ge))|e(?:(?:duc|nam)e|gex(?:Find(?:All)?|Match)?|place(?:All|One)|verseArray)|ound|trim)|s(?:(?:ampleRat|lic)e|e(?:cond|t(?:Difference|(?:Equal|WindowField)s|Field|I(?:ntersection|sSubset)|OnInsert|Union)?)|(?:hif|pli|qr)t|i(?:nh?|ze)|ort(?:Array)?|t(?:dDev(?:Po|Sam)p|r(?:Len(?:Bytes|CP)|casecmp))|u(?:b(?:str(?:Bytes|CP)?|tract)|m)|witch)|t(?:anh?|ext|o(?:Bool|D(?:(?:at|oubl)e|ecimal)|HashedIndexKey|Int|Lo(?:ng|wer)|ObjectId|String|U(?:UID|pper)|pN?)|r(?:im|unc)|s(?:Increment|Second)|ype)|unset|w(?:eek|here)|zip)\\b\\]?",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942290",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MySQL comments, conditions and ch(a)r injections",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\)[\\s\\x0b]*?when[\\s\\x0b]*?[0-9]+[\\s\\x0b]*?then|[\"'`][\\s\\x0b]*?(?:[#\\{]|--)|/\\*![\\s\\x0b]?[0-9]+|\\b(?:(?:binary|cha?r)[\\s\\x0b]*?\\([\\s\\x0b]*?[0-9]|(?:and|n(?:and|ot)|(?:xx?)?or|div|like|between|r(?:egexp|like))[\\s\\x0b]+[0-9A-Z_a-z]+\\()|(?:\\|\\||&&)[\\s\\x0b]*?[0-9A-Z_a-z]+\\(",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942300",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects chained SQL injection attempts 2/2",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "(?:\\([\\s\\x0b]*?select[\\s\\x0b]*?[0-9A-Z_a-z]+|coalesce|order[\\s\\x0b]+by[\\s\\x0b]+if[0-9A-Z_a-z]*?)[\\s\\x0b]*?\\(|\\*/from|\\+[\\s\\x0b]*?[0-9]+[\\s\\x0b]*?\\+[\\s\\x0b]*?@|[0-9A-Z_a-z][\"'`][\\s\\x0b]*?(?:(?:[\\+\\-=@\\|]+[\\s\\x0b]+?)+|[\\+\\-=@\\|]+)[\\(0-9]|@@[0-9A-Z_a-z]+[\\s\\x0b]*?[^\\s\\x0b0-9A-Z_a-z]|[^0-9A-Z_a-z]!+[\"'`][0-9A-Z_a-z]|[\"'`](?:;[\\s\\x0b]*?(?:if|while|begin)|[\\s\\x0b0-9]+=[\\s\\x0b]*?[0-9])|[\\s\\x0b\\(]+case[0-9]*?[^0-9A-Z_a-z].+[tw]hen[\\s\\x0b\\(]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942310",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MySQL and PostgreSQL stored procedure/function injections",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "create[\\s\\x0b]+(?:function|procedure)[\\s\\x0b]*?[0-9A-Z_a-z]+[\\s\\x0b]*?\\([\\s\\x0b]*?\\)[\\s\\x0b]*?-|d(?:eclare[^0-9A-Z_a-z]+[#@][\\s\\x0b]*?[0-9A-Z_a-z]+|iv[\\s\\x0b]*?\\([\\+\\-]*[\\s\\x0b\\.0-9]+,[\\+\\-]*[\\s\\x0b\\.0-9]+\\))|exec[\\s\\x0b]*?\\([\\s\\x0b]*?@|(?:lo_(?:impor|ge)t|procedure[\\s\\x0b]+analyse)[\\s\\x0b]*?\\(|;[\\s\\x0b]*?(?:declare|open)[\\s\\x0b]+[\\-0-9A-Z_a-z]+|::(?:b(?:igint|ool)|double[\\s\\x0b]+precision|int(?:eger)?|numeric|oid|real|(?:tex|smallin)t)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942320",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MySQL and PostgreSQL stored procedure/function injections",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "create[\\s\\x0b]+(?:function|procedure)[\\s\\x0b]*?[0-9A-Z_a-z]+[\\s\\x0b]*?\\([\\s\\x0b]*?\\)[\\s\\x0b]*?-|d(?:eclare[^0-9A-Z_a-z]+[#@][\\s\\x0b]*?[0-9A-Z_a-z]+|iv[\\s\\x0b]*?\\([\\+\\-]*[\\s\\x0b\\.0-9]+,[\\+\\-]*[\\s\\x0b\\.0-9]+\\))|exec[\\s\\x0b]*?\\([\\s\\x0b]*?@|(?:lo_(?:impor|ge)t|procedure[\\s\\x0b]+analyse)[\\s\\x0b]*?\\(|;[\\s\\x0b]*?(?:declare|open)[\\s\\x0b]+[\\-0-9A-Z_a-z]+|::(?:b(?:igint|ool)|double[\\s\\x0b]+precision|int(?:eger)?|numeric|oid|real|(?:tex|smallin)t)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_HEADERS:Referer",
+                "REQUEST_HEADERS:User-Agent"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942321",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_HEADERS:Referer|REQUEST_HEADERS:User-Agent",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects MySQL UDF injection and other data/structure manipulation attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "create[\\s\\x0b]+function[\\s\\x0b].+[\\s\\x0b]returns|;[\\s\\x0b]*?(?:alter|(?:(?:cre|trunc|upd)at|re(?:nam|plac))e|d(?:e(?:lete|sc)|rop)|(?:inser|selec)t|load)\\b[\\s\\x0b]*?[\\(\\[]?[0-9A-Z_a-z]{2,}",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942350",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects concatenated basic SQL injection and SQLLFI attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b(?:(?:alter|(?:(?:cre|trunc|upd)at|renam)e|de(?:lete|sc)|(?:inser|selec)t|load)[\\s\\x0b]+(?:char|group_concat|load_file)\\b[\\s\\x0b]*\\(?|end[\\s\\x0b]*?\\);)|[\\s\\x0b\\(]load_file[\\s\\x0b]*?\\(|[\"'`][\\s\\x0b]+regexp[^0-9A-Z_a-z]|[\"'0-9A-Z_-z][\\s\\x0b]+as\\b[\\s\\x0b]*[\"'0-9A-Z_-z]+[\\s\\x0b]*\\bfrom|^[^A-Z_a-z]+[\\s\\x0b]*?(?:(?:(?:(?:cre|trunc)at|renam)e|d(?:e(?:lete|sc)|rop)|(?:inser|selec)t|load)[\\s\\x0b]+[0-9A-Z_a-z]+|u(?:pdate[\\s\\x0b]+[0-9A-Z_a-z]+|nion[\\s\\x0b]*(?:all|(?:sele|distin)ct)\\b)|alter[\\s\\x0b]*(?:a(?:(?:ggregat|pplication[\\s\\x0b]*rol)e|s(?:sembl|ymmetric[\\s\\x0b]*ke)y|u(?:dit|thorization)|vailability[\\s\\x0b]*group)|b(?:roker[\\s\\x0b]*priority|ufferpool)|c(?:ertificate|luster|o(?:l(?:latio|um)|nversio)n|r(?:edential|yptographic[\\s\\x0b]*provider))|d(?:atabase|efault|i(?:mension|skgroup)|omain)|e(?:(?:ndpoi|ve)nt|xte(?:nsion|rnal))|f(?:lashback|oreign|u(?:lltext|nction))|hi(?:erarchy|stogram)|group|in(?:dex(?:type)?|memory|stance)|java|l(?:a(?:ngua|r)ge|ibrary|o(?:ckdown|g(?:file[\\s\\x0b]*group|in)))|m(?:a(?:s(?:k|ter[\\s\\x0b]*key)|terialized)|e(?:ssage[\\s\\x0b]*type|thod)|odule)|(?:nicknam|queu)e|o(?:perator|utline)|p(?:a(?:ckage|rtition)|ermission|ro(?:cedur|fil)e)|r(?:e(?:mot|sourc)e|o(?:l(?:e|lback)|ute))|s(?:chema|e(?:arch|curity|rv(?:er|ice)|quence|ssion)|y(?:mmetric[\\s\\x0b]*key|nonym)|togroup)|t(?:able(?:space)?|ext|hreshold|r(?:igger|usted)|ype)|us(?:age|er)|view|w(?:ork(?:load)?|rapper)|x(?:ml[\\s\\x0b]*schema|srobject))\\b)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942360",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects basic SQL injection based on keyword alter or union",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "(?i:^[\\W\\d]+\\s*?(?:alter|union)\\b)",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942361",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Detects concatenated basic SQL injection and SQLLFI attempts",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "(?:alter|(?:(?:cre|trunc|upd)at|renam)e|de(?:lete|sc)|(?:inser|selec)t|load)[\\s\\x0b]+(?:char|group_concat|load_file)[\\s\\x0b]?\\(?|end[\\s\\x0b]*?\\);|[\\s\\x0b\\(]load_file[\\s\\x0b]*?\\(|[\"'`][\\s\\x0b]+regexp[^0-9A-Z_a-z]|[^A-Z_a-z][\\s\\x0b]+as\\b[\\s\\x0b]*[\"'0-9A-Z_-z]+[\\s\\x0b]*\\bfrom|^[^A-Z_a-z]+[\\s\\x0b]*?(?:create[\\s\\x0b]+[0-9A-Z_a-z]+|(?:d(?:e(?:lete|sc)|rop)|(?:inser|selec)t|load|(?:renam|truncat)e|u(?:pdate|nion[\\s\\x0b]*(?:all|(?:sele|distin)ct))|alter[\\s\\x0b]*(?:a(?:(?:ggregat|pplication[\\s\\x0b]*rol)e|s(?:sembl|ymmetric[\\s\\x0b]*ke)y|u(?:dit|thorization)|vailability[\\s\\x0b]*group)|b(?:roker[\\s\\x0b]*priority|ufferpool)|c(?:ertificate|luster|o(?:l(?:latio|um)|nversio)n|r(?:edential|yptographic[\\s\\x0b]*provider))|d(?:atabase|efault|i(?:mension|skgroup)|omain)|e(?:(?:ndpoi|ve)nt|xte(?:nsion|rnal))|f(?:lashback|oreign|u(?:lltext|nction))|hi(?:erarchy|stogram)|group|in(?:dex(?:type)?|memory|stance)|java|l(?:a(?:ngua|r)ge|ibrary|o(?:ckdown|g(?:file[\\s\\x0b]*group|in)))|m(?:a(?:s(?:k|ter[\\s\\x0b]*key)|terialized)|e(?:ssage[\\s\\x0b]*type|thod)|odule)|(?:nicknam|queu)e|o(?:perator|utline)|p(?:a(?:ckage|rtition)|ermission|ro(?:cedur|fil)e)|r(?:e(?:mot|sourc)e|o(?:l(?:e|lback)|ute))|s(?:chema|e(?:arch|curity|rv(?:er|ice)|quence|ssion)|y(?:mmetric[\\s\\x0b]*key|nonym)|togroup)|t(?:able(?:space)?|ext|hreshold|r(?:igger|usted)|ype)|us(?:age|er)|view|w(?:ork(?:load)?|rapper)|x(?:ml[\\s\\x0b]*schema|srobject)))\\b)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942362",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b(?:having\\b(?:[\\s\\x0b]+(?:[0-9]{1,10}|'[^=]{1,10}')[\\s\\x0b]*?[<->]| ?(?:[0-9]{1,10} ?[<->]+|[\"'][^=]{1,10}[ \"'<-\\?\\[]+))|ex(?:ecute(?:\\(|[\\s\\x0b]{1,5}[\\$\\.0-9A-Z_a-z]{1,5}[\\s\\x0b]{0,3})|ists[\\s\\x0b]*?\\([\\s\\x0b]*?select\\b)|(?:create[\\s\\x0b]+?table.{0,20}?|like[^0-9A-Z_a-z]*?char[^0-9A-Z_a-z]*?)\\()|select.*?case|from.*?limit|order[\\s\\x0b]by|exists[\\s\\x0b](?:[\\s\\x0b]select|s(?:elect[^\\s\\x0b](?:if(?:null)?[\\s\\x0b]\\(|top|concat)|ystem[\\s\\x0b]\\()|\\bhaving\\b[\\s\\x0b]+[0-9]{1,10}|'[^=]{1,10}')",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942380",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b(?:or\\b(?:[\\s\\x0b]?(?:[0-9]{1,10}|[\"'][^=]{1,10}[\"'])[\\s\\x0b]?[<->]+|[\\s\\x0b]+(?:[0-9]{1,10}|'[^=]{1,10}')(?:[\\s\\x0b]*?[<->])?)|xor\\b[\\s\\x0b]+(?:[0-9]{1,10}|'[^=]{1,10}')(?:[\\s\\x0b]*?[<->])?)|'[\\s\\x0b]+x?or[\\s\\x0b]+.{1,20}[!\\+\\-<->]",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942390",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\band\\b(?:[\\s\\x0b]+(?:[0-9]{1,10}[\\s\\x0b]*?[<->]|'[^=]{1,10}')| ?(?:[0-9]{1,10}|[\"'][^=]{1,10}[\"']) ?[<->]+)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942400",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b(?:a(?:(?:b|co)s|vg)|bin|c(?:(?:as|o(?:nver|un))t|h(?:ar(?:set)?|r))|d(?:a(?:te|y)|e(?:fault|grees))|elt|f(?:ield|loor|ormat)|(?:hou|quarte|yea)r|i[fns]|l(?:ast|e(?:ft|ngth)|n|ikelihood|o(?:cal|g|wer))|m(?:ax|in(?:ute)?|o(?:d|nth))|now|p(?:assword|i|o(?:sition|wer))|r(?:awtonhex(?:toraw)?|e(?:p(?:eat|lace)|verse)|ight|ound)|s(?:econd|ign|leep|pace|tddev|um)|t(?:an|ime|o_(?:n?char|(?:day|second)s))|u(?:nlikely|(?:pp|s)er)|v(?:alues|ersion)|week)[^0-9A-Z_a-z]*?\\(",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942410",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Bin or Hex Encoding Identified",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b0x[0-9a-f]{3,}|(?:x'[0-9a-f]{3,}|b'[01]{10,})'",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942450",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "autonomous_transaction|(?:current_use|n?varcha|tbcreato)r|db(?:a_users|ms_java)|open(?:owa_util|query|rowset)|s(?:p_(?:(?:addextendedpro|sqlexe)c|execute(?:sql)?|help|is_srvrolemember|makewebtask|oacreate|p(?:assword|repare)|replwritetovarbin)|ql_(?:longvarchar|variant))|utl_(?:file|http)|xp_(?:availablemedia|(?:cmdshel|servicecontro)l|dirtree|e(?:numdsn|xecresultset)|filelist|loginconfig|makecab|ntsec(?:_enumdomains)?|reg(?:addmultistring|delete(?:key|value)|enum(?:key|value)s|re(?:ad|movemultistring)|write)|terminate(?:_process)?)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942470",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQL Injection Attack",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "\\b(?:(?:d(?:bms_[0-9A-Z_a-z]+\\.|elete\\b[^0-9A-Z_a-z]*?\\bfrom)|(?:group\\b.*?\\bby\\b.{1,100}?\\bhav|overlay\\b[^0-9A-Z_a-z]*?\\(.*?\\b[^0-9A-Z_a-z]*?plac)ing|in(?:ner\\b[^0-9A-Z_a-z]*?\\bjoin|sert\\b[^0-9A-Z_a-z]*?\\binto|to\\b[^0-9A-Z_a-z]*?\\b(?:dump|out)file)|load\\b[^0-9A-Z_a-z]*?\\bdata\\b.*?\\binfile|s(?:elect\\b.{1,100}?\\b(?:(?:.*?\\bdump\\b.*|(?:count|length)\\b.{1,100}?)\\bfrom|(?:data_typ|from\\b.{1,100}?\\bwher)e|instr|to(?:_(?:cha|numbe)r|p\\b.{1,100}?\\bfrom))|ys_context)|u(?:nion\\b.{1,100}?\\bselect|tl_inaddr))\\b|print\\b[^0-9A-Z_a-z]*?@@)|(?:collation[^0-9A-Z_a-z]*?\\(a|@@version|;[^0-9A-Z_a-z]*?\\b(?:drop|shutdown))\\b|'(?:dbo|msdasql|s(?:a|qloledb))'",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942480",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "MySQL in-line comment detected",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "/\\*[\\s\\x0b]*?[!\\+](?:[\\s\\x0b\\(\\)\\-0-9=A-Z_a-z]+)?\\*/",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942500",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQLi bypass attempt by ticks or backticks detected",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "`(?:[\\s\\x0b\\(\\)\\+\\-0-9<=@-Z_a-\\{\\}]{2,29}|(?:[\\+/-9A-Za-z]{4})+(?:(?:[\\+/-9A-Za-z]{2}=|[\\+/-9A-Za-z]{3})=)?)`",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942510",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQLi bypass attempt by ticks detected",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "'(?:[\\s\\x0b\\(\\)\\+\\-0-9<=@-Z_a-\\{\\}]{2,29}|(?:[\\+/-9A-Za-z]{4})+(?:(?:[\\+/-9A-Za-z]{2}=|[\\+/-9A-Za-z]{3})=)?)'",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942511",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "SQLi query termination detected",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "';",
+            "flags": "",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942530",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/3",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "JSON-Based SQL Injection",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "[\"'`][\\[\\{][^#\\]\\}]*[\\]\\}]+[\"'`]|(?:[\\-@]>?|<@|@[\\?@]|\\?(?:(?:)|&|\\|#>)|#(?:>>|-)|->>|[<>])[\"'`](?:[\\[\\{][^#\\]\\}]*[\\]\\}]+[\"'`]|\\$[\\.\\[])|\\bjson_extract\\b[^\\(]*\\([^\\)]*\\)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_FILENAME",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942550",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_FILENAME|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "MySQL Scientific Notation payload detected",
+            "category": "SQLi",
+            "severity": "critical",
+            "pattern": "1\\.e(?:[\\(\\),]|\\.[\\$0-9A-Z_a-z])",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "942560",
+            "source_rule_file": "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-sqli",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SQLI",
+                "capec/1000/152/248/66"
+            ]
+        },
+        {
+            "name": "Possible Session Fixation Attack: Setting Cookie Values in HTML",
+            "category": "Generic",
+            "severity": "critical",
+            "pattern": "\\.cookie\\b.*?;[^0-9A-Z_a-z]*?(?:expires|domain)[^0-9A-Z_a-z]*?=|\\bhttp-equiv[^0-9A-Z_a-z]+set-cookie\\b",
+            "flags": "i",
+            "targets": [
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "ARGS_NAMES",
+                "ARGS",
+                "XML:/*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "943100",
+            "source_rule_file": "REQUEST-943-APPLICATION-ATTACK-SESSION-FIXATION.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_COOKIES|REQUEST_COOKIES_NAMES|ARGS_NAMES|ARGS|XML:/*",
+            "source_tags": [
+                "application-multi",
+                "language-multi",
+                "platform-multi",
+                "attack-fixation",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-SESSION-FIXATION",
+                "capec/1000/225/21/593/61"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Suspicious Java class detected",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "java\\.lang\\.(?:runtime|processbuilder)",
+            "flags": "",
+            "targets": [
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_BODY",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944100",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/137/6"
+            ]
+        },
+        {
+            "name": "Java Injection Attack: Java Script File Upload Found",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": ".*\\.(?:jsp|jspx)\\.*$",
+            "flags": "",
+            "targets": [
+                "FILES",
+                "REQUEST_HEADERS:X-Filename",
+                "REQUEST_HEADERS:X_Filename",
+                "REQUEST_HEADERS:X.Filename",
+                "REQUEST_HEADERS:X-File-Name"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944140",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "FILES|REQUEST_HEADERS:X-Filename|REQUEST_HEADERS:X_Filename|REQUEST_HEADERS:X.Filename|REQUEST_HEADERS:X-File-Name",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-injection-java",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/242"
+            ]
+        },
+        {
+            "name": "Potential Remote Command Execution: Log4j / Log4shell",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)(?:[^\\}]{0,15}(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)|jndi|ctx)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_LINE",
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944150",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_LINE|ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/1",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/137/6"
+            ]
+        },
+        {
+            "name": "Potential Remote Command Execution: Log4j / Log4shell",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)(?:[^\\}]*(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)|jndi|ctx)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_LINE",
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944151",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_LINE|ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/137/6"
+            ]
+        },
+        {
+            "name": "Potential Remote Command Execution: Log4j / Log4shell",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)",
+            "flags": "i",
+            "targets": [
+                "REQUEST_LINE",
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944152",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "REQUEST_LINE|ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/4",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/137/6"
+            ]
+        },
+        {
+            "name": "Magic bytes Detected, probable java serialization in use",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "\\xac\\xed\\x00\\x05",
+            "flags": "",
+            "targets": [
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_BODY",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944200",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/248"
+            ]
+        },
+        {
+            "name": "Magic bytes Detected Base64 Encoded, probable java serialization in use",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:rO0ABQ|KztAAU|Cs7QAF)",
+            "flags": "",
+            "targets": [
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_BODY",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944210",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/248"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Java serialization (CVE-2015-4852)",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "(?:clonetransform|xmldecod)er|f(?:orclosure|ilewriter)|in(?:stantiate(?:factory|transformer)|vokertransformer)|(?:prototype(?:clone|serialization)factor|getpropert)y|whileclosure",
+            "flags": "",
+            "targets": [
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_BODY",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944240",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/248"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Suspicious Java method detected",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "java\\b.+(?:runtime|processbuilder)",
+            "flags": "",
+            "targets": [
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_BODY",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944250",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/248"
+            ]
+        },
+        {
+            "name": "Remote Command Execution: Malicious class-loading payload",
+            "category": "RCE",
+            "severity": "critical",
+            "pattern": "class\\.module\\.classLoader\\.resources\\.context\\.parent\\.pipeline|springframework\\.context\\.support\\.FileSystemXmlApplicationContext",
+            "flags": "",
+            "targets": [
+                "ARGS",
+                "ARGS_NAMES",
+                "REQUEST_COOKIES",
+                "REQUEST_COOKIES_NAMES",
+                "REQUEST_BODY",
+                "REQUEST_HEADERS",
+                "!REQUEST_HEADERS:Cookie",
+                "XML:/*",
+                "XML://@*"
+            ],
+            "source": "OWASP Core Rule Set",
+            "source_rule_id": "944260",
+            "source_rule_file": "REQUEST-944-APPLICATION-ATTACK-JAVA.conf",
+            "source_operator": "rx",
+            "source_targets": "ARGS|ARGS_NAMES|REQUEST_COOKIES|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|!REQUEST_HEADERS:Cookie|XML:/*|XML://@*",
+            "source_tags": [
+                "application-multi",
+                "language-java",
+                "platform-multi",
+                "attack-rce",
+                "paranoia-level/2",
+                "OWASP_CRS",
+                "OWASP_CRS/ATTACK-JAVA",
+                "capec/1000/152/248"
+            ]
+        }
+    ]
+}
