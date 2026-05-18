@@ -23,6 +23,8 @@
       "sys_protect.py",
       "dashboard.py"
     ],
+    "services": [
+    ],
     "apm_modules": [],
     "templates": [
       "dashboard.html",
@@ -105,7 +107,8 @@
       "psutil",
       "rich"
     ],
-    "system": [],
+    "system": [
+    ],
     "local_modules": []
   },
   "install_commands": [],
