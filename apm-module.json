@@ -20,9 +20,7 @@
       "net_analyzer.py",
       "os_protect.py",
       "sec_config.py",
-      "sys_protect.py"
-    ],
-    "services": [
+      "sys_protect.py",
       "dashboard.py"
     ],
     "apm_modules": [],
@@ -107,10 +105,7 @@
       "psutil",
       "rich"
     ],
-    "system": [
-      "python",
-      "wget google.com"
-    ],
+    "system": [],
     "local_modules": []
   },
   "install_commands": [],
