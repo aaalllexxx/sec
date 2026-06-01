@@ -356,14 +356,14 @@ print(report["resources"])    # CPU/RAM/Disk
 Отказоустойчивость через Heartbeat (UDP) и автоматическую синхронизацию файлов проекта по TCP.
 
 ```python
-from sec.cluster import create_cluster_node
+from sec.cluster import ClusterNode
 
 def on_failover():
     print("Master нода упала! Запускаем резервное приложение...")
 
-node = create_cluster_node(
+node = ClusterNode(
     node_id="slave_1",
-    role="slave", 
+    role="slave",
     master_ip="192.168.1.100",
     master_port=8888,
     sync_dir="."
@@ -470,3 +470,30 @@ app.run()
 ```
 
 **Результат:** Приложение автоматически защищено на уровнях L3-L7 + хоста, с визуальным мониторингом по адресу `/admin`.
+
+---
+
+## 🛰️ Сигнатурный анализ (OWASP CRS)
+
+`SignatureDetector` использует базу `signatures_db.json` из **109 сигнатур**,
+импортированных из [OWASP Core Rule Set](https://owasp.org/www-project-modsecurity-core-rule-set/)
+(Log4Shell, Shellshock, SSTI, PHP/Node/Python инъекции, XXE, MSSQL RCE и др.).
+Каждая сигнатура указывает цели проверки в стиле ModSecurity (`targets`:
+`ARGS`, `REQUEST_HEADERS`, `REQUEST_COOKIES`, `REQUEST_URI`, `REQUEST_BODY` …).
+
+```python
+from sec.intrusions import IPS, SignatureDetector
+
+ips = IPS(app)              # SignatureDetector подключается по умолчанию
+# или вручную: ips.add_detector(SignatureDetector)
+```
+
+> **Атрибуция:** правила взяты из проекта OWASP ModSecurity Core Rule Set,
+> распространяемого под лицензией **Apache License 2.0**. © OWASP CRS project.
+
+---
+
+## 📄 Лицензия
+
+Модуль `sec` распространяется под лицензией MIT. Встроенная база сигнатур
+основана на OWASP Core Rule Set (Apache License 2.0).

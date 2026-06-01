@@ -1,5 +1,33 @@
 # Changelog (sec)
 
+## [2.7.0] - 2026-06-01
+### Added
+- **Сигнатурный движок на базе OWASP Core Rule Set.** `SignatureDetector`
+  переработан под ModSecurity-совместимую модель: для каждой сигнатуры задаётся
+  набор целей проверки (`targets`: `ARGS`, `REQUEST_HEADERS`, `REQUEST_COOKIES`,
+  `REQUEST_URI`, `REQUEST_BODY` и др.). База `signatures_db.json` содержит
+  **109 сигнатур, импортированных из [OWASP Core Rule Set](https://owasp.org/www-project-modsecurity-core-rule-set/)**
+  (Log4Shell, Shellshock, SSTI, PHP/Node/Python инъекции, XXE, MSSQL RCE и т.д.).
+
+### Changed
+- **RCEDetector — детерминированное обнаружение.** Детектор RCE переписан так,
+  чтобы обнаруживать инъекцию команд независимо от окружения, а не полагаться
+  только на `shutil.which()`:
+  - добавлено обнаружение подстановки команд: `$(...)`, обратные кавычки,
+    `${...}`, `&&`, `||`;
+  - shell-метасимволы срезаются с токенов, поэтому `;cat` и `$(whoami)`
+    детектируются так же, как `cat` и `whoami`;
+  - существенно расширен список опасных команд (`cat`, `ls`, `whoami`, `id`,
+    `ping`, `nc`, `bash`, `sh`, `powershell`, `curl`, `wget` и др.);
+  - `dangerous` теперь `set` (поиск за O(1)); обратная совместимость сохранена
+    (`eval`, `exec`, `system`, `subprocess` по-прежнему присутствуют).
+
+### Notes
+- Изменение задействовано в демонстрационном стенде `security-demo`, который
+  прогоняет полезные нагрузки через реальные детекторы `sec`.
+- Сигнатуры OWASP CRS распространяются под лицензией Apache 2.0 — см. атрибуцию
+  в `README.md`.
+
 ## [2.6.1] - 2026-03-16
 ### Changed
 - **Rich Output**: Реализован вывод через библиотеку `rich` в модулях `sign.py` и `unsign.py` для улучшения читаемости и поддержки цветов в терминале.

@@ -244,20 +244,56 @@ class BaseDetector(ABC):
 # ─── Детекторы ─────────────────────────────────────────────────
 
 class RCEDetector(BaseDetector):
-    """Обнаружение Remote Code Execution."""
-    dangerous = ["echo", "eval", "exec", "system", "popen", "subprocess"]
+    """Обнаружение Remote Code Execution (инъекция команд ОС).
+
+    Срабатывает на:
+      * подстановку команд: ``$(...)``, обратные кавычки, ``${...}``, ``&&``, ``||``;
+      * опасные системные команды (cat, whoami, nc, bash, ...);
+      * наличие исполняемого файла команды в PATH (``shutil.which``).
+
+    Перед сопоставлением из токенов срезаются shell-метасимволы, поэтому
+    ``;cat`` и ``$(whoami)`` детектируются так же, как ``cat`` и ``whoami``.
+    Базовый список команд срабатывает детерминированно — независимо от того,
+    установлена ли утилита на сервере.
+    """
+
+    # Опасные команды/утилиты. Множество, чтобы проверка `x in dangerous` была O(1).
+    dangerous = {
+        "echo", "eval", "exec", "system", "popen", "subprocess",
+        "cat", "ls", "dir", "type", "id", "whoami", "uname", "hostname",
+        "ping", "nc", "ncat", "netcat", "telnet", "curl", "wget",
+        "bash", "sh", "zsh", "ksh", "powershell", "pwsh", "cmd",
+        "python", "perl", "ruby", "php", "nslookup", "chmod", "chown",
+        "rm", "mv", "cp", "kill", "wmic", "certutil", "bitsadmin",
+    }
+
+    # Подстановка/инъекция команд через shell-конструкции.
+    _substitution = re.compile(r"\$\(|\$\{|`|&&|\|\|")
+
+    # Символы, которые срезаются с краёв токена, чтобы добраться до имени команды.
+    _strip_chars = ";|$`&()<>{}\"'\\ \t\n\r"
 
     def run(self) -> None:
         # Проверяем только параметры и тело для предотвращения логов от User-Agent и т.д.
         user_inputs = _get_all_input_values()
         user_inputs.append(request.full_path)
-        
+
         for val in user_inputs:
             decoded = unquote(val).lower()
-            # Проверка по списку опасных команд
-            for el in decoded.split():
+
+            # 1. Подстановка команд / инъекция через shell-конструкции.
+            if self._substitution.search(decoded):
+                self.log(f"DETECTED RCE (command substitution): {request.method} {request.path} | payload: {val[:50]}")
+                self.trigger_response()
+                return
+
+            # 2. Опасные команды (метасимволы срезаются с токенов).
+            for raw_token in re.split(r"[\s;|&]+", decoded):
+                el = raw_token.strip(self._strip_chars)
+                if not el:
+                    continue
                 if el in self.dangerous or shutil.which(el):
-                    self.log(f"DETECTED RCE: {request.method} {request.path} | payload: {val[:50]}")
+                    self.log(f"DETECTED RCE: {request.method} {request.path} | command '{el}' in {val[:50]}")
                     self.trigger_response()
                     return
 
