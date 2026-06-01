@@ -2,6 +2,7 @@ from AEngineApps.service import Service
 from AEngineApps.screen import Screen
 from AEngineApps.api import API
 import os
+import hmac
 from flask import session, redirect, url_for, render_template
 
 try:
@@ -83,7 +84,10 @@ class SecDashboardService(Service):
                 login = self.request.form.get("login")
                 password = self.request.form.get("password")
                 
-                if login == self.service.admin_login and password == self.service.admin_pass:
+                expected_pass = self.service.admin_pass
+                if (login == self.service.admin_login
+                    and expected_pass is not None
+                    and hmac.compare_digest(password, expected_pass)):
                     session["sec_admin_logged_in"] = True
                     return redirect(url_for("sec_dashboard.sec_dashboard__dashboard"))
                 return render_template("sec/login.html", error="Неверный логин или пароль")

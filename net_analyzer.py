@@ -1,4 +1,7 @@
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 from collections import defaultdict
 import time
 

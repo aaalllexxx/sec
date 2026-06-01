@@ -191,7 +191,7 @@ class SecDashboardService(Service):
                 try:
                     import AEngineApps.sec_config as sc
                     config_path = sc.__file__
-                except:
+                except Exception:
                     config_path = "AEngineApps/sec_config.py"
                 
                 if not os.path.exists(config_path):
@@ -222,7 +222,7 @@ class SecDashboardService(Service):
                     with open(config_path, "w", encoding="utf-8") as f:
                         f.write(new_content)
                     os.chmod(config_path, mode)
-                except:
+                except Exception:
                     with open(config_path, "w", encoding="utf-8") as f:
                         f.write(new_content)
 
@@ -265,10 +265,12 @@ class SecDashboardService(Service):
                     return {"error": "Unauthorized"}, 401
                 
                 res = {"os": {}, "network": {}}
-                if get_os_protection_module():
-                    res["os"] = get_os_protection_module().run_health_check()
-                if get_network_analyzer():
-                    res["network"] = get_network_analyzer().run_analysis()
+                os_mod = get_os_protection_module()
+                if os_mod:
+                    res["os"] = os_mod.run_health_check()
+                net_mod = get_network_analyzer()
+                if net_mod:
+                    res["network"] = net_mod.run_analysis()
                 return res
 
         class LogReaderAPI(API):
@@ -285,7 +287,8 @@ class SecDashboardService(Service):
                             lines = f.readlines()
                             for line in reversed(lines[-50:]):
                                 logs.append({"message": line.strip()})
-                    except: pass
+                    except Exception:
+                        pass
                 return {"logs": logs}
 
         self.add_screen("/login", LoginScreen, endpoint="login_page")
@@ -301,5 +304,12 @@ class SecDashboardService(Service):
         def index_redirect():
             return redirect(url_for("sec_dashboard.dashboard_page"))
 
-# Экземпляр для авто-обнаружения
-dashboard_service = SecDashboardService()
+# Ленивая инициализация для авто-обнаружения (избегаем побочных эффектов при импорте)
+dashboard_service = None
+
+def get_dashboard_service(**kwargs):
+    """Фабрика для ленивой инициализации SecDashboardService."""
+    global dashboard_service
+    if dashboard_service is None:
+        dashboard_service = SecDashboardService(**kwargs)
+    return dashboard_service

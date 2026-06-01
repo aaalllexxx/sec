@@ -1,7 +1,10 @@
 import os
 import ctypes
 import platform
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 from typing import Optional, Dict
 
 class OSProtection:

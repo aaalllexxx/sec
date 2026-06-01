@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sec.os_protect import get_os_protection_module
 from sec.net_analyzer import get_network_analyzer
-from sec.cluster import create_cluster_node
+from sec.cluster import ClusterNode
 
 def test_os_and_network():
     print("--- Тестирование OS Protection ---")
@@ -32,12 +32,12 @@ def run_cluster_node(role="master"):
     def on_failover_callback():
         print(">>> КОЛЛБЕК ПРОСРАБОТАЛ! Узел перешел в боевой режим (Master). Запускаю App.run()...")
         
-    node = create_cluster_node(
-        node_id=f"example_{role}", 
-        role=role, 
-        master_ip="127.0.0.1", 
+    node = ClusterNode(
+        node_id=f"example_{role}",
+        role=role,
+        master_ip="127.0.0.1",
         master_port=8888,
-        sync_dir="." # Для тестов синхронизируем текущую папку
+        sync_dir="."  # Для тестов синхронизируем текущую папку
     )
     node.on_failover = on_failover_callback
     node.start()

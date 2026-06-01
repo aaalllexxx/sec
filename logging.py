@@ -37,12 +37,12 @@ class Logger:
         self.app.logger.handlers.clear()
 
         # Создадим папку logs, если её нет
-        if not os.path.exists(app.project_root + "logs"):
-            os.mkdir(app.project_root + "logs")
-            
+        logs_dir = os.path.join(app.project_root, "logs")
+        if not os.path.exists(logs_dir):
+            os.mkdir(logs_dir)
 
         # --- Хендлер, пишущий в файл ---
-        file_handler = FileHandler(app.project_root + "logs/app.log")
+        file_handler = FileHandler(os.path.join(logs_dir, "app.log"))
         file_handler.setLevel(logging.INFO)
 
         # --- Хендлер, пишущий в консоль ---

@@ -34,9 +34,9 @@ def run(*args, **kwargs):
         return
 
     # Определяем список модулей для удаления
-    if args and "--modules" in args:
+    if arg and "--modules" in arg:
         try:
-            target_modules = args[args.index("--modules") + 1:]
+            target_modules = arg[arg.index("--modules") + 1:]
         except IndexError:
             target_modules = []
     else:

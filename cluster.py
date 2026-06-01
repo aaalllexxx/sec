@@ -52,11 +52,35 @@ class ClusterNode:
         mem_file.seek(0)
         return mem_file.read()
 
+    @staticmethod
+    def _is_safe_tar_member(member, target_dir):
+        """Проверяет, что член архива не содержит path traversal."""
+        # Нормализуем целевой путь
+        abs_target = os.path.abspath(target_dir)
+        # Вычисляем абсолютный путь для члена архива
+        member_path = os.path.abspath(os.path.join(abs_target, member.name))
+        # Проверяем что путь внутри целевой директории
+        if not member_path.startswith(abs_target + os.sep) and member_path != abs_target:
+            return False
+        # Запрещаем абсолютные пути и пути с ..
+        if member.name.startswith('/') or member.name.startswith('\\'):
+            return False
+        if '..' in member.name.split('/') or '..' in member.name.split('\\'):
+            return False
+        # Запрещаем симлинки, хардлинки и device файлы
+        if member.issym() or member.islnk():
+            return False
+        return True
+
     def _extract_project_archive(self, archive_data: bytes):
         """Распаковывает полученный tar.gz архив поверх текущей директории (Slave)."""
         mem_file = io.BytesIO(archive_data)
         with tarfile.open(fileobj=mem_file, mode="r:gz") as tar:
-            tar.extractall(path=self.sync_dir)
+            safe_members = [
+                m for m in tar.getmembers()
+                if self._is_safe_tar_member(m, self.sync_dir)
+            ]
+            tar.extractall(path=self.sync_dir, members=safe_members)
 
     def _master_sync_server(self):
         """TCP сервер на Master для отдачи файлов."""
@@ -174,4 +198,4 @@ class ClusterNode:
         self.running = False
 
 
-__all__ = ['ClusterAdmin']
+__all__ = ['ClusterNode']

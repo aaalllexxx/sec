@@ -1033,6 +1033,93 @@
             startTimer();
         }
 
+        async function loadModules() {
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__modules_api') }}");
+                const data = await res.json();
+                const container = document.getElementById('modules-list');
+                const modules = data.modules;
+                
+                container.innerHTML = Object.keys(modules).map(name => `
+                    <div class="activity-row" style="padding: 1.5rem; background: rgba(255,255,255,0.03);">
+                        <div class="activity-content">
+                            <div class="activity-icon" style="background: ${modules[name] ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)'}; color: ${modules[name] ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">
+                                ${name[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight:700; text-transform: capitalize;">${name.replace('_', ' ')}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">${modules[name] ? 'Модуль активен' : 'Модуль отключен'}</div>
+                            </div>
+                        </div>
+                        <label class="switch-container">
+                            <input type="checkbox" ${modules[name] ? 'checked' : ''} onchange="toggleModule('${name}', this.checked)">
+                            <div class="switch"></div>
+                        </label>
+                    </div>
+                `).join('');
+            } catch (e) { console.error('Load modules error:', e); }
+        }
+
+        async function toggleModule(name, enabled) {
+            try {
+                await fetch("{{ url_for('sec_dashboard.sec_dashboard__toggle_module_api') }}", {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ module: name, enabled: enabled })
+                });
+                // Small toast/feedback could be added here
+                loadModules(); // Refresh UI
+            } catch (e) { alert('Ошибка переключения: ' + e); }
+        }
+
+        async function updateCredentials() {
+            const oldPwd = document.getElementById('old-password').value;
+            const newLogin = document.getElementById('new-login').value;
+            const newPwd = document.getElementById('new-password').value;
+            const confirmPwd = document.getElementById('confirm-password').value;
+
+            if (!oldPwd || !newLogin || !newPwd) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                alert('Новые пароли не совпадают');
+                return;
+            }
+
+            if (newPwd.length < 8) {
+                alert('Новый пароль должен быть не менее 8 символов');
+                return;
+            }
+
+            try {
+                const res = await fetch("{{ url_for('sec_dashboard.sec_dashboard__update_credentials_api') }}", {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        old_password: oldPwd,
+                        new_login: newLogin,
+                        new_password: newPwd
+                    })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    window.location.reload(); // Перенаправит на логин
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (e) { alert('Ошибка сети: ' + e); }
+        }
+
         window.onload = () => {
             runScan();
             loadLogs();

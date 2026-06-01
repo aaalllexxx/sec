@@ -50,14 +50,15 @@ def lock_file(filepath, intense=False):
     try:
         if os.name == 'nt':
             # Windows: Смена владельца на Администраторов и настройка ACL
-            subprocess.run(f'icacls "{filepath}" /setowner "Administrators"', shell=True, capture_output=True)
-            subprocess.run(f'icacls "{filepath}" /inheritance:r /grant:r "Administrators":(F) /grant:r "SYSTEM":(F)', shell=True, capture_output=True)
+            subprocess.run(['icacls', filepath, '/setowner', 'Administrators'], capture_output=True)
+            subprocess.run(['icacls', filepath, '/inheritance:r', '/grant:r', 'Administrators:(F)', '/grant:r', 'SYSTEM:(F)'], capture_output=True)
             
-            flags = "+R"
+            attrib_args = ['attrib', '+R']
             if intense:
-                flags += " +H +S"
-            subprocess.run(f'attrib {flags} "{filepath}"', shell=True, capture_output=True)
-            subprocess.run(f'icacls "{filepath}" /deny Everyone:(D)', shell=True, capture_output=True)
+                attrib_args.extend(['+H', '+S'])
+            attrib_args.append(filepath)
+            subprocess.run(attrib_args, capture_output=True)
+            subprocess.run(['icacls', filepath, '/deny', 'Everyone:(D)'], capture_output=True)
         
         else:
             # Linux: Смена владельца на root и установка прав
@@ -81,9 +82,9 @@ def unlock_file(filepath):
     try:
         if os.name == 'nt':
             # Windows
-            subprocess.run(f'icacls "{filepath}" /remove:d Everyone', shell=True, capture_output=True)
-            subprocess.run(f'icacls "{filepath}" /grant:r Everyone:(M)', shell=True, capture_output=True)
-            subprocess.run(f'attrib -R -H -S "{filepath}"', shell=True, capture_output=True)
+            subprocess.run(['icacls', filepath, '/remove:d', 'Everyone'], capture_output=True)
+            subprocess.run(['icacls', filepath, '/grant:r', 'Everyone:(M)'], capture_output=True)
+            subprocess.run(['attrib', '-R', '-H', '-S', filepath], capture_output=True)
         else:
             # Linux
             try:

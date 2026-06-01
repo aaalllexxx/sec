@@ -110,12 +110,6 @@ class AdvancedSystemProtection:
     def __init__(self, app=None, scan_interval: int = 30,
                  max_cpu: float = 90.0, max_ram: float = 90.0,
                  max_users: int = 5, auto_start: bool = True):
-        # Проверка статуса модуля
-        try:
-            import AEngineApps.sec_config as sec_config
-            if not getattr(sec_config, "MODULES_STATUS", {}).get("sys_protect", True):
-                return
-        except ImportError: pass
         """
         Args:
             app: Экземпляр AEngineApps App. Если передан — проверяет конфигурацию
@@ -126,6 +120,12 @@ class AdvancedSystemProtection:
             max_users: Порог количества терминальных сессий для предупреждения.
             auto_start: Запускать ли фоновый сканер автоматически.
         """
+        # Проверка статуса модуля
+        try:
+            import AEngineApps.sec_config as sec_config
+            if not getattr(sec_config, "MODULES_STATUS", {}).get("sys_protect", True):
+                return
+        except ImportError: pass
         self.app = app
         self.scan_interval = scan_interval
         self.max_cpu = max_cpu
@@ -464,9 +464,6 @@ class AdvancedSystemProtection:
             "xss_payloads_found": len(alerts),
             "alerts": alerts
         }
-
-
-__all__ = ["AdvancedSystemProtection"]
 
 
 __all__ = ['AdvancedSystemProtection', 'enable_cors', 'enable_csp']
